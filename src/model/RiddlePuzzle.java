@@ -1,0 +1,31 @@
+package model;
+
+public class RiddlePuzzle extends Puzzle{
+    private String question;
+    private String answer;
+    private String hint;
+
+    public RiddlePuzzle(String description, int coinReward, int difficultyLevel,
+                        String question, String answer, String hint){
+        super(description, coinReward, difficultyLevel);
+        this.question = question;
+        this.answer = answer;
+        this.hint = hint;
+    }
+
+    @Override
+    public boolean attemptSolve(GachaItem item){
+        //RIDDLE PUZZLES DONT USE ITEMS - THEY NEED ANSWER INPUT
+        return false;
+    }
+
+    public boolean checkAnswer(String playerAnswer){
+        if(playerAnswer.equalsIgnoreCase(answer)) {
+            markSolved();
+            return true;
+        }
+        return false;
+    }
+
+    public String getQuestion(){return question;}
+}

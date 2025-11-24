@@ -1,0 +1,57 @@
+package model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Room {
+    private int roomNumber;
+    private String name;
+    private String description;
+    private boolean isLocked;
+    private List<Puzzle> puzzles;
+    private GachaMachine gachaMachine;
+
+    public Room(int roomNumber, String name, String description){
+        this.roomNumber = roomNumber;
+        this.name = name;
+        this.description = description;
+        this.isLocked = true;
+        this.puzzles = new Arraylist<>();
+        this.gachaMachine = new GachaMachine(name + " Gacha", 20);
+    }
+
+    public void unlock(){
+        this.isLocked = false;
+    }
+
+    public boolean isComplete() {
+        for(Puzzle puzzle : puzzles){
+            if(!puzzle.isSolved()) return false;
+        }
+        return true;
+    }
+
+    public List<Puzzle> getAvailablePuzzles() {
+        List<Puzzle> available = new ArrayList<>();
+        for(Puzzle puzzle : puzzles){
+            if(!puzzle.isSolved()) available.add(puzzle);
+        }
+        return available;
+    }
+
+    public GachaMachine getGachaMachine(){return gachaMachine;}
+
+    public String getRoomDescription(){return description;}
+
+    public void addPuzzle(Puzzle puzzle){puzzle.add(puzzle);}
+
+    public int getRoomNumber(){return roomNumber;}
+
+    public String getName(){return name;}
+
+    public boolean isLocked(){return isLocked;}
+
+    public List<Puzzle> getPuzzles(){
+        return new ArrayList<>(puzzles);
+    }
+}
