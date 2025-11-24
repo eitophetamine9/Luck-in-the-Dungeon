@@ -35,5 +35,42 @@ public class GameManager {
         rooms.get(0).unlock();
     }
 
+    public void startNewGame() {
+        currentPlayer = new Player("Adventurer");
+        currentRoomIndex = 0;
+        gameState = "PLAYING";
+        initializeGame();
+    }
 
+    public void saveGame() {
+        // File saving will be implemented later
+        System.out.println("Game saved successfully!");
+    }
+
+    public void loadGame() {
+        // File loading will be implemented later
+        System.out.println("Game loaded successfully!");
+    }
+
+    public void moveToNextRoom(){
+        if(currentRoomIndex < rooms.size() - 1) {
+            currentRoomIndex++;
+            rooms.get(currentRoomIndex).unlock();
+        } else {
+            gameState = "COMPLETED";
+        }
+    }
+
+    public Room getCurrentRoom(){
+        if(currentRoomIndex < rooms.size()) return rooms.get(currentRoomIndex);
+
+        return null;
+    }
+
+    public Player getCurrentPlayer(){return currentPlayer;}
+    public String getGameState(){return gameState;}
+    public int getCurrentRoomIndex(){return currentRoomIndex;}
+    public List<Room> getRooms() {
+        return new ArrayList<>(rooms);
+    }
 }
