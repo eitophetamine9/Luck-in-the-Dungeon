@@ -16,7 +16,7 @@ public class Room {
         this.name = name;
         this.description = description;
         this.isLocked = true;
-        this.puzzles = new Arraylist<>();
+        this.puzzles = new ArrayList<>();
         this.gachaMachine = new GachaMachine(name + " Gacha", 20);
     }
 
@@ -43,7 +43,7 @@ public class Room {
 
     public String getRoomDescription(){return description;}
 
-    public void addPuzzle(Puzzle puzzle){puzzle.add(puzzle);}
+    public void addPuzzle(Puzzle puzzle){this.puzzles.add(puzzle);}
 
     public int getRoomNumber(){return roomNumber;}
 
