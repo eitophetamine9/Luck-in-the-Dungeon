@@ -1,5 +1,8 @@
 package model;
 
+import exceptions.SaveFileCorruptedException;
+import util.FileManager;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,11 +12,13 @@ public class GameManager {
     private List<Room> rooms;
     private int currentRoomIndex;
     private String gameState;
+    private FileManager fileManager;
 
     private GameManager(){
         this.rooms = new ArrayList<>();
         this.currentRoomIndex = 0;
         this.gameState = "MENU";
+        this.fileManager = new FileManager();
         initializeGame();
     }
 
@@ -43,13 +48,32 @@ public class GameManager {
     }
 
     public void saveGame() {
-        // File saving will be implemented later
-        System.out.println("Game saved successfully!");
+        try{
+            fileManager.saveGame(this);
+        } catch (SaveFileCorruptedException e){
+            System.err.println("Save failed: " + e.getMessage());
+            // UI LATER
+        }
+
     }
 
-    public void loadGame() {
-        // File loading will be implemented later
-        System.out.println("Game loaded successfully!");
+    public boolean loadGame() {
+        try {
+            return fileManager.loadGame(this);
+        } catch (SaveFileCorruptedException e){
+            System.err.println("Load failed: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean saveExists() {return fileManager.saveExists();}
+
+    public void deleteSave(){
+        try{
+            fileManager.deleteSave();
+        } catch (SaveFileCorruptedException e) {
+            System.err.println("Delete failed: " + e.getMessage());
+        }
     }
 
     public void moveToNextRoom(){

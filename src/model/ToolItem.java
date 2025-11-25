@@ -13,13 +13,27 @@ public class ToolItem extends GachaItem {
 
     @Override
     public boolean use(Puzzle puzzle){
-        if(usesRemaining > 0){
-            boolean wasUsed = puzzle.attemptSolve(this);
-            if(wasUsed) usesRemaining--;
+        if(usesRemaining <= 0) return false;
 
-            return wasUsed;
+        boolean wasUsed = false;
+        //Different tools work on different puzzles
+        if(puzzle instanceof LockPuzzle && "lockpick".equals(toolType)){
+            //Lockpick has a chance to solve any lock
+            if(Math.random() > 0.5) {
+                ((LockPuzzle)puzzle).markSolved();
+                wasUsed = true;
+            }
+        } else if(puzzle instanceof CodePuzzle && "decoder".equals(toolType)){
+            //Decoder tool - mark as used but doesn't auto solve
+            wasUsed = true;
+        } else if (puzzle instanceof RiddlePuzzle && "hintbook".equals(toolType)) {
+            //Hint book tol - mark as used but doesn't auto solve
+            wasUsed = true;
         }
-        return false;
+
+        if(wasUsed) usesRemaining--;
+
+        return wasUsed;
     }
 
     public String getToolType(){return toolType;}

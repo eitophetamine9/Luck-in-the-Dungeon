@@ -1,5 +1,7 @@
 package model;
 
+import exceptions.WrongItemException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,8 +36,16 @@ public class Player {
         this.inventory.add(item);
     }
 
-    public boolean useItem(GachaItem item, Puzzle puzzle){
-        return item.use(puzzle);
+    public boolean useItem(GachaItem item, Puzzle puzzle) throws WrongItemException {
+        if (!inventory.contains(item))
+            throw new WrongItemException("Item '" + item.getName() + "' is not in your inventory!");
+
+        boolean success = item.use(puzzle);
+
+        if(!success)
+            throw new WrongItemException("The " + item.getName() + " cannot be used on this type of puzzle!");
+
+        return true;
     }
 
     public List<GachaItem> getInventory() {

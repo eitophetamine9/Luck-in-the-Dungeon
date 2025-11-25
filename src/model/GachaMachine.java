@@ -1,5 +1,7 @@
 package model;
 
+import exceptions.NotEnoughCoinsException;
+
 import java.util.*;
 
 public class GachaMachine {
@@ -24,7 +26,11 @@ public class GachaMachine {
         rateTable.put(Rarity.EPIC, 0.05); // Epic 5% roll
     }
 
-    public GachaItem pull(){
+    public GachaItem pull(Player player) throws NotEnoughCoinsException {
+
+        if(!player.spendCoins(pullCost)) throw new NotEnoughCoinsException(pullCost, player.getCoinBalance());
+
+
         Random random = new Random();
         double roll = random.nextDouble();
 

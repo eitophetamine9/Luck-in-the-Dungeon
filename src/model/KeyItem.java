@@ -12,10 +12,14 @@ public class KeyItem extends GachaItem {
 
     @Override
     public boolean use(Puzzle puzzle) {
-        // Simple implementation - just return true for now
-        // We'll add proper puzzle solving logic later
-        System.out.println("Using " + name + " on puzzle...");
-        return true;
+        // PUZZLE WILL BE ADDED SOON
+        if(puzzle instanceof LockPuzzle) {
+            LockPuzzle lockPuzzle = (LockPuzzle) puzzle;
+
+            if(this.keyColor.equals(lockPuzzle.getLockColor()) || this.isMasterKey)
+                return lockPuzzle.attemptSolve(this);
+        }
+        return false;
     }
 
     public String getKeyColor() { return keyColor; }
