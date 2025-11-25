@@ -10,6 +10,8 @@ public class GachaMachine {
     private List<GachaItem> itemPool;
     private int pityCounter;
     private Map<Rarity, Double> rateTable;
+    private static final int PITY_THRESHOLD = 10; // Epic every 10 pulls
+    private int pullCounter; // Track pulls since last epic
 
     public GachaMachine(String machineName, int pullCost){
         this.machineName = machineName;
@@ -44,6 +46,13 @@ public class GachaMachine {
                 rolledRarity = entry.getKey();
                 break;
             }
+        }
+
+        pullCounter++;
+        if (pullCounter >= PITY_THRESHOLD) {
+            rolledRarity = Rarity.EPIC; // Force epic
+            pullCounter = 0; // Reset counter
+            System.out.println("🎉 Pity system activated! Guaranteed EPIC!");
         }
 
         // Filter items by rolled rarity
