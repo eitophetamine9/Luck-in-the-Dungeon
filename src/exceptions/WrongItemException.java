@@ -18,11 +18,7 @@ public class WrongItemException extends GameException {
         super(message);
     }
 
-    public GachaItem getItem() {
-        return item;
-    }
+    public GachaItem getItem() { return item; }
 
-    public Puzzle getPuzzle() {
-        return puzzle;
-    }
+    public Puzzle getPuzzle() { return puzzle; }
 }

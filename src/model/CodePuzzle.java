@@ -13,9 +13,13 @@ public class CodePuzzle extends Puzzle{
         this.playerInput = "";
     }
 
+    // ✅ FIX: Allow tools to work on these puzzles
     @Override
     public boolean attemptSolve(GachaItem item){
-        //CODE PUZZLES THAT DON'T USE ITEMS - THEY NEED DIRECT INPUT
+        if(item instanceof ToolItem) {
+            ToolItem tool = (ToolItem) item;
+            return tool.use(this); // Let the tool decide if it can help
+        }
         return false;
     }
 
@@ -29,5 +33,9 @@ public class CodePuzzle extends Puzzle{
             return true;
         }
         return false;
+    }
+
+    public String getSolution() {
+        return solution;
     }
 }

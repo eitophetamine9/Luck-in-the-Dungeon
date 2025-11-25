@@ -10,14 +10,15 @@ public class KeyItem extends GachaItem {
         this.isMasterKey = isMasterKey;
     }
 
+    // ✅ FIX: KeyItem should directly solve the puzzle
     @Override
     public boolean use(Puzzle puzzle) {
-        // PUZZLE WILL BE ADDED SOON
         if(puzzle instanceof LockPuzzle) {
             LockPuzzle lockPuzzle = (LockPuzzle) puzzle;
-
-            if(this.keyColor.equals(lockPuzzle.getLockColor()) || this.isMasterKey)
-                return lockPuzzle.attemptSolve(this);
+            if(this.keyColor.equals(lockPuzzle.getLockColor()) || this.isMasterKey) {
+                lockPuzzle.markSolved(); // ✅ Direct solution
+                return true;
+            }
         }
         return false;
     }

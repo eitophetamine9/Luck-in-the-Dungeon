@@ -10,7 +10,11 @@ public class RiddlePuzzle extends Puzzle{
         super(description, coinReward, difficultyLevel);
         this.question = question;
         this.answer = answer;
-        this.hint = hint;
+        this.hint = hint; // Make sure this is stored
+    }
+
+    public String getHint() {
+        return hint; // Add this getter method
     }
 
     @Override

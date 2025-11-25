@@ -24,8 +24,8 @@ public class Inventory {
         items.remove(item);
     }
 
-    public List<GachaItem> getItems(){
-        return new ArrayList<>();
+    public List<GachaItem> getItems() {
+        return new ArrayList<>(items); // Return copy of actual items
     }
 
     public boolean isFull(){

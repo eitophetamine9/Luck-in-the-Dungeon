@@ -63,6 +63,7 @@ public class GachaMachine {
         if(!eligibleItems.isEmpty()){
             GachaItem res = eligibleItems.get(random.nextInt(eligibleItems.size()));
             pityCounter++;
+            player.incrementTotalPulls(); // ✅ Fixed - calls the new method
             return res;
         }
 

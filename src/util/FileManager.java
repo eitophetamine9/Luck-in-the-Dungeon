@@ -9,7 +9,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileManager {
+public class FileManager     {
     private static final String SAVE_DIRECTORY = "saves/";
     private static final String SAVE_FILE = "game_save.json";
 
@@ -76,7 +76,7 @@ public class FileManager {
                 if(line.equals("INVENTORY_START")) {
                     readingInventory = true;
                     continue;
-                } else if(line.equals("INVETORY_END")){
+                } else if(line.equals("INVENTORY_END")){
                     readingInventory = false;
                     continue;
                 }
@@ -84,7 +84,7 @@ public class FileManager {
                 if(readingInventory){
                     // Processing inventory items
                     if(line.startsWith("KEY_ITEM:")) {
-                        String[] parts = line.substring("KEY_ITEMS:".length()).split(":");
+                        String[] parts = line.substring("KEY_ITEM:".length()).split(":");
                         if(parts.length >= 4){
                             String name = parts[0];
                             Rarity rarity = Rarity.valueOf(parts[1]);
@@ -100,10 +100,10 @@ public class FileManager {
                         if(parts.length >= 4){
                             String name = parts[0];
                             Rarity rarity = Rarity.valueOf(parts[1]);
-                            String tooltType = parts[2];
+                            String toolType = parts[2];
                             int uses = Integer.parseInt(parts[3]);
 
-                            ToolItem tool = new ToolItem(name, "Restored tool", rarity, tooltType, uses);
+                            ToolItem tool = new ToolItem(name, "Restored tool", rarity, toolType, uses);
                             player.addItem(tool);
                         }
                     }
@@ -114,9 +114,9 @@ public class FileManager {
                     } else if (line.startsWith("COINS:")) {
                         int coins = Integer.parseInt(line.substring("COINS:".length()));
                         // add coins to player (starting coins + saved coins)
-                        player.earnCoins(coins);
+                        player.setCoins(coins);
                     } else if (line.startsWith("CURRENT_ROOM:")){
-                        int roomIndex = Integer.parseInt(line.substring("CURRENT_ROOM".length()));
+                        int roomIndex = Integer.parseInt(line.substring("CURRENT_ROOM:".length()));
                         // move to the saved room
                         for (int i = 0; i < roomIndex; i++){
                             gameManager.moveToNextRoom();

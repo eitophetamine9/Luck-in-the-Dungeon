@@ -32,9 +32,9 @@ public class GameManager {
         currentPlayer = new Player("Adventurer");
 
         // Create basic rooms, content will be later
-        rooms.add(new Room(1, "Starting Chamber", "A simple room to learn the basice"));
+        rooms.add(new Room(1, "Starting Chamber", "A simple room to learn the basics"));
         rooms.add(new Room(2, "Ancient Library", "A room filled with ancient books"));
-        rooms.add(new Room(3, "Alchemy Lab", "A nysterious laboratory"));
+        rooms.add(new Room(3, "Alchemy Lab", "A mysterious laboratory"));
         rooms.add(new Room(4, "Final Observatory", "The final room"));
 
         rooms.get(0).unlock();
@@ -44,7 +44,6 @@ public class GameManager {
         currentPlayer = new Player("Adventurer");
         currentRoomIndex = 0;
         gameState = "PLAYING";
-        initializeGame();
     }
 
     public void saveGame() {

@@ -20,6 +20,14 @@ public class Player {
         this.puzzlesSolved = 0;
     }
 
+    public void incrementTotalPulls() {
+        this.totalPulls++;
+    }
+
+    public void setCoins(int coins) {
+        this.coins = coins;
+    }
+
     public void earnCoins(int amount){
         this.coins += amount;
     }
@@ -42,8 +50,11 @@ public class Player {
 
         boolean success = item.use(puzzle);
 
-        if(!success)
+        if(!success) {
             throw new WrongItemException("The " + item.getName() + " cannot be used on this type of puzzle!");
+        } else {
+            puzzlesSolved++;
+        }
 
         return true;
     }
