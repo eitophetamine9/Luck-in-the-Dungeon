@@ -39,6 +39,20 @@ public class Room {
         return available;
     }
 
+    public void addItemToGacha(GachaItem item){
+        this.gachaMachine.addItemToPool(item);
+    }
+
+    // Optional: Add method to set room description
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    // Optional: Add method to set room name
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public GachaMachine getGachaMachine(){return gachaMachine;}
 
     public String getRoomDescription(){return description;}

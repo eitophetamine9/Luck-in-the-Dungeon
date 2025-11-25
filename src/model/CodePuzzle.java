@@ -4,6 +4,7 @@ public class CodePuzzle extends Puzzle{
     private String solution;
     private String playerInput;
     private int maxAttempts;
+    private int currentAttempts;
 
     public CodePuzzle(String description, int coinReward, int difficultyLevel,
                       String solution, int maxAttempts){
@@ -21,6 +22,27 @@ public class CodePuzzle extends Puzzle{
             return tool.use(this); // Let the tool decide if it can help
         }
         return false;
+    }
+
+    public int getRemainingAttempts() {
+        return maxAttempts - currentAttempts;
+    }
+
+    public boolean hasAttemptsLeft() {
+        return currentAttempts < maxAttempts;
+    }
+
+    public int getCurrentAttempts() {
+        return currentAttempts;
+    }
+
+    @Override
+    public String getHint() {
+        int remaining = getRemainingAttempts();
+        if (remaining <= 1) {
+            return "Last attempt! Think carefully about the pattern.";
+        }
+        return "Look for patterns or sequences. Attempts remaining: " + remaining;
     }
 
     public void setPlayerInput(String input){
