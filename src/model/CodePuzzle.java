@@ -7,12 +7,17 @@ public class CodePuzzle extends Puzzle {
     private int currentAttempts;
 
     public CodePuzzle(String description, int coinReward, int difficultyLevel,
-                      String solution, int maxAttempts){
-        super(description, coinReward, difficultyLevel);
+                      String solution, int maxAttempts, boolean requiresGachaItem){
+        super(description, coinReward, difficultyLevel, requiresGachaItem);
         this.solution = solution;
         this.maxAttempts = maxAttempts;
         this.playerInput = "";
         this.currentAttempts = 0;
+    }
+
+    public CodePuzzle(String description, int coinReward, int difficultyLevel,
+                      String solution, int maxAttempts){
+        this(description, coinReward, difficultyLevel, solution, maxAttempts, false); // Default to no gacha requirement
     }
 
     // ✅ FIX: Allow tools to work on these puzzles

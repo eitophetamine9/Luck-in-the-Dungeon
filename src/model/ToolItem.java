@@ -43,13 +43,23 @@ public class ToolItem extends GachaItem {
             RiddlePuzzle riddle = (RiddlePuzzle) puzzle;
             System.out.println("📖 Hintbook reveals: " + riddle.getHint());
             wasUsed = true;
+
+        } else if (puzzle instanceof CodePuzzle && "alchemy".equals(toolType)) {
+            CodePuzzle alchemyPuzzle = (CodePuzzle) puzzle;
+            System.out.println("⚗️ Alchemy tool reveals: The symbols represent chemical elements");
+            wasUsed = true;
+
+        } else if (puzzle instanceof CodePuzzle && "astronomy".equals(toolType)) {
+            CodePuzzle astronomyPuzzle = (CodePuzzle) puzzle;
+            System.out.println("🔭 Astronomy tool reveals: These are zodiac constellation symbols");
+            wasUsed = true;
         }
 
         if (!wasUsed) {
             System.out.println("This " + toolType + " cannot help with this type of puzzle.");
+        } else {
+            usesRemaining--; // Decrement uses when successfully used
         }
-
-        if (wasUsed) usesRemaining--;
 
         return wasUsed;
     }

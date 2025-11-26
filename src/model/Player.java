@@ -110,6 +110,27 @@ public class Player {
         return true;
     }
 
+    public boolean hasRequiredItem(String requiredToolType) {
+        if (requiredToolType == null) return true;
+
+        for (GachaItem item : inventory) {
+            if (item instanceof ToolItem) {
+                ToolItem tool = (ToolItem) item;
+                if (tool.getToolType().equals(requiredToolType) && tool.getUsesRemaining() > 0) {
+                    return true;
+                }
+            }
+            if (item instanceof KeyItem) {
+                KeyItem key = (KeyItem) item;
+                // For LockPuzzles, check if key color matches or if it's a master key
+                if (key.getKeyColor().equals(requiredToolType) || key.isMasterKey()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public List<GachaItem> getInventory() {
         return new ArrayList<>(inventory);
     }

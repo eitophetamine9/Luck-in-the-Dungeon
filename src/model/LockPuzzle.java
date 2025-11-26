@@ -6,7 +6,7 @@ public class LockPuzzle extends Puzzle {
 
     public LockPuzzle(String description, int coinReward, int difficultyLevel,
                       String requiredKeyType, String lockColor) {
-        super(description, coinReward, difficultyLevel);
+        super(description, coinReward, difficultyLevel, true);
         this.requiredKeyType = requiredKeyType;
         this.lockColor = lockColor;
     }

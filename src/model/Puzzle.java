@@ -5,12 +5,28 @@ public abstract class Puzzle {
     protected boolean isSolved;
     protected int coinReward;
     protected int difficultyLevel;
+    protected boolean requiresGachaItem;
+    protected String requiredToolType;
 
-    public Puzzle(String description, int coinReward, int difficultyLevel){
+    public Puzzle(String description, int coinReward, int difficultyLevel, boolean requiresGachaItem){
         this.description = description;
         this.isSolved = false;
         this.coinReward = coinReward;
         this.difficultyLevel = difficultyLevel;
+        this.requiresGachaItem = requiresGachaItem;
+        this.requiredToolType = null;
+    }
+
+    public boolean requiresGachaItem() {
+        return requiresGachaItem;
+    }
+
+    public String getRequiredToolType() {
+        return requiredToolType;
+    }
+
+    public void setRequiredToolType(String toolType) {
+        this.requiredToolType = toolType;
     }
 
     public abstract boolean attemptSolve(GachaItem item);

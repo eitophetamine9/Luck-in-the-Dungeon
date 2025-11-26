@@ -6,11 +6,16 @@ public class RiddlePuzzle extends Puzzle{
     private String hint;
 
     public RiddlePuzzle(String description, int coinReward, int difficultyLevel,
-                        String riddleQuestion, String answer, String hint){
-        super(description, coinReward, difficultyLevel);
+                        String riddleQuestion, String answer, String hint, boolean requiresGachaItem){
+        super(description, coinReward, difficultyLevel, requiresGachaItem);
         this.question = riddleQuestion;
         this.answer = answer;
         this.hint = hint; // Store the hint for tool usage
+    }
+
+    public RiddlePuzzle(String description, int coinReward, int difficultyLevel,
+                        String riddleQuestion, String answer, String hint){
+        this(description, coinReward, difficultyLevel, riddleQuestion, answer, hint, false); // Default to no gacha requirement
     }
 
     public String getHint() {

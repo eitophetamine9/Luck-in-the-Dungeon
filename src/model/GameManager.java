@@ -52,17 +52,18 @@ public class GameManager {
     private void initializeRoom1() {
         Room room1 = rooms.get(0);
 
-        // Puzzle 1: The Missing Sequence (CodePuzzle)
+        // Puzzle 1: The Missing Sequence (CodePuzzle) - NO GACHA REQUIREMENT
         CodePuzzle sequencePuzzle = new CodePuzzle(
                 "Find the pattern and solve for the missing number: 2, 5, 11, 19, 29, 41, ?",
-                25,  // coin reward
-                1,   // difficulty
-                "67", // solution
-                3     // max attempts
+                25,
+                1,
+                "55", // Note: Changed from "67" to "55" (pattern: +3, +6, +8, +10, +12, +14)
+                3,
+                false  // No gacha requirement for tutorial
         );
         room1.addPuzzle(sequencePuzzle);
 
-        // Add gacha items for Room 1
+        // Keep existing gacha items for Room 1 (no changes needed)
         room1.addItemToGacha(new KeyItem("Basic Key", "Unlocks Level 2", Rarity.COMMON, "brown", false));
         room1.addItemToGacha(new ToolItem("Number Decoder", "Helps with numerical puzzles", Rarity.COMMON, "decoder", 3));
         room1.addItemToGacha(new KeyItem("Silver Key", "Shiny advanced key", Rarity.RARE, "silver", false));
@@ -71,110 +72,135 @@ public class GameManager {
     private void initializeRoom2() {
         Room room2 = rooms.get(1);
 
-        // Puzzle 1: Symbol Cipher (CodePuzzle)
+        // PUZZLE 1: Symbol Cipher (REQUIRES DECODER TOOL)
         CodePuzzle symbolCipher = new CodePuzzle(
-                "Decode the message: H ▼ V Y ▲ S ▼ L V D T ▼ D ▼ Y? (Answer: HAVE YOU SOLVED TODAY?)",
-                35,  // coin reward
-                2,   // difficulty
-                "HAVE YOU SOLVED TODAY", // solution
-                3     // max attempts
+                "Decode the message: H ▼ V Y ▲ S ▼ L V D T ▼ D ▼ Y? " +
+                        "(The symbols are encrypted - you need a decoder tool to read them)",
+                45,  // Increased coin reward
+                2,
+                "HAVE YOU SOLVED TODAY",
+                3,
+                true  // REQUIRES GACHA ITEM
         );
+        symbolCipher.setRequiredToolType("decoder"); // Must have decoder tool
         room2.addPuzzle(symbolCipher);
 
-        // Puzzle 2: Color Pattern Lock (CodePuzzle)
+        // PUZZLE 2: Ancient Riddle Lock (REQUIRES SPECIFIC KEY)
+        LockPuzzle ancientLock = new LockPuzzle(
+                "An ancient lock with hieroglyphic symbols. It requires a special key from this library's gacha machine.",
+                50, // Increased reward
+                2,
+                "hieroglyphic",
+                "golden"
+        );
+        room2.addPuzzle(ancientLock);
+
+        // PUZZLE 3: Color Pattern Lock (existing but enhanced)
         CodePuzzle colorPattern = new CodePuzzle(
                 "Color sequence: RED, BLUE, GREEN, YELLOW, RED, BLUE, ?, ? (Next two colors?)",
-                30,  // coin reward
-                2,   // difficulty
-                "GREEN YELLOW", // solution
-                3     // max attempts
+                35,
+                2,
+                "GREEN YELLOW",
+                3,
+                false  // This one doesn't require gacha item
         );
         room2.addPuzzle(colorPattern);
 
-        // Add gacha items for Room 2
-        room2.addItemToGacha(new KeyItem("Blue Key", "Unlocks Level 3", Rarity.COMMON, "blue", false));
+        // UPDATE GACHA ITEMS - ADD REQUIRED ITEMS
+        room2.addItemToGacha(new KeyItem("Golden Hieroglyphic Key", "Unlocks ancient lock", Rarity.RARE, "golden", false));
+        room2.addItemToGacha(new ToolItem("Ancient Decoder", "Deciphers symbol puzzles", Rarity.COMMON, "decoder", 3));
         room2.addItemToGacha(new ToolItem("Cipher Solver", "Helps decode messages", Rarity.COMMON, "decoder", 2));
-        room2.addItemToGacha(new KeyItem("Master Key", "Opens any lock", Rarity.EPIC, "master", true));
+        room2.addItemToGacha(new KeyItem("Library Master Key", "Opens any library lock", Rarity.EPIC, "master", true));
     }
 
     private void initializeRoom3() {
         Room room3 = rooms.get(2);
 
-        // Puzzle 1: Hieroglyphic Math (CodePuzzle)
-        CodePuzzle hieroglyphicMath = new CodePuzzle(
-                "Egyptian math: %=5, i=10, c=50, c=100. Solve: (τ-τ̄) + (ε-1) × τ̄",
-                40,  // coin reward
-                3,   // difficulty
-                "460", // solution
-                3     // max attempts
+        // PUZZLE 1: Elemental Combination Lock (REQUIRES ELEMENTAL KEY)
+        LockPuzzle elementalLock = new LockPuzzle(
+                "A complex alchemical lock with four elemental slots. Requires an elemental key to proceed.",
+                60,  // Increased reward
+                3,
+                "elemental",
+                "crystal"
         );
-        room3.addPuzzle(hieroglyphicMath);
+        room3.addPuzzle(elementalLock);
 
-        // Puzzle 2: Directional Lock (RiddlePuzzle)
+        // PUZZLE 2: Potion Formula Puzzle (REQUIRES ALCHEMY TOOL)
+        CodePuzzle potionPuzzle = new CodePuzzle(
+                "Balance the alchemical equation: ☿ + ♁ + ♀ = ? " +
+                        "(You need an alchemy tool to measure the elements)",
+                55,  // Increased reward
+                3,
+                "42",
+                3,
+                true  // REQUIRES GACHA ITEM
+        );
+        potionPuzzle.setRequiredToolType("alchemy");
+        room3.addPuzzle(potionPuzzle);
+
+        // PUZZLE 3: Directional Lock (existing)
         RiddlePuzzle directionalLock = new RiddlePuzzle(
                 "Direction puzzle: Start NORTH, RIGHT×3, LEFT×2, RIGHT×1. Where are you facing?",
-                35,  // coin reward
-                3,   // difficulty
+                35,
+                3,
                 "Start facing NORTH. Turn RIGHT 90° × 3, LEFT 90° × 2, RIGHT 90° × 1. What direction?",
-                "SOUTH", // answer
-                "Track each turn step by step" // hint
+                "SOUTH",
+                "Track each turn step by step",
+                false  // Doesn't require gacha
         );
         room3.addPuzzle(directionalLock);
 
-        // Puzzle 3: Weight Balance (CodePuzzle)
-        CodePuzzle weightBalance = new CodePuzzle(
-                "Scale balance: Left=5kg+8kg+Xkg, Right=6kg+10kg+7kg. Find X if balanced.",
-                45,  // coin reward
-                3,   // difficulty
-                "10", // solution
-                3     // max attempts
-        );
-        room3.addPuzzle(weightBalance);
-
-        // Add gacha items for Room 3
-        room3.addItemToGacha(new KeyItem("Silver Key", "Unlocks Level 4", Rarity.RARE, "silver", false));
-        room3.addItemToGacha(new ToolItem("Math Solver", "Helps with calculations", Rarity.RARE, "decoder", 2));
-        room3.addItemToGacha(new ToolItem("Ancient Compass", "Helps with direction puzzles", Rarity.RARE, "hintbook", 2));
+        // UPDATE GACHA ITEMS - ADD ELEMENTAL ITEMS
+        room3.addItemToGacha(new KeyItem("Crystal Elemental Key", "Unlocks elemental mechanisms", Rarity.RARE, "crystal", false));
+        room3.addItemToGacha(new ToolItem("Alchemy Measurer", "Measures potion ingredients", Rarity.COMMON, "alchemy", 2));
+        room3.addItemToGacha(new ToolItem("Elemental Compass", "Navigates alchemical puzzles", Rarity.RARE, "alchemy", 3));
+        room3.addItemToGacha(new KeyItem("Philosopher's Key", "Ultimate alchemical key", Rarity.EPIC, "philosopher", true));
     }
 
     private void initializeRoom4() {
         Room room4 = rooms.get(3);
 
-        // Puzzle 1: Binary Sequence (CodePuzzle)
-        CodePuzzle binarySequence = new CodePuzzle(
-                "Convert binary to text: 01001000 01100101 01101100 01101100 01101111",
-                50,  // coin reward
-                4,   // difficulty
-                "HELLO", // solution
-                3     // max attempts
+        // PUZZLE 1: Star Map Alignment (REQUIRES ASTRONOMICAL TOOL)
+        CodePuzzle starMap = new CodePuzzle(
+                "Align the constellations: ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ " +
+                        "(Requires astronomical tool to read star patterns)",
+                75,  // Increased reward
+                4,
+                "ARIES-TAURUS-GEMINI",
+                3,
+                true  // REQUIRES GACHA ITEM
         );
-        room4.addPuzzle(binarySequence);
+        starMap.setRequiredToolType("astronomy");
+        room4.addPuzzle(starMap);
 
-        // Puzzle 2: Mathematical Riddle (RiddlePuzzle)
+        // PUZZLE 2: Cosmic Final Lock (REQUIRES ULTIMATE KEY)
+        LockPuzzle cosmicLock = new LockPuzzle(
+                "The final barrier - a lock powered by starlight. Only a cosmic key can open the way to freedom.",
+                85,  // Increased reward
+                4,
+                "cosmic",
+                "starlight"
+        );
+        room4.addPuzzle(cosmicLock);
+
+        // PUZZLE 3: Mathematical Riddle (existing)
         RiddlePuzzle mathRiddle = new RiddlePuzzle(
                 "Three-digit number puzzle: digits sum to 12, first=3×third, second=first-2",
-                55,  // coin reward
-                4,   // difficulty
+                55,
+                4,
                 "I am a three-digit number. My digits add up to 12. The first digit is three times the third digit. The second digit is two less than the first digit. What number am I?",
-                "642", // answer - CORRECTED from 842 to 642
-                "Let digits be A, B, C. A + B + C = 12, A = 3C, B = A - 2" // hint
+                "642",
+                "Let digits be A, B, C. A + B + C = 12, A = 3C, B = A - 2",
+                false  // Doesn't require gacha
         );
         room4.addPuzzle(mathRiddle);
 
-        // Puzzle 3: Final Sequence Challenge (CodePuzzle)
-        CodePuzzle finalSequence = new CodePuzzle(
-                "Complete the pattern: 1, 1, 2, 3, 5, 8, 13, 21, ?",
-                60,  // coin reward
-                4,   // difficulty
-                "34", // solution
-                3     // max attempts
-        );
-        room4.addPuzzle(finalSequence);
-
-        // Add gacha items for Room 4
-        room4.addItemToGacha(new KeyItem("Master Key", "ESCAPE! Final key", Rarity.EPIC, "master", true));
-        room4.addItemToGacha(new ToolItem("Quantum Decoder", "Solves complex patterns", Rarity.EPIC, "decoder", 3));
-        room4.addItemToGacha(new ToolItem("Final Hint Book", "Reveals ultimate solutions", Rarity.EPIC, "hintbook", 1));
+        // UPDATE GACHA ITEMS - ADD COSMIC ITEMS
+        room4.addItemToGacha(new KeyItem("Starlight Cosmic Key", "Final key to escape", Rarity.EPIC, "starlight", false));
+        room4.addItemToGacha(new ToolItem("Astronomical Sextant", "Measures celestial patterns", Rarity.RARE, "astronomy", 2));
+        room4.addItemToGacha(new ToolItem("Star Chart Decoder", "Deciphers cosmic codes", Rarity.EPIC, "astronomy", 1));
+        room4.addItemToGacha(new KeyItem("Universal Master Key", "Opens all cosmic locks", Rarity.EPIC, "universal", true));
     }
 
     public void startNewGame() {
@@ -267,5 +293,23 @@ public class GameManager {
         return true;
         // OR if you want win when final room is complete:
         // return gameState.equals("COMPLETED");
+    }
+
+    public boolean canSolvePuzzle(Puzzle puzzle) {
+        if (puzzle.requiresGachaItem()) {
+            String requiredTool = puzzle.getRequiredToolType();
+            return currentPlayer.hasRequiredItem(requiredTool);
+        }
+        return true;
+    }
+
+    public String getPuzzleRequirementMessage(Puzzle puzzle) {
+        if (puzzle.requiresGachaItem()) {
+            String requiredTool = puzzle.getRequiredToolType();
+            if (!currentPlayer.hasRequiredItem(requiredTool)) {
+                return "🔒 This puzzle requires a " + requiredTool + " from the gacha machine!";
+            }
+        }
+        return null;
     }
 }
