@@ -1,7 +1,5 @@
 package exceptions;
 
-import model.Inventory;
-
 public class InventoryFullException extends GameException {
     private int currentSize;
     private int maxCapacity;

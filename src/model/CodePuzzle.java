@@ -1,6 +1,6 @@
 package model;
 
-public class CodePuzzle extends Puzzle{
+public class CodePuzzle extends Puzzle {
     private String solution;
     private String playerInput;
     private int maxAttempts;
@@ -12,6 +12,7 @@ public class CodePuzzle extends Puzzle{
         this.solution = solution;
         this.maxAttempts = maxAttempts;
         this.playerInput = "";
+        this.currentAttempts = 0;
     }
 
     // ✅ FIX: Allow tools to work on these puzzles
@@ -50,6 +51,7 @@ public class CodePuzzle extends Puzzle{
     }
 
     public boolean validateCode(String code){
+        currentAttempts++;
         if(code.equals(solution)){
             markSolved();
             return true;

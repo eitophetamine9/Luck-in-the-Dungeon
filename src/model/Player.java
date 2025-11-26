@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Player {
-    private String name;
+    private final String name;
     private int coins;
-    private List<GachaItem> inventory;
+    private final List<GachaItem> inventory;
     private int totalPulls;
     private int puzzlesSolved;
     private static final int MAX_INVENTORY_SIZE = 20;
@@ -26,6 +26,26 @@ public class Player {
         this.totalCoinsEarned = 0;
         this.totalCoinsSpent = 0;
         this.roomsCompleted = 0;
+    }
+
+    public void setPuzzlesSolved(int puzzlesSolved) {
+        this.puzzlesSolved = puzzlesSolved;
+    }
+
+    public void setRoomsCompleted(int roomsCompleted) {
+        this.roomsCompleted = roomsCompleted;
+    }
+
+    public void setTotalPulls(int totalPulls) {
+        this.totalPulls = totalPulls;
+    }
+
+    public void setTotalCoinsEarned(int totalCoinsEarned) {
+        this.totalCoinsEarned = totalCoinsEarned;
+    }
+
+    public void setTotalCoinsSpent(int totalCoinsSpent) {
+        this.totalCoinsSpent = totalCoinsSpent;
     }
 
     public int getTotalCoinsEarned() { return totalCoinsEarned; }

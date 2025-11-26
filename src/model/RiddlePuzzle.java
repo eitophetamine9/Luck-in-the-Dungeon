@@ -6,11 +6,11 @@ public class RiddlePuzzle extends Puzzle{
     private String hint;
 
     public RiddlePuzzle(String description, int coinReward, int difficultyLevel,
-                        String question, String answer, String hint){
+                        String riddleQuestion, String answer, String hint){
         super(description, coinReward, difficultyLevel);
-        this.question = question;
+        this.question = riddleQuestion;
         this.answer = answer;
-        this.hint = hint; // Make sure this is stored
+        this.hint = hint; // Store the hint for tool usage
     }
 
     public String getHint() {
@@ -20,6 +20,10 @@ public class RiddlePuzzle extends Puzzle{
     @Override
     public boolean attemptSolve(GachaItem item){
         //RIDDLE PUZZLES DONT USE ITEMS - THEY NEED ANSWER INPUT
+        if(item instanceof ToolItem) {
+            ToolItem tool = (ToolItem) item;
+            return tool.use(this); // ✅ Allow hintbook to work
+        }
         return false;
     }
 

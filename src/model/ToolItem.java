@@ -1,5 +1,7 @@
 package model;
 
+import model.LockPuzzle; // Needed for instanceof check
+
 public class ToolItem extends GachaItem {
     private String toolType;
     private int usesRemaining;
@@ -13,7 +15,10 @@ public class ToolItem extends GachaItem {
 
     @Override
     public boolean use(Puzzle puzzle){
-        if(usesRemaining <= 0) return false;
+        if(usesRemaining <= 0) {
+            System.out.println("This tool is broken and cannot be used!");
+            return false;
+        }
 
         boolean wasUsed = false;
 
@@ -40,7 +45,12 @@ public class ToolItem extends GachaItem {
             wasUsed = true;
         }
 
-        if(wasUsed) usesRemaining--;
+        if (!wasUsed) {
+            System.out.println("This " + toolType + " cannot help with this type of puzzle.");
+        }
+
+        if (wasUsed) usesRemaining--;
+
         return wasUsed;
     }
 

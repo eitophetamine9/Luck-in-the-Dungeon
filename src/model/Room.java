@@ -24,6 +24,10 @@ public class Room {
         this.isLocked = false;
     }
 
+    public void lock() {
+        this.isLocked = true;
+    }
+
     public boolean isComplete() {
         for(Puzzle puzzle : puzzles){
             if(!puzzle.isSolved()) return false;

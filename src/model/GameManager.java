@@ -182,17 +182,11 @@ public class GameManager {
         currentRoomIndex = 0;
         gameState = "PLAYING";
 
-        // Reset all rooms
+        // Reset all rooms - lock all first, then unlock only first room
         for (Room room : rooms) {
-            room.unlock(); // Only unlock first room, others stay locked until progression
-            // Note: You may want to add a resetPuzzles() method to Room class later
+            room.lock(); // Lock all rooms first
         }
-        // Re-lock all except first room
-        for (int i = 1; i < rooms.size(); i++) {
-            // You'll need to add a lock() method to Room class
-            // rooms.get(i).lock();
-        }
-        rooms.get(0).unlock();
+        rooms.get(0).unlock(); // Then unlock only first room
     }
 
     public void saveGame() {
