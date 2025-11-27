@@ -16,10 +16,7 @@ public abstract class GachaItem {
     public abstract boolean use(Puzzle puzzle);
 
     public String getName() {return name;}
-
     public ItemType getItemType() {return itemType;}
-
     public Rarity getRarity() {return rarity;}
-
     public String getDescription() {return description;}
 }

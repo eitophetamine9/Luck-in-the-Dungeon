@@ -1,4 +1,3 @@
-// PuzzlePanel.java
 package view;
 
 import model.*;
@@ -298,6 +297,23 @@ public class PuzzlePanel extends JPanel {
         }
     }
 
+    private void handleToolAutoSolve() {
+        if (currentPuzzle.isSolved()) {
+            // Puzzle was solved by the tool
+            game.getCurrentPlayer().earnCoins(currentPuzzle.getCoinReward());
+
+            // Show success message
+            JOptionPane.showMessageDialog(this,
+                    "Tool automatically solved the puzzle!\n" +
+                            "You earned " + currentPuzzle.getCoinReward() + " coins!",
+                    "Puzzle Solved!",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+            // Return to game screen
+            parent.showGame();
+        }
+    }
+
     private void showItemSelectionDialog() {
         Player player = game.getCurrentPlayer();
         java.util.List<GachaItem> tools = player.getInventory().stream()
@@ -310,7 +326,11 @@ public class PuzzlePanel extends JPanel {
         }
 
         String[] toolNames = tools.stream()
-                .map(item -> item.getName() + " (" + ((ToolItem) item).getToolType() + ")")
+                .map(item -> {
+                    ToolItem tool = (ToolItem) item;
+                    return item.getName() + " (" + tool.getToolType() + ") - " +
+                            tool.getUsesRemaining() + " uses left";
+                })
                 .toArray(String[]::new);
 
         String selected = (String) JOptionPane.showInputDialog(
@@ -328,15 +348,75 @@ public class PuzzlePanel extends JPanel {
             ToolItem selectedTool = (ToolItem) tools.get(selectedIndex);
 
             try {
-                if (player.useItem(selectedTool, currentPuzzle)) {
-                    parent.showMessage("Tool used successfully! Check the hint area.");
-                    // Refresh hint area with new information
-                    hintArea.setText("Hint: " + currentPuzzle.getHint() +
-                            "\n\nTool used: " + selectedTool.getName());
+                boolean wasUsed = player.useItem(selectedTool, currentPuzzle);
+                if (wasUsed) {
+                    // Check if the puzzle was solved by the tool
+                    if (currentPuzzle.isSolved()) {
+                        handleToolAutoSolve();
+                    } else {
+                        // Show the translation/decoding result in the hint area
+                        String currentHint = hintArea.getText();
+                        String toolResult = getToolResultMessage(selectedTool, currentPuzzle);
+                        hintArea.setText(currentHint + "\n\n" + toolResult);
+
+                        parent.showMessage("Tool used successfully! Check the hint area for the translation.");
+                    }
                 }
             } catch (WrongItemException ex) {
                 parent.showMessage("This tool cannot be used on this puzzle type!");
             }
         }
+    }
+
+    private String getToolResultMessage(ToolItem tool, Puzzle puzzle) {
+        String description = puzzle.getDescription();
+
+        if (description.contains("▼") && description.contains("▲") && "decoder".equals(tool.getToolType())) {
+            return "Cipher Translation Guide:\n" +
+                    "▼ = space\n" +
+                    "▲ = O\n" +
+                    "V = A\n" +
+                    "Y = U\n" +
+                    "L = S\n" +
+                    "D = O\n" +
+                    "T = D\n\n" +
+                    "Apply these substitutions to decode the message!";
+        }
+        else if (description.contains("Color sequence") && "decoder".equals(tool.getToolType())) {
+            return "Pattern Analysis:\n" +
+                    "The sequence repeats every 4 colors:\n" +
+                    "Position 1: RED, Position 2: BLUE, Position 3: GREEN, Position 4: YELLOW\n" +
+                    "Then repeats: Position 5: RED, Position 6: BLUE, Position 7: ?, Position 8: ?";
+        }
+        else if (description.contains("binary") && "decoder".equals(tool.getToolType())) {
+            return "Binary Conversion Guide:\n" +
+                    "Each 8-bit group = one character\n" +
+                    "Convert binary to decimal, then to ASCII character\n" +
+                    "01001000 = 72 = 'H'\n" +
+                    "01100101 = 101 = 'e'\n" +
+                    "01101100 = 108 = 'l'\n" +
+                    "01101100 = 108 = 'l'\n" +
+                    "01101111 = 111 = 'o'";
+        }
+        else if ((description.contains("Egyptian math") || description.contains("τ")) && "decoder".equals(tool.getToolType())) {
+            return "Hieroglyphic Math Guide:\n" +
+                    "Symbol values: %=5, i=10, c=50, τ=100, τ̄=1000, ε=1\n" +
+                    "Solve step by step: (τ-τ̄) + (ε-1) × τ̄";
+        }
+        else if ((description.contains("Scale balance") || description.contains("kg")) && "decoder".equals(tool.getToolType())) {
+            return "Weight Balance Guide:\n" +
+                    "Left side total = Right side total\n" +
+                    "Left: 5 + 8 + X = 13 + X\n" +
+                    "Right: 6 + 10 + 7 = 23\n" +
+                    "Equation: 13 + X = 23";
+        }
+        else if (description.contains("1, 1, 2, 3, 5, 8") && "decoder".equals(tool.getToolType())) {
+            return "Sequence Pattern Guide:\n" +
+                    "Fibonacci sequence rule:\n" +
+                    "Each number = sum of previous two numbers\n" +
+                    "1 + 1 = 2, 1 + 2 = 3, 2 + 3 = 5, 3 + 5 = 8, 5 + 8 = 13, 8 + 13 = 21, 13 + 21 = ?";
+        }
+
+        return "Tool provided guidance. Check the console for detailed explanation.";
     }
 }

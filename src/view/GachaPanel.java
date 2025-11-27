@@ -1,4 +1,3 @@
-// GachaPanel.java
 package view;
 
 import model.*;
@@ -123,7 +122,7 @@ public class GachaPanel extends JPanel {
                                 "Type: %s\n" +
                                 "Description: %s\n\n" +
                                 "Added to your inventory!",
-                        rarityColor, result.getName(), Color.WHITE,
+                        rarityColor, result.getName(), "",
                         result.getItemType(),
                         result.getDescription()
                 ));
@@ -145,10 +144,10 @@ public class GachaPanel extends JPanel {
 
     private String getRarityColorCode(Rarity rarity) {
         switch (rarity) {
-            case COMMON: return "[GRAY]";
-            case RARE: return "[BLUE]";
-            case EPIC: return "[PURPLE]";
-            default: return "[WHITE]";
+            case COMMON: return "";
+            case RARE: return "";
+            case EPIC: return "";
+            default: return "";
         }
     }
 

@@ -1,4 +1,3 @@
-// InventoryPanel.java
 package view;
 
 import model.*;
