@@ -1,23 +1,17 @@
 package main;
 
-import gui.GUI;
 import model.*;
+import view.*;
 
 import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-        // Test the complete backend system
         GameManager game = GameManager.getInstance();
 
-        SwingUtilities.invokeLater(()->{
-            JFrame frame = new JFrame("Luck in the Dungeon");
-            GUI gui = new GUI();
-            frame.setContentPane(gui.getMainPanel());
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.pack();
-            frame.setLocationRelativeTo(null);
-            frame.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            MainFrame mainFrame = new MainFrame(game);
+            mainFrame.setVisible(true);
         });
 
         System.out.println("=== Backend System Test ===");

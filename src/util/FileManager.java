@@ -4,10 +4,15 @@ import exceptions.InventoryFullException;
 import model.*;
 import exceptions.SaveFileCorruptedException;
 import java.io.*;
+import java.util.*;
 
-public class FileManager {
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class FileManager     {
     private static final String SAVE_DIRECTORY = "saves/";
-    private static final String SAVE_FILE = "game_save.dat";
+    private static final String SAVE_FILE = "game_save.json";
 
     public FileManager() {
         createSaveDirectory();
@@ -27,35 +32,16 @@ public class FileManager {
         try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
             Player player = gameManager.getCurrentPlayer();
 
-            // ✅ COMPLETE: Save all game state
-            writer.println("PLAYER_NAME:" + player.getName());
+            //saving basic game data
+            writer.println("PLAYER_NAME: " + player.getName());
             writer.println("COINS:" + player.getCoinBalance());
             writer.println("CURRENT_ROOM:" + gameManager.getCurrentRoomIndex());
             writer.println("GAME_STATE:" + gameManager.getGameState());
 
-            // ✅ COMPLETE: Save ALL player statistics
-            writer.println("STATS_PUZZLES_SOLVED:" + player.getPuzzlesSolved());
-            writer.println("STATS_ROOMS_COMPLETED:" + player.getRoomsCompleted());
-            writer.println("STATS_TOTAL_PULLS:" + player.getTotalPulls());
-            writer.println("STATS_COINS_EARNED:" + player.getTotalCoinsEarned());
-            writer.println("STATS_COINS_SPENT:" + player.getTotalCoinsSpent());
-
-            // ✅ COMPLETE: Save room and puzzle states
-            writer.println("ROOM_STATES_START");
-            for (int i = 0; i < gameManager.getRooms().size(); i++) {
-                Room room = gameManager.getRooms().get(i);
-                writer.println("ROOM:" + i + ":LOCKED:" + room.isLocked());
-
-                for (int j = 0; j < room.getPuzzles().size(); j++) {
-                    Puzzle puzzle = room.getPuzzles().get(j);
-                    writer.println("PUZZLE:" + i + ":" + j + ":SOLVED:" + puzzle.isSolved());
-                }
-            }
-            writer.println("ROOM_STATES_END");
-
-            // Save inventory
+            // save inventory
             writer.println("INVENTORY_START");
-            for(GachaItem item : player.getInventory()) {
+            List<GachaItem> inventory = player.getInventory();
+            for(GachaItem item : inventory) {
                 if(item instanceof KeyItem) {
                     KeyItem key = (KeyItem) item;
                     writer.println("KEY_ITEM:" + key.getName() + ":" + key.getRarity() +
@@ -67,8 +53,7 @@ public class FileManager {
                 }
             }
             writer.println("INVENTORY_END");
-
-            System.out.println("✅ Game saved successfully to: " + filePath);
+            System.out.println("Game saved successfully to: " + filePath);
         } catch (IOException e){
             throw new SaveFileCorruptedException("Failed to save game to: " + filePath, e);
         }
@@ -84,11 +69,9 @@ public class FileManager {
             String line;
             Player player = gameManager.getCurrentPlayer();
             boolean readingInventory = false;
-            boolean readingRoomStates = false;
 
-            // Clear and reset game state
+            //clear game state
             gameManager.startNewGame();
-            player = gameManager.getCurrentPlayer(); // Get fresh player instance
 
             while((line = br.readLine()) != null){
                 if(line.equals("INVENTORY_START")) {
@@ -97,16 +80,10 @@ public class FileManager {
                 } else if(line.equals("INVENTORY_END")){
                     readingInventory = false;
                     continue;
-                } else if(line.equals("ROOM_STATES_START")) {
-                    readingRoomStates = true;
-                    continue;
-                } else if(line.equals("ROOM_STATES_END")) {
-                    readingRoomStates = false;
-                    continue;
                 }
 
                 if(readingInventory){
-                    // Process inventory items
+                    // Processing inventory items
                     if(line.startsWith("KEY_ITEM:")) {
                         String[] parts = line.substring("KEY_ITEM:".length()).split(":");
                         if(parts.length >= 4){
@@ -116,6 +93,7 @@ public class FileManager {
                             boolean isMasterKey = Boolean.parseBoolean(parts[3]);
 
                             KeyItem key = new KeyItem(name, "Restored key", rarity, keyColor, isMasterKey);
+
                             player.addItem(key);
                         }
                     } else if(line.startsWith("TOOL_ITEM:")){
@@ -130,56 +108,25 @@ public class FileManager {
                             player.addItem(tool);
                         }
                     }
-                } else if (readingRoomStates) {
-                    // ✅ COMPLETE: Process room and puzzle states
-                    if (line.startsWith("ROOM:")) {
-                        String[] parts = line.substring("ROOM:".length()).split(":");
-                        int roomIndex = Integer.parseInt(parts[0]);
-                        boolean locked = Boolean.parseBoolean(parts[2]);
-                        Room room = gameManager.getRooms().get(roomIndex);
-                        if (locked) room.lock();
-                        else room.unlock();
-                    } else if (line.startsWith("PUZZLE:")) {
-                        String[] parts = line.substring("PUZZLE:".length()).split(":");
-                        int roomIndex = Integer.parseInt(parts[0]);
-                        int puzzleIndex = Integer.parseInt(parts[1]);
-                        boolean solved = Boolean.parseBoolean(parts[3]);
-                        Room room = gameManager.getRooms().get(roomIndex);
-                        Puzzle puzzle = room.getPuzzles().get(puzzleIndex);
-                        if (solved) puzzle.markSolved();
-                    }
                 } else {
-                    // ✅ COMPLETE: Process ALL statistics with the new setters
-                    if (line.startsWith("COINS:")) {
+                    // process game state
+                    if(line.startsWith("PLAYER_NAME:")) {
+                        // player name loaded during startNewGame()
+                    } else if (line.startsWith("COINS:")) {
                         int coins = Integer.parseInt(line.substring("COINS:".length()));
+                        // add coins to player (starting coins + saved coins)
                         player.setCoins(coins);
                     } else if (line.startsWith("CURRENT_ROOM:")){
                         int roomIndex = Integer.parseInt(line.substring("CURRENT_ROOM:".length()));
-                        // Move to saved room
+                        // move to the saved room
                         for (int i = 0; i < roomIndex; i++){
                             gameManager.moveToNextRoom();
                         }
-                    } else if (line.startsWith("STATS_PUZZLES_SOLVED:")) {
-                        int puzzlesSolved = Integer.parseInt(line.substring("STATS_PUZZLES_SOLVED:".length()));
-                        player.setPuzzlesSolved(puzzlesSolved); // ✅ NOW WORKS - setter exists
-                    } else if (line.startsWith("STATS_ROOMS_COMPLETED:")) {
-                        int roomsCompleted = Integer.parseInt(line.substring("STATS_ROOMS_COMPLETED:".length()));
-                        player.setRoomsCompleted(roomsCompleted); // ✅ NOW WORKS - setter exists
-                    } else if (line.startsWith("STATS_TOTAL_PULLS:")) {
-                        int totalPulls = Integer.parseInt(line.substring("STATS_TOTAL_PULLS:".length()));
-                        player.setTotalPulls(totalPulls); // ✅ NOW WORKS - setter exists
-                    } else if (line.startsWith("STATS_COINS_EARNED:")) {
-                        int coinsEarned = Integer.parseInt(line.substring("STATS_COINS_EARNED:".length()));
-                        player.setTotalCoinsEarned(coinsEarned); // ✅ NOW WORKS - setter exists
-                    } else if (line.startsWith("STATS_COINS_SPENT:")) {
-                        int coinsSpent = Integer.parseInt(line.substring("STATS_COINS_SPENT:".length()));
-                        player.setTotalCoinsSpent(coinsSpent); // ✅ NOW WORKS - setter exists
                     }
-                    // ✅ ALL STATISTICS NOW HANDLED - no more "Add other statistics here" comment needed
                 }
             }
 
-            System.out.println("✅ Game loaded successfully from: " + filePath);
+            System.out.println("Game loaded successfully from: " + filePath);
             return true;
         } catch (IOException e) {
             throw new SaveFileCorruptedException("Failed to load game from: " + filePath, e);
@@ -188,7 +135,7 @@ public class FileManager {
         } catch (IllegalArgumentException e){
             throw new SaveFileCorruptedException("Save file contains invalid enum values", e);
         } catch (InventoryFullException e) {
-            throw new SaveFileCorruptedException("Inventory full while loading saved items", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -200,9 +147,11 @@ public class FileManager {
     public void deleteSave() throws SaveFileCorruptedException {
         String filePath = SAVE_DIRECTORY + SAVE_FILE;
         File saveFile = new File(filePath);
+
         if(saveFile.exists()) {
             boolean deleted = saveFile.delete();
             if(!deleted) throw new SaveFileCorruptedException("Could not delete save file: " + filePath);
+
             System.out.println("Save file deleted: " + filePath);
         }
     }
