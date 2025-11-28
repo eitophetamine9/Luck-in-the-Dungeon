@@ -49,6 +49,17 @@ public class GameManager {
         initializeRoom4();
     }
 
+    public void startNewGame(String playerName){
+        currentPlayer = new Player(playerName);
+        currentRoomIndex = 0;
+        gameState = "PLAYING";
+
+        rooms.clear();
+        initializeGame();
+    }
+    public void startNewGame() {
+        startNewGame("Adventurer");
+    }
     private void initializeRoom1() {
         Room room1 = rooms.get(0);
 
@@ -214,24 +225,11 @@ public class GameManager {
         room4.addItemToGacha(new KeyItem("Master Key", "ESCAPE! Final key", Rarity.EPIC, "master", true));
     }
 
-    public void startNewGame() {
-        currentPlayer = new Player("Adventurer");
-        currentRoomIndex = 0;
-        gameState = "PLAYING";
-
-        // Reset all rooms - lock all first, then unlock only first room
-        for (Room room : rooms) {
-            room.lock(); // Lock all rooms first
-        }
-        rooms.get(0).unlock(); // Then unlock only first room
-    }
-
     public void saveGame() {
         try{
             fileManager.saveGame(this);
         } catch (SaveFileCorruptedException e){
             System.err.println("Save failed: " + e.getMessage());
-            // UI LATER
         }
 
     }

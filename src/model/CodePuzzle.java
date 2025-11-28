@@ -3,16 +3,14 @@ package model;
 public class CodePuzzle extends Puzzle {
     private String solution;
     private String playerInput;
-    private int maxAttempts;
-    private int currentAttempts;
+    //private int maxAttempts;
+    //private int currentAttempts;
 
     public CodePuzzle(String description, int coinReward, int difficultyLevel,
                       String solution, int maxAttempts, boolean requiresGachaItem){
         super(description, coinReward, difficultyLevel, requiresGachaItem);
         this.solution = solution;
-        this.maxAttempts = maxAttempts;
         this.playerInput = "";
-        this.currentAttempts = 0;
     }
 
     public CodePuzzle(String description, int coinReward, int difficultyLevel,
@@ -29,7 +27,7 @@ public class CodePuzzle extends Puzzle {
         }
         return false;
     }
-
+    /*
     public int getRemainingAttempts() {
         return maxAttempts - currentAttempts;
     }
@@ -41,14 +39,11 @@ public class CodePuzzle extends Puzzle {
     public int getCurrentAttempts() {
         return currentAttempts;
     }
+    */
 
     @Override
     public String getHint() {
-        int remaining = getRemainingAttempts();
-        if (remaining <= 1) {
-            return "Last attempt! Think carefully about the pattern.";
-        }
-        return "Look for patterns or sequences.";
+        return "Analyze the pattern carefully. Look for the mathematical sequences or logical progressions";
     }
 
     public void setPlayerInput(String input){
@@ -56,7 +51,6 @@ public class CodePuzzle extends Puzzle {
     }
 
     public boolean validateCode(String code){
-        currentAttempts++;
         if(code.equals(solution)){
             markSolved();
             return true;

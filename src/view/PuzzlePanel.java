@@ -17,6 +17,7 @@ public class PuzzlePanel extends JPanel {
     private JButton useItemButton;
     private JButton backButton;
     private JTextArea hintArea;
+    private JButton buyHintButton;
 
     public PuzzlePanel(MainFrame parent, GameManager game) {
         this.parent = parent;
@@ -84,12 +85,19 @@ public class PuzzlePanel extends JPanel {
         useItemButton.setBackground(new Color(80, 120, 80));
         useItemButton.setForeground(Color.WHITE);
 
+        buyHintButton = new JButton("Buy Better Hint (10 coins)");
+        buyHintButton.setFont(new Font("Arial", Font.BOLD, 14));
+        buyHintButton.setBackground(new Color(120, 80, 80));
+        buyHintButton.setForeground(Color.WHITE);
+
+
         backButton = new JButton("Back to Room");
         backButton.setFont(new Font("Arial", Font.BOLD, 14));
         backButton.setBackground(new Color(80, 80, 140));
         backButton.setForeground(Color.WHITE);
 
         buttonPanel.add(useItemButton);
+        buttonPanel.add(buyHintButton);
         buttonPanel.add(backButton);
 
         add(puzzleTitleLabel, BorderLayout.NORTH);
@@ -126,11 +134,6 @@ public class PuzzlePanel extends JPanel {
         JTextField answerField = new JTextField(20);
         answerField.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        JLabel attemptsLabel = new JLabel("Attempts: " + codePuzzle.getCurrentAttempts() +
-                "/" + codePuzzle.getRemainingAttempts());
-        attemptsLabel.setForeground(codePuzzle.hasAttemptsLeft() ? Color.GREEN : Color.RED);
-        attemptsLabel.setFont(new Font("Arial", Font.BOLD, 12));
-
         submitButton = new JButton("Submit Answer");
         submitButton.setBackground(new Color(80, 120, 80));
         submitButton.setForeground(Color.WHITE);
@@ -148,25 +151,14 @@ public class PuzzlePanel extends JPanel {
                 parent.showMessage("Correct! You earned " + currentPuzzle.getCoinReward() + " coins!");
                 parent.showGame();
             } else {
-                attemptsLabel.setText("Attempts: " + codePuzzle.getCurrentAttempts() +
-                        "/" + codePuzzle.getRemainingAttempts());
-                attemptsLabel.setForeground(codePuzzle.hasAttemptsLeft() ? Color.YELLOW : Color.RED);
-
-                if (!codePuzzle.hasAttemptsLeft()) {
-                    submitButton.setEnabled(false);
-                    parent.showMessage("No attempts left! This puzzle is now locked.");
-                } else {
-                    parent.showMessage("Incorrect! Try again. Attempts left: " +
-                            codePuzzle.getRemainingAttempts());
-                }
+                parent.showMessage("Incorrect! Try again.");
             }
         });
 
-        JPanel inputComponents = new JPanel(new GridLayout(4, 1, 10, 10));
+        JPanel inputComponents = new JPanel(new GridLayout(3, 1, 10, 10));
         inputComponents.setBackground(new Color(40, 40, 80));
         inputComponents.add(inputLabel);
         inputComponents.add(answerField);
-        inputComponents.add(attemptsLabel);
         inputComponents.add(submitButton);
 
         inputPanel.add(inputComponents, BorderLayout.NORTH);
@@ -232,7 +224,6 @@ public class PuzzlePanel extends JPanel {
         submitButton.setForeground(Color.WHITE);
 
         submitButton.addActionListener(e -> {
-            // Show inventory selection for keys only
             showKeySelectionDialog(lockPuzzle);
         });
 
@@ -295,6 +286,65 @@ public class PuzzlePanel extends JPanel {
         if (useItemButton != null) {
             useItemButton.addActionListener(e -> showItemSelectionDialog());
         }
+
+        if(buyHintButton != null){
+            buyHintButton.addActionListener(e -> purchaseHint());
+        }
+    }
+
+    private void purchaseHint(){
+        Player player = game.getCurrentPlayer();
+        if(player.spendCoins(10)){
+            String enhancedHint = getEnhancedHint(currentPuzzle);
+            hintArea.setText("💰 Premium Hint (Cost: 10 coins):\n" + enhancedHint);
+            parent.showMessage("Better hint purchased! Check the hint area");
+        } else {
+            parent.showMessage("Not enough coins for hint! You need 10 coins");
+        }
+    }
+
+    private String getEnhancedHint(Puzzle puzzle){
+        if(puzzle instanceof CodePuzzle){
+            CodePuzzle codePuzzle = (CodePuzzle) puzzle;
+            String description = codePuzzle.getDescription();
+
+            if (description.contains("▼") && description.contains("▲")) {
+                return "Symbol Cipher Key:\n" +
+                        "▼ = space\n" +
+                        "▲ = O\n" +
+                        "V = A\n" +
+                        "Y = U\n" +
+                        "Decoded message starts with: H▼VY▲ = H A V E  O\n" +
+                        "Full solution: HAVE YOU SOLVED TODAY";
+            }
+            else if (description.contains("Color sequence")) {
+                return "Color Pattern Analysis:\n" +
+                        "The sequence repeats every 4 colors: RED, BLUE, GREEN, YELLOW\n" +
+                        "Position 7 = GREEN, Position 8 = YELLOW";
+            }
+            else if (description.contains("binary")) {
+                return "Binary Conversion:\n" +
+                        "01001000 = H (72)\n" +
+                        "01100101 = e (101)\n" +
+                        "01101100 = l (108)\n" +
+                        "01101100 = l (108)\n" +
+                        "01101111 = o (111)\n" +
+                        "Solution: HELLO";
+            }
+            else if (description.contains("2 (+3)â†’5 (+6)â†’11")) {
+                return "Number Sequence Pattern:\n" +
+                        "Differences: +3, +6, +8, +10, +12, +14...\n" +
+                        "41 + 14 = 55\n" +
+                        "Solution: 55";
+            }
+        }
+        else if (puzzle instanceof RiddlePuzzle) {
+            RiddlePuzzle riddle = (RiddlePuzzle) puzzle;
+            return "Enhanced Riddle Guidance:\n" + riddle.getHint() +
+                    "\n\nThink carefully about each part of the riddle.";
+        }
+
+        return "Detailed analysis: " + puzzle.getHint();
     }
 
     private void handleToolAutoSolve() {

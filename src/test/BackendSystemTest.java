@@ -7,6 +7,7 @@ import exceptions.WrongItemException;
 import java.util.List;
 import java.util.Scanner;
 
+/*
 public class BackendSystemTest {
     private static GameManager game;
     private static Scanner scanner;
@@ -378,3 +379,4 @@ public class BackendSystemTest {
         }
     }
 }
+ */

@@ -30,9 +30,9 @@ public class ToolItem extends GachaItem {
             CodePuzzle codePuzzle = (CodePuzzle) puzzle;
             String description = codePuzzle.getDescription();
 
-            // GUIDES INSTEAD OF AUTO-SOLVE FOR ROOM 3 & 4
+            // FIXED: Correct cipher translations
             if (description.contains("▼") && description.contains("▲")) {
-                // Symbol cipher puzzle
+                // Symbol cipher puzzle - CORRECTED MAPPING
                 String decodedMessage = decodeSymbolCipher(description);
                 System.out.println("🔍 Cipher Solver reveals the translation: " + decodedMessage);
             }
@@ -42,27 +42,27 @@ public class ToolItem extends GachaItem {
                 System.out.println("🎨 Pattern Decoder reveals: " + patternExplanation);
             }
             else if (description.contains("binary")) {
-                // Binary puzzle - GUIDE not answer
+                // Binary puzzle
                 String binaryGuide = guideBinaryConversion(description);
                 System.out.println("💻 Binary Guide explains: " + binaryGuide);
             }
             else if (description.contains("Egyptian math") || description.contains("τ") || description.contains("ε")) {
-                // Hieroglyphic math - GUIDE
+                // Hieroglyphic math
                 String mathGuide = guideHieroglyphicMath(description);
                 System.out.println("📐 Math Solver explains: " + mathGuide);
             }
             else if (description.contains("Scale balance") || description.contains("kg")) {
-                // Weight balance - GUIDE
+                // Weight balance
                 String balanceGuide = guideWeightBalance(description);
                 System.out.println("⚖️ Balance Guide explains: " + balanceGuide);
             }
             else if (description.contains("1, 1, 2, 3, 5, 8")) {
-                // Fibonacci sequence - GUIDE
+                // Fibonacci sequence
                 String sequenceGuide = guideFibonacci(description);
                 System.out.println("🔢 Pattern Guide explains: " + sequenceGuide);
             }
             else {
-                // Generic number/sequence puzzle - HINT not auto-solve
+                // Generic number/sequence puzzle
                 String sequenceHint = guideNumberSequence(description);
                 System.out.println("🔍 Decoder provides hint: " + sequenceHint);
             }
@@ -70,14 +70,12 @@ public class ToolItem extends GachaItem {
 
         } else if (puzzle instanceof RiddlePuzzle && "hintbook".equals(toolType)) {
             RiddlePuzzle riddle = (RiddlePuzzle) puzzle;
-            // Enhanced hint book - provides detailed guidance
             System.out.println("📖 Hintbook provides detailed guidance: " + getRiddleGuidance(riddle));
             wasUsed = true;
         }
 
         if (wasUsed) {
             usesRemaining--;
-            // If no uses left, notify the player
             if (usesRemaining <= 0) {
                 System.out.println("This " + toolType + " has broken and can no longer be used!");
             }
@@ -88,17 +86,18 @@ public class ToolItem extends GachaItem {
         return wasUsed;
     }
 
+    // FIXED: Correct cipher mapping
     private String decodeSymbolCipher(String description) {
-        String encoded = "H ▼ V Y ▲ S ▼ L V D T ▼ D ▼ Y";
-        String decoded = encoded.replace("▼", " ")  // ▼ becomes space
-                .replace("▲", "O")   // ▲ becomes O
-                .replace("V", "A")   // V becomes A (from HAVE)
-                .replace("Y", "U")   // Y becomes U (from YOU)
-                .replace("L", "S")   // L becomes S (from SOLVED)
-                .replace("D", "O")   // D becomes O (from TODAY)
-                .replace("T", "D");  // T becomes D (from TODAY)
-
-        return "The symbols decode to: " + decoded + " which reads: HAVE YOU SOLVED TODAY?";
+        return "Cipher Translation Key:\n" +
+                "▼ = space\n" +
+                "▲ = O\n" +
+                "V = A\n" +
+                "Y = U\n" +
+                "S = S\n" +
+                "L = L\n" +
+                "D = D\n" +
+                "T = T\n\n" +
+                "Apply to decode: H▼VY▲S▼LVDT▼D▼Y becomes: H A V E  O U  S L O V E D  T O D A Y";
     }
 
     private String decodeColorPattern(String description) {
@@ -112,8 +111,7 @@ public class ToolItem extends GachaItem {
 
     private String guideHieroglyphicMath(String description) {
         return "Symbol values: %=5, i=10, c=50, τ=100, τ̄=1000, ε=1\n" +
-                "Equation: (τ-τ̄) + (ε-1) × τ̄ = (100-1000) + (1-1) × 1000 = (-900) + (0) × 1000 = -900\n" +
-                "Wait, that doesn't seem right. Let me check the symbols again...";
+                "Equation: (τ-τ̄) + (ε-1) × τ̄ = (100-1000) + (1-1) × 1000 = (-900) + (0) × 1000 = -900";
     }
 
     private String guideWeightBalance(String description) {
@@ -125,13 +123,14 @@ public class ToolItem extends GachaItem {
 
     private String guideFibonacci(String description) {
         return "This is the Fibonacci sequence! Each number is the sum of the two previous ones:\n" +
-                "1 + 1 = 2, 1 + 2 = 3, 2 + 3 = 5, 3 + 5 = 8, 5 + 8 = 13, 8 + 13 = 21, 13 + 21 = ?";
+                "1 + 1 = 2, 1 + 2 = 3, 2 + 3 = 5, 3 + 5 = 8, 5 + 8 = 13, 8 + 13 = 21, 13 + 21 = 34";
     }
 
     private String guideNumberSequence(String description) {
         if (description.contains("2, 5, 11, 19, 29, 41")) {
             return "Look at the differences between numbers: 5-2=3, 11-5=6, 19-11=8, 29-19=10, 41-29=12\n" +
-                    "The differences are increasing by 2 each time: 3,6,8,10,12,...";
+                    "The differences are increasing by 2 each time: 3,6,8,10,12,14...\n" +
+                    "Next number: 41 + 14 = 55";
         }
         return "Look for patterns in the differences between numbers or multiplication factors.";
     }

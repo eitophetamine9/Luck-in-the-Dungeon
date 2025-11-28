@@ -65,15 +65,21 @@ public class MainMenuPanel extends JPanel {
     private void setupEventHandlers() {
         newGameButton.addActionListener(e -> {
             if (!game.saveExists() || parent.showConfirmDialog("Start new game? Current progress will be lost.")) {
-                game.startNewGame();
-                parent.showGame();
+                String playerName = showCharacterNameDialog();
+                if(playerName != null && !playerName.trim().isEmpty()){
+                    game.startNewGame(playerName.trim());
+                    parent.showGame();
+                    parent.showMessage("Welcome, " + playerName + "! Your adventure begins...");
+                } else {
+                    parent.showMessage("Game start cancelled. Please enter a character name.");
+                }
             }
         });
 
         loadGameButton.addActionListener(e -> {
             if (game.loadGame()) {
                 parent.showGame();
-                parent.showMessage("Game loaded successfully!");
+                parent.showMessage("Game loaded successfully! Welcome back, " + game.getCurrentPlayer().getName() + "!");
             } else {
                 parent.showMessage("No save file found or load failed!");
             }
@@ -85,6 +91,66 @@ public class MainMenuPanel extends JPanel {
             }
         });
     }
+
+    private String showCharacterNameDialog() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBackground(new Color(30, 30, 60));
+
+        // Title
+        JLabel titleLabel = new JLabel("Create Your Character", JLabel.CENTER);
+        titleLabel.setFont(new Font("Serif", Font.BOLD, 18));
+        titleLabel.setForeground(Color.YELLOW);
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+
+        // Input field with styling
+        JLabel nameLabel = new JLabel("Enter Character Name:");
+        nameLabel.setForeground(Color.WHITE);
+        nameLabel.setFont(new Font("Arial", Font.BOLD, 14));
+
+        JTextField nameField = new JTextField(20);
+        nameField.setFont(new Font("Arial", Font.PLAIN, 14));
+        nameField.setBackground(new Color(60, 60, 110));
+        nameField.setForeground(Color.WHITE);
+        nameField.setCaretColor(Color.WHITE);
+        nameField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.GRAY),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
+
+        // Suggestions label
+        JLabel suggestionLabel = new JLabel("Examples: Adventurer, Explorer, Hero, Mystic (max 20 chars)");
+        suggestionLabel.setForeground(Color.LIGHT_GRAY);
+        suggestionLabel.setFont(new Font("Arial", Font.ITALIC, 12));
+
+        panel.add(titleLabel, BorderLayout.NORTH);
+
+        JPanel inputPanel = new JPanel(new GridLayout(3, 1, 5, 5));
+        inputPanel.setBackground(new Color(30, 30, 60));
+        inputPanel.add(nameLabel);
+        inputPanel.add(nameField);
+        inputPanel.add(suggestionLabel);
+
+        panel.add(inputPanel, BorderLayout.CENTER);
+
+        int result = JOptionPane.showConfirmDialog(
+                parent,
+                panel,
+                "Character Creation",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (result == JOptionPane.OK_OPTION) {
+            String name = nameField.getText().trim();
+            if (name.length() > 20) {
+                parent.showMessage("Name too long! Maximum 20 characters.");
+                return showCharacterNameDialog(); // Recursive call to try again
+            }
+            return name;
+        }
+        return null;
+    }
+
 
     public void refresh() {
         loadGameButton.setEnabled(game.saveExists());

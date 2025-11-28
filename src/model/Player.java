@@ -18,7 +18,7 @@ public class Player {
     private int roomsCompleted;
 
     public Player(String name){
-        this.name = name;
+        this.name = sanitizePlayerName(name);
         this.coins = 100;
         this.inventory = new ArrayList<>();
         this.totalPulls = 0;
@@ -26,6 +26,15 @@ public class Player {
         this.totalCoinsEarned = 0;
         this.totalCoinsSpent = 0;
         this.roomsCompleted = 0;
+    }
+
+    private String sanitizePlayerName(String name){
+        if(name == null || name.trim().isEmpty()) return "Adventurer";
+
+        String sanitized = name.trim().replaceAll("\\s+", " ");
+        if(sanitized.length() > 20) sanitized = sanitized.substring(0, 20);
+
+        return sanitized;
     }
 
     public void setPuzzlesSolved(int puzzlesSolved) {

@@ -161,7 +161,8 @@ public class GachaPanel extends JPanel {
             );
 
             pullButton.setText("PULL! (" + gacha.getPullCost() + " coins)");
-            pullButton.setEnabled(gacha.canPull(player));
+            // FIX: Always enable the button to show error messages
+            pullButton.setEnabled(true);
 
             // Display rates
             var rates = gacha.getRateTable();
