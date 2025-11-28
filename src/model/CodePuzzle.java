@@ -48,7 +48,7 @@ public class CodePuzzle extends Puzzle {
         if (remaining <= 1) {
             return "Last attempt! Think carefully about the pattern.";
         }
-        return "Look for patterns or sequences. Attempts remaining: " + remaining;
+        return "Look for patterns or sequences.";
     }
 
     public void setPlayerInput(String input){
