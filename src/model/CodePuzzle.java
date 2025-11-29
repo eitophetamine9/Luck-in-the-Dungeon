@@ -3,8 +3,6 @@ package model;
 public class CodePuzzle extends Puzzle {
     private String solution;
     private String playerInput;
-    //private int maxAttempts;
-    //private int currentAttempts;
 
     public CodePuzzle(String description, int coinReward, int difficultyLevel,
                       String solution, int maxAttempts, boolean requiresGachaItem){
@@ -27,19 +25,6 @@ public class CodePuzzle extends Puzzle {
         }
         return false;
     }
-    /*
-    public int getRemainingAttempts() {
-        return maxAttempts - currentAttempts;
-    }
-
-    public boolean hasAttemptsLeft() {
-        return currentAttempts < maxAttempts;
-    }
-
-    public int getCurrentAttempts() {
-        return currentAttempts;
-    }
-    */
 
     @Override
     public String getHint() {

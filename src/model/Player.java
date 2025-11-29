@@ -16,6 +16,7 @@ public class Player {
     private int totalCoinsEarned;
     private int totalCoinsSpent;
     private int roomsCompleted;
+    private int timeMachinePartsCollected;
 
     public Player(String name){
         this.name = sanitizePlayerName(name);
@@ -26,6 +27,7 @@ public class Player {
         this.totalCoinsEarned = 0;
         this.totalCoinsSpent = 0;
         this.roomsCompleted = 0;
+        this.timeMachinePartsCollected = 0;
     }
 
     private String sanitizePlayerName(String name){
@@ -35,6 +37,18 @@ public class Player {
         if(sanitized.length() > 20) sanitized = sanitized.substring(0, 20);
 
         return sanitized;
+    }
+
+    public void collectTimeMachinePart() {
+        this.timeMachinePartsCollected++;
+    }
+
+    public int getTimeMachinePartsCollected() {
+        return timeMachinePartsCollected;
+    }
+
+    public void setTimeMachinePartsCollected(int count) {
+        this.timeMachinePartsCollected = count;
     }
 
     public void setPuzzlesSolved(int puzzlesSolved) {
@@ -102,21 +116,14 @@ public class Player {
             throw new InventoryFullException(inventory.size(), MAX_INVENTORY_SIZE);
         }
         this.inventory.add(item);
-    }
 
-    public boolean useItem(GachaItem item, Puzzle puzzle) throws WrongItemException {
-        if (!inventory.contains(item))
-            throw new WrongItemException("Item '" + item.getName() + "' is not in your inventory!");
-
-        boolean success = item.use(puzzle);
-
-        if(!success) {
-            throw new WrongItemException("The " + item.getName() + " cannot be used on this type of puzzle!");
-        } else {
-            puzzlesSolved++;
+        // Track if it's a time machine component
+        if (item instanceof ToolItem) {
+            ToolItem tool = (ToolItem) item;
+            if ("time_component".equals(tool.getToolType())) {
+                collectTimeMachinePart();
+            }
         }
-
-        return true;
     }
 
     public boolean hasRequiredItem(String requiredToolType) {
