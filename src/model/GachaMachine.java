@@ -8,37 +8,43 @@ public class GachaMachine {
     private String machineName;
     private int pullCost;
     private List<GachaItem> itemPool;
-    private int pityCounter;
     private Map<Rarity, Double> rateTable;
     private static final int PITY_THRESHOLD = 10; // Epic every 10 pulls
-    private int pullsSinceLastEpic;
-    private int pullCounter; // Track pulls since last epic
+    private int pullsSinceLastEpic; // Track pulls since last epic
 
     public GachaMachine(String machineName, int pullCost){
         this.machineName = machineName;
         this.pullCost = pullCost;
         this.itemPool = new ArrayList<>();
-        this.pityCounter = 0;
         this.rateTable = new HashMap<>();
-        this.pullsSinceLastEpic = pullsSinceLastEpic;
-        initilizeRates();
+        this.pullsSinceLastEpic = 0; // PROPERLY INITIALIZED
+        initializeRates();
     }
 
-    private void initilizeRates(){
-        rateTable.put(Rarity.COMMON, 0.70); // Common 70% roll
-        rateTable.put(Rarity.RARE, 0.25); // Rare 25% roll
-        rateTable.put(Rarity.EPIC, 0.05); // Epic 5% roll
+    private void initializeRates(){
+        rateTable.put(Rarity.COMMON, 0.60); // Reduced from 70%
+        rateTable.put(Rarity.RARE, 0.30);   // Increased from 25%
+        rateTable.put(Rarity.EPIC, 0.10);   // Increased from 5%
     }
 
     public GachaItem pull(Player player) throws NotEnoughCoinsException {
+        if(!player.spendCoins(pullCost)) {
+            throw new NotEnoughCoinsException(pullCost, player.getCoinBalance());
+        }
 
-        if(!player.spendCoins(pullCost)) throw new NotEnoughCoinsException(pullCost, player.getCoinBalance());
+        pullsSinceLastEpic++; // Track every pull
 
+        // Pity system: Guaranteed epic every 10 pulls
+        if (pullsSinceLastEpic >= PITY_THRESHOLD) {
+            pullsSinceLastEpic = 0; // Reset counter
+            System.out.println("🎉 Pity system activated! Guaranteed EPIC!");
+            return getGuaranteedEpic();
+        }
 
         Random random = new Random();
         double roll = random.nextDouble();
 
-        //Determine rarity based on rates
+        // Determine rarity based on rates
         Rarity rolledRarity = Rarity.COMMON;
         double cumulative = 0.0;
 
@@ -48,13 +54,6 @@ public class GachaMachine {
                 rolledRarity = entry.getKey();
                 break;
             }
-        }
-
-        pullCounter++;
-        if (pullCounter >= PITY_THRESHOLD) {
-            rolledRarity = Rarity.EPIC; // Force epic
-            pullCounter = 0; // Reset counter
-            System.out.println("🎉 Pity system activated! Guaranteed EPIC!");
         }
 
         // Filter items by rolled rarity
@@ -72,30 +71,56 @@ public class GachaMachine {
 
         // Return random item from eligible ones
         if(!eligibleItems.isEmpty()){
-            GachaItem res = eligibleItems.get(random.nextInt(eligibleItems.size()));
-            pityCounter++;
-            player.incrementTotalPulls(); // ✅ Fixed - calls the new method
-            return res;
+            GachaItem result = eligibleItems.get(random.nextInt(eligibleItems.size()));
+            player.incrementTotalPulls();
+            return result;
         }
 
         return null; // will never happen if itemPool is properly initialized
     }
 
-    public boolean canPull(Player player) {return player.getCoinBalance() >= pullCost;}
+    private GachaItem getGuaranteedEpic() {
+        List<GachaItem> epicItems = new ArrayList<>();
+        for(GachaItem item : itemPool){
+            if(item.getRarity() == Rarity.EPIC) epicItems.add(item);
+        }
 
-    public int getPullCost() {return pullCost;}
+        if (!epicItems.isEmpty()) {
+            Random random = new Random();
+            return epicItems.get(random.nextInt(epicItems.size()));
+        }
 
-    public Map<Rarity, Double> getRateTable(){return new HashMap<>(rateTable);}
+        // Fallback to any item if no epics in pool
+        if (!itemPool.isEmpty()) {
+            Random random = new Random();
+            return itemPool.get(random.nextInt(itemPool.size()));
+        }
+
+        return null;
+    }
+
+    public boolean canPull(Player player) {
+        return player.getCoinBalance() >= pullCost;
+    }
+
+    public int getPullCost() {
+        return pullCost;
+    }
+
+    public Map<Rarity, Double> getRateTable(){
+        return new HashMap<>(rateTable);
+    }
 
     // Methods to add items to the pool
     public void addItemToPool(GachaItem item){
         itemPool.add(item);
     }
 
-    // In GachaMachine.java - Add this method to the class
     public int getPullsSinceLastEpic() {
         return pullsSinceLastEpic;
     }
 
-    public String getMachineName(){return machineName;}
+    public String getMachineName(){
+        return machineName;
+    }
 }
