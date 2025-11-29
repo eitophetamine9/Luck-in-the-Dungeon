@@ -81,4 +81,8 @@ public class GamePanel extends JPanel {
             gachaBtn.setEnabled(game.getCurrentPlayer().getCoinBalance() >= 20);
         }
     }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+    }
 }
