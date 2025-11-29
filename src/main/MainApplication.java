@@ -1,55 +1,57 @@
-// MainFrame.java
-package view;
+package main;
 
-import model.*;
+import Panels.MainMenuPanel;
+import Panels.PuzzlePanel;
+import Panels.GachaPanel;
+import Panels.InventoryPanel;
+import model.GameManager;
 import javax.swing.*;
 import java.awt.*;
 
-public class MainFrame extends JFrame {
+public class MainApplication extends JFrame {
+    // ... rest of your existing code remains the same
     private GameManager game;
     private CardLayout cardLayout;
     private JPanel mainPanel;
 
-    // Panels
+    // Panel references
     private MainMenuPanel mainMenuPanel;
     private GamePanel gamePanel;
-    private InventoryPanel inventoryPanel;
-    private GachaPanel gachaPanel;
     private PuzzlePanel puzzlePanel;
+    private GachaPanel gachaPanel;
+    private InventoryPanel inventoryPanel;
 
-    public MainFrame(GameManager game) {
-        this.game = game;
+    public MainApplication() {
+        game = GameManager.getInstance();
         initializeGUI();
+        showMainMenu();
     }
 
     private void initializeGUI() {
         setTitle("Luck in the Dungeon");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(900, 700);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         // CardLayout for panel switching
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
-        // Initialize panels
+        // Initialize all panels
         mainMenuPanel = new MainMenuPanel(this, game);
         gamePanel = new GamePanel(this, game);
-        inventoryPanel = new InventoryPanel(this, game);
-        gachaPanel = new GachaPanel(this, game);
         puzzlePanel = new PuzzlePanel(this, game);
+        gachaPanel = new GachaPanel(this, game);
+        inventoryPanel = new InventoryPanel(this, game);
 
         // Add panels to card layout
         mainPanel.add(mainMenuPanel, "MAIN_MENU");
         mainPanel.add(gamePanel, "GAME");
-        mainPanel.add(inventoryPanel, "INVENTORY");
-        mainPanel.add(gachaPanel, "GACHA");
         mainPanel.add(puzzlePanel, "PUZZLE");
+        mainPanel.add(gachaPanel, "GACHA");
+        mainPanel.add(inventoryPanel, "INVENTORY");
 
-        add(mainPanel);
-
-        // Start with main menu
-        showMainMenu();
+        setContentPane(mainPanel);
     }
 
     // Navigation methods
@@ -63,9 +65,9 @@ public class MainFrame extends JFrame {
         gamePanel.refresh();
     }
 
-    public void showInventory() {
-        cardLayout.show(mainPanel, "INVENTORY");
-        inventoryPanel.refresh();
+    public void showPuzzle() {
+        cardLayout.show(mainPanel, "PUZZLE");
+        puzzlePanel.refresh();
     }
 
     public void showGacha() {
@@ -73,9 +75,9 @@ public class MainFrame extends JFrame {
         gachaPanel.refresh();
     }
 
-    public void showPuzzle(Puzzle puzzle) {
-        puzzlePanel.setPuzzle(puzzle);
-        cardLayout.show(mainPanel, "PUZZLE");
+    public void showInventory() {
+        cardLayout.show(mainPanel, "INVENTORY");
+        inventoryPanel.refresh();
     }
 
     public void showMessage(String message) {

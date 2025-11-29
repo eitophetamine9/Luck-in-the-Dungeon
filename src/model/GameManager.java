@@ -1,5 +1,6 @@
 package model;
 
+import exceptions.RoomLockedException;
 import exceptions.SaveFileCorruptedException;
 import util.FileManager;
 
@@ -302,5 +303,34 @@ public class GameManager {
         return true;
         // OR if you want win when final room is complete:
         // return gameState.equals("COMPLETED");
+    }
+
+    // NEW: Jump to specific room
+    public void moveToRoom(int roomIndex) throws RoomLockedException {
+        if (roomIndex < 0 || roomIndex >= rooms.size()) {
+            throw new IllegalArgumentException("Invalid room index: " + roomIndex);
+        }
+
+        Room targetRoom = rooms.get(roomIndex);
+        if (targetRoom.isLocked()) {
+            throw new RoomLockedException(roomIndex + 1, targetRoom.getName());
+        }
+
+        this.currentRoomIndex = roomIndex;
+    }
+
+    // NEW: Check if room is accessible
+    public boolean isRoomAccessible(int roomIndex) {
+        return roomIndex >= 0 && roomIndex < rooms.size() &&
+                !rooms.get(roomIndex).isLocked();
+    }
+
+    // NEW: Get room status for map
+    public String getRoomStatus(int roomIndex) {
+        if (roomIndex >= rooms.size()) return "INVALID";
+        if (rooms.get(roomIndex).isLocked()) return "LOCKED";
+        if (roomIndex == currentRoomIndex) return "CURRENT";
+        if (rooms.get(roomIndex).isComplete()) return "COMPLETED";
+        return "UNLOCKED";  // unlocked but not completed
     }
 }
