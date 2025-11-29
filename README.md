@@ -1,6 +1,6 @@
-# Luck in the Dungeon 🎮
+# 🎲 Luck in the Dungeon 🏰
 
-A Java-based gacha escape room game for our OOP Capstone Project.
+A Java-based gacha escape room game with time travel elements for our OOP Capstone Project.
 
 ## 👥 Team: Code Hub
 **Members:**
@@ -10,31 +10,49 @@ A Java-based gacha escape room game for our OOP Capstone Project.
 4. Niño Michael M. Mahusay
 5. Justine Kirby T. Lepon
 
-## 🏗️ System Overview
-**Luck in the Dungeon** is an object-oriented Java application that combines escape room puzzle mechanics with gacha game elements. The system is built using core OOP principles and follows a modular architecture.
+## 🌟 Story Overview
+**Luck in the Dungeon** combines escape room puzzles with gacha mechanics in a time-bending adventure. You've been trapped in a mysterious temporal dungeon by an evil chronomancer who has scattered a time machine across different laboratory rooms. Your luck and wits are the only tools to find all the components and rebuild the device to escape.
 
-### Core System Components:
-- **Room Management System**: Handles 4 progressive rooms with increasing difficulty
-- **Puzzle Engine**: Manages different puzzle types (locks, codes, riddles) with polymorphic solving
-- **Gacha Mechanics**: Randomized item acquisition with rarity tiers and probability management
-- **Inventory System**: Item storage and usage management
-- **Save/Load System**: JSON-based persistence for game state
-- **GUI Interface**: Swing-based user interface for game interaction
+### 🎯 Game Objective:
+Navigate through 4 temporal laboratory rooms, solve time-based puzzles, collect time machine components through gacha pulls, and rebuild the chronomancer's device to escape the dungeon.
 
-### Technical Architecture:
-The system implements a **layered architecture** with clear separation between:
-- **Model Layer**: Game state, player data, puzzle logic
-- **View Layer**: Swing GUI components
-- **Controller Layer**: Game flow and user input handling
+## 🏗️ System Architecture
 
-## 🎮 Gameplay Overview
-**How to Play:**
-1. **Solve Puzzles** in each room to earn coins
-2. **Use Coins** to pull from gacha machines
-3. **Collect Items** of different rarities (Common, Rare, Epic)
-4. **Use Items** to solve specific puzzles
-5. **Progress** through 4 rooms of increasing difficulty
-6. **Escape** the dungeon to win!
+### Core Game Systems:
+- **Laboratory Exploration**: Progressive room-based gameplay through temporal labs
+- **Enhanced Puzzle Engine**: Time-based puzzles with progressive hint system
+- **Luck-Based Gacha**: Collect time machine components with rarity tiers
+- **Robust Save System**: Automatic backups with corruption protection
+- **Map Navigation System**: Room progression system
+- **Achievement Tracking**: Comprehensive player accomplishment system
+
+### Technical Features:
+- **Backup & Recovery**: Automatic save file backups with restoration capabilities
+- **Game State Validation**: Prevents corruption and ensures data integrity
+- **Enhanced Error Handling**: User-friendly messages instead of harsh exceptions
+- **Progressive Difficulty**: Puzzles that adapt to player performance
+- **Modular Expansion**: Ready for future content expansions
+
+## 🎮 Gameplay Features
+
+### Room Progression:
+1. **Ruined Time Lab** - Discover basic time machine components in the destroyed laboratory
+2. **Research Archives** - Decode the chronomancer's temporal research notes
+3. **Chronal Alchemy Lab** - Create exotic materials needed for time travel
+4. **Assembly Observatory** - Final room to assemble the time machine and escape
+
+### Enhanced Mechanics:
+- **Smart Item Usage**: Contextual feedback and helpful guidance
+- **Time Machine Assembly**: Track collected components and assembly progress
+- **Story Integration**: Every puzzle ties into the escape narrative
+- **Achievement System**: Unlock badges for completing challenges
+- **Progressive Hints**: Gets more helpful after multiple attempts
+
+### Gacha System:
+- **Working Pity System**: Guaranteed epic item every 10 pulls
+- **Balanced Rates**: COMMON (60%) → RARE (30%) → EPIC (10%)
+- **Meaningful Items**: All components contribute to time machine assembly
+- **Smart Inventory**: Capacity warnings and organizational tools
 
 ## 🚀 Quick Start
 
@@ -48,5 +66,4 @@ java -jar LuckInTheDungeon.jar
 
 # From source code:
 javac -d bin src/*.java src/**/*.java
-java -cp bin Main
-
+java -cp bin main.Main
