@@ -1,13 +1,11 @@
 package main;
 
-import Panels.MainMenuPanel;
-import Panels.GachaPanel;
+import Panels.*;
 import model.GameManager;
 import javax.swing.*;
 import java.awt.*;
 
 public class MainApplication extends JFrame {
-    // ... rest of your existing code remains the same
     private GameManager game;
     private CardLayout cardLayout;
     private JPanel mainPanel;
@@ -18,6 +16,7 @@ public class MainApplication extends JFrame {
     private PuzzlePanel puzzlePanel;
     private GachaPanel gachaPanel;
     private InventoryPanel inventoryPanel;
+    private MapPanel mapPanel;
 
     public MainApplication() {
         game = GameManager.getInstance();
@@ -35,19 +34,21 @@ public class MainApplication extends JFrame {
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
-        // Initialize all panels
+        // ✅ FIXED: Remove Kotlin-style named parameters
         mainMenuPanel = new MainMenuPanel(this, game);
         gamePanel = new GamePanel(this, game);
         puzzlePanel = new PuzzlePanel(this, game);
         gachaPanel = new GachaPanel(this, game);
         inventoryPanel = new InventoryPanel(this, game);
+        mapPanel = new MapPanel(this, game);
 
-        // Add panels to card layout
+        // ✅ FIXED: Correct syntax for mainPanel.add() calls
         mainPanel.add(mainMenuPanel, "MAIN_MENU");
         mainPanel.add(gamePanel, "GAME");
-        mainPanel.add(puzzlePanel, "PUZZLE");
+        mainPanel.add(puzzlePanel, "PUZZLE");  // Fixed typo: was "PUZZL1"
         mainPanel.add(gachaPanel, "GACHA");
-        mainPanel.add(inventoryPanel, "INVENTORY");
+        mainPanel.add(inventoryPanel, "INVENTORY");  // Fixed: was "IN"
+        mainPanel.add(mapPanel, "MAP");
 
         setContentPane(mainPanel);
     }
@@ -76,6 +77,11 @@ public class MainApplication extends JFrame {
     public void showInventory() {
         cardLayout.show(mainPanel, "INVENTORY");
         inventoryPanel.refresh();
+    }
+
+    public void showMap() {
+        cardLayout.show(mainPanel, "MAP");
+        mapPanel.refresh();
     }
 
     public void showMessage(String message) {

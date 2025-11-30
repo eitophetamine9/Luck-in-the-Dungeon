@@ -1,6 +1,9 @@
 package model;
 
-public abstract class GachaItem {
+import java.io.Serializable;
+
+public abstract class GachaItem implements  Serializable{
+    private static final long serialVersionUID = 1L;
     protected String name;
     protected String description;
     protected Rarity rarity;

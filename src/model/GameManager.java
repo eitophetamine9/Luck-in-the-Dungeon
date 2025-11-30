@@ -2,6 +2,7 @@ package model;
 
 import exceptions.SaveFileCorruptedException;
 import util.FileManager;
+import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,7 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class GameManager {
+public class GameManager implements Serializable {
+    private static final long serialVersionUID = 1L;
     private static GameManager instance;
     private Player currentPlayer;
     private List<Room> rooms;
@@ -216,14 +218,22 @@ public class GameManager {
 
     public boolean validateGameState() {
         try {
-            if (currentPlayer == null) return false;
-            if (rooms == null || rooms.isEmpty()) return false;
-            if (currentRoomIndex < 0 || currentRoomIndex >= rooms.size()) return false;
-
-            for (Room room : rooms) {
-                if (room.getPuzzles() == null) return false;
+            if (currentPlayer == null) {
+                System.err.println("Game state invalid: No current player");
+                return false;
             }
-
+            if (rooms == null || rooms.isEmpty()) {
+                System.err.println("Game state invalid: No rooms available");
+                return false;
+            }
+            if (currentRoomIndex < 0 || currentRoomIndex >= rooms.size()) {
+                System.err.println("Game state invalid: Invalid current room index: " + currentRoomIndex);
+                return false;
+            }
+            if (!currentPlayer.validatePlayerState()) {
+                System.err.println("Game state invalid: Player state validation failed");
+                return false;
+            }
             return true;
         } catch (Exception e) {
             System.err.println("Game state validation failed: " + e.getMessage());
@@ -569,4 +579,6 @@ public class GameManager {
         Room currentRoom = getCurrentRoom();
         return currentRoom != null ? currentRoom.getGachaMachine() : null;
     }
+
+
 }

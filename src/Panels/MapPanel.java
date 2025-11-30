@@ -2,12 +2,12 @@ package Panels;
 
 import main.MainApplication;
 import model.GameManager;
-import exceptions.RoomLockedException;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class MapPanel extends JPanel {
+    // ✅ MUST MATCH FORM COMPONENT NAMES
     private JPanel mapPanel;
     private JButton room1Button;
     private JButton room2Button;
@@ -22,14 +22,13 @@ public class MapPanel extends JPanel {
     public MapPanel(MainApplication mainApp, GameManager game) {
         this.mainApp = mainApp;
         this.game = game;
-        initializePanel();
-        setupEventHandlers();
-        refresh();
-    }
 
-    private void initializePanel() {
+        // ✅ Initialize form components
         setLayout(new BorderLayout());
         add(mapPanel, BorderLayout.CENTER);
+
+        setupEventHandlers();
+        refresh();
     }
 
     private void setupEventHandlers() {
@@ -41,17 +40,17 @@ public class MapPanel extends JPanel {
     }
 
     private void navigateToRoom(int roomIndex) {
-        try {
-            game.moveToRoom(roomIndex);
-            mainApp.showMessage("Traveling to: " + game.getCurrentRoom().getName());
+        String result = game.moveToRoom(roomIndex);
+
+        if (result.contains("🔒")) {
+            mainApp.showMessage(result);
+        } else {
+            mainApp.showMessage(result);
             mainApp.showGame();
-        } catch (Exception e) {
-            mainApp.showMessage("Cannot travel to that room: " + e.getMessage());
         }
     }
 
     public void refresh() {
-        // Update room button states and appearance
         updateRoomButton(room1Button, 0);
         updateRoomButton(room2Button, 1);
         updateRoomButton(room3Button, 2);
@@ -62,31 +61,28 @@ public class MapPanel extends JPanel {
         String status = game.getRoomStatus(roomIndex);
         String roomName = game.getRooms().get(roomIndex).getName();
 
-        // Update button text with status
         button.setText("<html><center>ROOM " + (roomIndex + 1) + "<br>" +
                 roomName + "<br>[" + status + "]</center></html>");
 
-        // Update button appearance based on status
         switch (status) {
-            case "CURRENT":
-                button.setBackground(new Color(144, 238, 144)); // Light green
+            case "📍 CURRENT":
+                button.setBackground(new Color(144, 238, 144));
                 button.setEnabled(true);
                 break;
-            case "COMPLETED":
-                button.setBackground(new Color(173, 216, 230)); // Light blue
+            case "✅ COMPLETED":
+                button.setBackground(new Color(173, 216, 230));
                 button.setEnabled(true);
                 break;
-            case "UNLOCKED":
-                button.setBackground(new Color(255, 255, 150)); // Light yellow
+            case "⚪ UNLOCKED":
+                button.setBackground(new Color(255, 255, 150));
                 button.setEnabled(true);
                 break;
-            case "LOCKED":
+            case "🔒 LOCKED":
                 button.setBackground(Color.LIGHT_GRAY);
                 button.setEnabled(false);
                 break;
         }
 
-        // Set consistent button properties
         button.setFont(new Font("Arial", Font.BOLD, 12));
         button.setPreferredSize(new Dimension(180, 70));
         button.setFocusPainted(false);

@@ -1,11 +1,13 @@
 package Panels;
 
+import main.MainApplication;
 import model.GameManager;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class MainMenuPanel extends JPanel {
-    // Auto-bound from .form file
+    // ✅ MUST MATCH FORM COMPONENT NAMES
     private JPanel mainPanel;
     private JButton newGameButton;
     private JButton loadGameButton;
@@ -19,6 +21,10 @@ public class MainMenuPanel extends JPanel {
     public MainMenuPanel(MainApplication mainApp, GameManager game) {
         this.mainApp = mainApp;
         this.game = game;
+
+        // ✅ Initialize form components
+        setLayout(new BorderLayout());
+        add(mainPanel, BorderLayout.CENTER);
 
         loadBackgroundImage();
         setupEventHandlers();
@@ -39,7 +45,6 @@ public class MainMenuPanel extends JPanel {
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         } else {
-            // Fallback color
             g.setColor(new Color(30, 30, 60));
             g.fillRect(0, 0, getWidth(), getHeight());
         }
@@ -68,12 +73,16 @@ public class MainMenuPanel extends JPanel {
     }
 
     private void handleLoadGame() {
-        if (game.loadGame()) {
-            mainApp.showMessage("Game loaded successfully! Welcome back, " +
-                    game.getCurrentPlayer().getName() + "!");
-            mainApp.showGame();
-        } else {
-            mainApp.showMessage("No save file found or load failed!");
+        try {
+            if (game.loadGame()) {
+                mainApp.showMessage("Game loaded successfully! Welcome back, " +
+                        game.getCurrentPlayer().getName() + "!");
+                mainApp.showGame();
+            } else {
+                mainApp.showMessage("No save file found or load failed!");
+            }
+        } catch (Exception e) {
+            mainApp.showMessage("Error loading game: " + e.getMessage());
         }
     }
 

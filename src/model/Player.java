@@ -2,13 +2,15 @@ package model;
 
 import exceptions.InventoryFullException;
 import exceptions.WrongItemException;
+import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Player {
+public class Player implements  Serializable{
+    private static final long serialVersionUID = 1L;
     private final String name;
     private int coins;
     private final List<GachaItem> inventory;

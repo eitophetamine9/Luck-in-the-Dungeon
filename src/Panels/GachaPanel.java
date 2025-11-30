@@ -4,11 +4,13 @@ import main.MainApplication;
 import model.GameManager;
 import model.GachaItem;
 import exceptions.NotEnoughCoinsException;
+import exceptions.InventoryFullException;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class GachaPanel extends JPanel {
+    // ✅ MUST MATCH FORM COMPONENT NAMES
     private JPanel gachaPanel;
     private JLabel titleLabel;
     private JTextArea resultArea;
@@ -25,19 +27,21 @@ public class GachaPanel extends JPanel {
     public GachaPanel(MainApplication mainApp, GameManager game) {
         this.mainApp = mainApp;
         this.game = game;
+
+        // ✅ Initialize form components
+        setLayout(new BorderLayout());
+        add(gachaPanel, BorderLayout.CENTER);
+
         initializePanel();
         setupEventHandlers();
         refresh();
     }
 
     private void initializePanel() {
-        setLayout(new BorderLayout());
-        add(gachaPanel, BorderLayout.CENTER);
-
-        // Configure text area
         resultArea.setEditable(false);
         resultArea.setLineWrap(true);
         resultArea.setWrapStyleWord(true);
+        resultArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
     }
 
     private void setupEventHandlers() {
@@ -50,39 +54,69 @@ public class GachaPanel extends JPanel {
             GachaItem pulledItem = game.getCurrentGachaMachine().pull(game.getCurrentPlayer());
 
             if (pulledItem != null) {
-                // Display the pulled item
-                resultArea.setText("🎉 You pulled: " + pulledItem.getName() +
-                        "\nRarity: " + pulledItem.getRarity() +
-                        "\n" + pulledItem.getDescription());
+                try {
+                    game.getCurrentPlayer().addItem(pulledItem);
 
-                mainApp.showMessage("Congratulations! You got: " + pulledItem.getName());
+                    String rarityDisplay = "";
+                    String itemIcon = pulledItem.getItemType() == model.ItemType.KEY ? "🔑 " : "🛠️ ";
+
+                    switch (pulledItem.getRarity()) {
+                        case EPIC: rarityDisplay = "🟡 LEGENDARY EPIC 🟡"; break;
+                        case RARE: rarityDisplay = "🔵 RARE ITEM 🔵"; break;
+                        default: rarityDisplay = "⚪ COMMON ITEM ⚪";
+                    }
+
+                    resultArea.setText(rarityDisplay + "\n\n" +
+                            itemIcon + " YOU PULLED: " + pulledItem.getName() + "\n" +
+                            "📝 " + pulledItem.getDescription() + "\n\n" +
+                            "✅ Successfully added to inventory!\n\n" +
+                            "🎒 " + game.getCurrentPlayer().getInventoryStatus());
+
+                    mainApp.showMessage("🎊 " + pulledItem.getRarity() + " ITEM! \n" +
+                            pulledItem.getName() + "\n" +
+                            "Added to your inventory!");
+
+                } catch (InventoryFullException e) {
+                    resultArea.setText("❌ INVENTORY FULL!\n\n" +
+                            "You pulled: " + pulledItem.getName() + "\n" +
+                            "But your inventory is full!\n\n" +
+                            "Please discard some items to make space.");
+                    mainApp.showMessage("❌ Inventory full! Cannot add " + pulledItem.getName());
+                }
             }
 
-            refresh(); // Update coins and pity counter
+            refresh();
 
         } catch (NotEnoughCoinsException e) {
-            mainApp.showMessage("Not enough coins! You need 20 coins for a pull.");
+            mainApp.showMessage("❌ Not enough coins! You need " + e.getRequired() +
+                    " coins but only have " + e.getAvailable());
         } catch (Exception e) {
-            mainApp.showMessage("Error during pull: " + e.getMessage());
+            mainApp.showMessage("❌ Error during pull: " + e.getMessage());
         }
     }
 
     public void refresh() {
-        // Update machine info
         if (game.getCurrentGachaMachine() != null) {
-            machineLabel.setText("Machine: " + game.getCurrentGachaMachine().getMachineName());
-            pityLabel.setText("Pity: " + game.getCurrentGachaMachine().getPullsSinceLastEpic() + "/10");
+            machineLabel.setText("🎰 Machine: " + game.getCurrentGachaMachine().getMachineName());
+            costLabel.setText("💰 Cost: " + game.getCurrentGachaMachine().getPullCost() + " coins per pull");
+
+            int pullsSinceEpic = game.getCurrentGachaMachine().getPullsSinceLastEpic();
+            pityLabel.setText("📊 Pity Counter: " + pullsSinceEpic + "/10" +
+                    (pullsSinceEpic >= 8 ? " (Epic Soon!)" : ""));
         }
 
-        // Update coin balance
-        coinsLabel.setText("Coins: " + game.getCurrentPlayer().getCoinBalance());
+        int coins = game.getCurrentPlayer().getCoinBalance();
+        coinsLabel.setText("🪙 Your Coins: " + coins);
 
-        // Enable/disable pull button based on coins
-        pullButton.setEnabled(game.getCurrentPlayer().getCoinBalance() >= 20);
+        pullButton.setEnabled(coins >= 20);
+        pullButton.setText(pullButton.isEnabled() ? "🎲 PULL GACHA (20 coins)" : "❌ Need 20 coins");
 
-        // Clear results if no pull has been made
         if (resultArea.getText().isEmpty()) {
-            resultArea.setText("Pull the gacha to see your results here!");
+            resultArea.setText("🎰 WELCOME TO THE GACHA MACHINE!\n\n" +
+                    "• Each pull costs 20 coins\n" +
+                    "• Every 10th pull guarantees an EPIC item!\n" +
+                    "• Items go directly to your inventory\n\n" +
+                    "Click PULL to try your luck! 🍀");
         }
     }
 }

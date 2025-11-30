@@ -41,7 +41,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="1d34c" class="javax.swing.JTextArea" binding="puzzleDesc">
+          <component id="1d34c" class="javax.swing.JTextArea" binding="puzzleDescription">
             <constraints/>
             <properties/>
           </component>

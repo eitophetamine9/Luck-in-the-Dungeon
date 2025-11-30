@@ -3,22 +3,22 @@ package Panels;
 import main.MainApplication;
 import model.GameManager;
 import model.GachaItem;
+import model.Puzzle;
+import model.Rarity;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
 public class InventoryPanel extends JPanel {
+    // Form components
     private JPanel inventoryPanel;
     private JTextArea itemDetails;
 
-    // Inventory Slots - Row 1
+    // Inventory Slots
     private JButton slot00, slot01, slot02, slot03, slot04;
-    // Inventory Slots - Row 2
     private JButton slot10, slot11, slot12, slot13, slot14;
-    // Inventory Slots - Row 3
     private JButton slot20, slot21, slot22, slot23, slot24;
-    // Inventory Slots - Row 4
     private JButton slot30, slot31, slot32, slot33, slot34;
 
     // Action Buttons
@@ -26,7 +26,7 @@ public class InventoryPanel extends JPanel {
     private JButton discardButton;
     private JButton backButton;
     private JLabel titleLabel;
-    private JLabel capacityLabel;
+    private JLabel capacityLabel; // This was null in your form
 
     private MainApplication mainApp;
     private GameManager game;
@@ -36,111 +36,286 @@ public class InventoryPanel extends JPanel {
     public InventoryPanel(MainApplication mainApp, GameManager game) {
         this.mainApp = mainApp;
         this.game = game;
+
+        // Initialize form components
+        setLayout(new BorderLayout());
+
+        // ✅ SAFE: Check if inventoryPanel exists before adding
+        if (inventoryPanel != null) {
+            add(inventoryPanel, BorderLayout.CENTER);
+        } else {
+            // Fallback: create basic panel
+            System.err.println("❌ inventoryPanel is null - creating fallback UI");
+            createFallbackUI();
+        }
+
         initializePanel();
         setupEventHandlers();
-        refresh();
+
+        // ✅ SAFE: Only refresh if components are initialized
+        if (componentsInitialized()) {
+            refresh();
+        } else {
+            System.err.println("❌ Components not initialized - skipping refresh");
+        }
+    }
+
+    private void createFallbackUI() {
+        JPanel fallbackPanel = new JPanel(new BorderLayout());
+        JLabel fallbackLabel = new JLabel("Inventory Panel - Form not loaded properly", JLabel.CENTER);
+        fallbackLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        fallbackPanel.add(fallbackLabel, BorderLayout.CENTER);
+
+        JButton backBtn = new JButton("Back to Game");
+        backBtn.addActionListener(e -> mainApp.showGame());
+        fallbackPanel.add(backBtn, BorderLayout.SOUTH);
+
+        add(fallbackPanel, BorderLayout.CENTER);
+    }
+
+    private boolean componentsInitialized() {
+        // Check if critical components are initialized
+        boolean slotsInitialized = allSlots != null && allSlots.length > 0;
+        boolean buttonsInitialized = useButton != null && discardButton != null && backButton != null;
+
+        return slotsInitialized && buttonsInitialized;
     }
 
     private void initializePanel() {
-        setLayout(new BorderLayout());
-        add(inventoryPanel, BorderLayout.CENTER);
+        // ✅ SAFE: Check before configuring
+        if (itemDetails != null) {
+            itemDetails.setEditable(false);
+            itemDetails.setLineWrap(true);
+            itemDetails.setWrapStyleWord(true);
+            itemDetails.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        } else {
+            System.err.println("❌ itemDetails is null");
+        }
 
-        // Configure text area
-        itemDetails.setEditable(false);
-        itemDetails.setLineWrap(true);
-        itemDetails.setWrapStyleWord(true);
+        // ✅ SAFE: Initialize slot array
+        if (slot00 != null && slot01 != null && slot02 != null && slot03 != null && slot04 != null &&
+                slot10 != null && slot11 != null && slot12 != null && slot13 != null && slot14 != null &&
+                slot20 != null && slot21 != null && slot22 != null && slot23 != null && slot24 != null &&
+                slot30 != null && slot31 != null && slot32 != null && slot33 != null && slot34 != null) {
 
-        // Initialize slot array for easy access
-        allSlots = new JButton[]{
-                slot00, slot01, slot02, slot03, slot04,
-                slot10, slot11, slot12, slot13, slot14,
-                slot20, slot21, slot22, slot23, slot24,
-                slot30, slot31, slot32, slot33, slot34
-        };
+            allSlots = new JButton[]{
+                    slot00, slot01, slot02, slot03, slot04,
+                    slot10, slot11, slot12, slot13, slot14,
+                    slot20, slot21, slot22, slot23, slot24,
+                    slot30, slot31, slot32, slot33, slot34
+            };
+        } else {
+            System.err.println("❌ Some slot buttons are null");
+            allSlots = new JButton[0]; // Empty array to prevent NPE
+        }
     }
 
     private void setupEventHandlers() {
-        // Setup all slot buttons
+        // ✅ SAFE: Setup slot buttons
         for (int i = 0; i < allSlots.length; i++) {
-            final int index = i;
-            allSlots[i].addActionListener(e -> selectSlot(index));
+            if (allSlots[i] != null) {
+                final int index = i;
+                allSlots[i].addActionListener(e -> selectSlot(index));
+            }
         }
 
-        useButton.addActionListener(e -> useSelectedItem());
-        discardButton.addActionListener(e -> discardSelectedItem());
-        backButton.addActionListener(e -> mainApp.showGame());
+        // ✅ SAFE: Setup action buttons
+        if (useButton != null) {
+            useButton.addActionListener(e -> useSelectedItem());
+        } else {
+            System.err.println("❌ useButton is null");
+        }
+
+        if (discardButton != null) {
+            discardButton.addActionListener(e -> discardSelectedItem());
+        } else {
+            System.err.println("❌ discardButton is null");
+        }
+
+        if (backButton != null) {
+            backButton.addActionListener(e -> mainApp.showGame());
+        } else {
+            System.err.println("❌ backButton is null");
+        }
     }
 
     private void selectSlot(int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= allSlots.length || allSlots[slotIndex] == null) {
+            return;
+        }
+
         List<GachaItem> inventory = game.getCurrentPlayer().getInventory();
 
         if (slotIndex < inventory.size()) {
             selectedItem = inventory.get(slotIndex);
             updateItemDetails();
+
+            // Visual feedback for selected slot
+            for (int i = 0; i < allSlots.length; i++) {
+                if (allSlots[i] != null) {
+                    allSlots[i].setBorder(i == slotIndex ?
+                            BorderFactory.createLineBorder(Color.RED, 3) :
+                            BorderFactory.createLineBorder(Color.GRAY, 1));
+                }
+            }
         } else {
             selectedItem = null;
-            itemDetails.setText("SELECTED: None\nSelect an item to view details");
+            if (itemDetails != null) {
+                itemDetails.setText("SELECTED: None\n\nSelect an item to view details and actions");
+            }
         }
 
         updateActionButtons();
     }
 
     private void updateItemDetails() {
-        if (selectedItem != null) {
-            itemDetails.setText(
-                    "SELECTED: " + selectedItem.getName() + "\n" +
-                            "Rarity: " + selectedItem.getRarity() + "\n" +
-                            selectedItem.getDescription()
-            );
+        if (selectedItem != null && itemDetails != null) {
+            String details = "🎒 SELECTED ITEM:\n" +
+                    "📛 Name: " + selectedItem.getName() + "\n" +
+                    "⭐ Rarity: " + selectedItem.getRarity() + "\n" +
+                    "🔧 Type: " + selectedItem.getItemType() + "\n" +
+                    "📖 " + selectedItem.getDescription() + "\n\n";
+
+            if (selectedItem instanceof model.KeyItem) {
+                model.KeyItem key = (model.KeyItem) selectedItem;
+                details += "🔑 Key Color: " + key.getKeyColor() + "\n";
+                details += key.isMasterKey() ? "🌟 MASTER KEY (opens any lock)" : "Standard key";
+            } else if (selectedItem instanceof model.ToolItem) {
+                model.ToolItem tool = (model.ToolItem) selectedItem;
+                details += "🛠️ Tool Type: " + tool.getToolType() + "\n";
+                details += "📊 Uses Remaining: " + tool.getUsesRemaining();
+            }
+
+            itemDetails.setText(details);
         }
     }
 
     private void updateActionButtons() {
         boolean hasSelection = selectedItem != null;
-        useButton.setEnabled(hasSelection);
-        discardButton.setEnabled(hasSelection);
+
+        if (useButton != null) {
+            useButton.setEnabled(hasSelection);
+        }
+
+        if (discardButton != null) {
+            discardButton.setEnabled(hasSelection);
+        }
+
+        if (hasSelection && useButton != null) {
+            useButton.setText(selectedItem.getItemType() == model.ItemType.KEY ?
+                    "Use Key 🔑" : "Use Tool 🛠️");
+        }
     }
 
     private void useSelectedItem() {
         if (selectedItem == null) return;
 
-        mainApp.showMessage("Using " + selectedItem.getName() + " on puzzle...");
-        // Puzzle usage logic would go here
-        refresh();
+        List<Puzzle> availablePuzzles = game.getAvailablePuzzles();
+        if (availablePuzzles.isEmpty()) {
+            mainApp.showMessage("❌ No puzzles available to use this item on!\n" +
+                    "Go to the Puzzle panel to find puzzles.");
+            return;
+        }
+
+        Puzzle[] puzzleArray = availablePuzzles.toArray(new Puzzle[0]);
+        String[] puzzleNames = new String[puzzleArray.length];
+        for (int i = 0; i < puzzleArray.length; i++) {
+            puzzleNames[i] = (i+1) + ". " + puzzleArray[i].getDescription().substring(0,
+                    Math.min(50, puzzleArray[i].getDescription().length())) +
+                    (puzzleArray[i].getDescription().length() > 50 ? "..." : "");
+        }
+
+        String selectedPuzzleName = (String) JOptionPane.showInputDialog(
+                mainApp,
+                "Select a puzzle to use " + selectedItem.getName() + " on:",
+                "Use Item on Puzzle",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                puzzleNames,
+                puzzleNames[0]
+        );
+
+        if (selectedPuzzleName != null) {
+            int puzzleIndex = Integer.parseInt(selectedPuzzleName.split("\\.")[0]) - 1;
+            Puzzle selectedPuzzle = puzzleArray[puzzleIndex];
+
+            String result = game.getCurrentPlayer().useItemWithFeedback(selectedItem, selectedPuzzle);
+            mainApp.showMessage(result);
+
+            if (selectedPuzzle.isSolved()) {
+                mainApp.showMessage("🎉 Puzzle Solved!\n" +
+                        "💰 Earned: " + selectedPuzzle.getCoinReward() + " coins!");
+            }
+
+            refresh();
+        }
     }
 
     private void discardSelectedItem() {
         if (selectedItem == null) return;
 
-        if (mainApp.showConfirmDialog("Discard " + selectedItem.getName() + "?")) {
-            game.getCurrentPlayer().getInventory().remove(selectedItem);
+        String result = game.getCurrentPlayer().safeRemoveItem(selectedItem);
+
+        if (result.contains("✅")) {
+            mainApp.showMessage("🗑️ Discarded: " + selectedItem.getName());
             selectedItem = null;
-            mainApp.showMessage("Item discarded!");
             refresh();
+        } else {
+            mainApp.showMessage("❌ Failed to discard: " + result);
         }
     }
 
     public void refresh() {
+        // ✅ SAFE: Check if components are initialized before refreshing
+        if (!componentsInitialized()) {
+            System.err.println("❌ Cannot refresh - components not initialized");
+            return;
+        }
+
         List<GachaItem> inventory = game.getCurrentPlayer().getInventory();
 
-        // Update all slot buttons
+        // ✅ SAFE: Update slot buttons with null checks
         for (int i = 0; i < allSlots.length; i++) {
-            if (i < inventory.size()) {
-                GachaItem item = inventory.get(i);
-                allSlots[i].setText(getItemIcon(item));
-                allSlots[i].setBackground(getRarityColor(item.getRarity()));
-            } else {
-                allSlots[i].setText("➕");
-                allSlots[i].setBackground(Color.LIGHT_GRAY);
+            if (allSlots[i] != null) {
+                if (i < inventory.size()) {
+                    GachaItem item = inventory.get(i);
+                    allSlots[i].setText("<html><center>" + getItemIcon(item) + "<br>" +
+                            item.getName().substring(0, Math.min(8, item.getName().length())) +
+                            "</center></html>");
+                    allSlots[i].setBackground(getRarityColor(item.getRarity()));
+                    allSlots[i].setToolTipText(item.getName() + " (" + item.getRarity() + ")");
+                } else {
+                    allSlots[i].setText("➕");
+                    allSlots[i].setBackground(Color.LIGHT_GRAY);
+                    allSlots[i].setToolTipText("Empty Slot");
+                }
+
+                allSlots[i].setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
             }
         }
 
-        // Update capacity label
-        capacityLabel.setText("(" + inventory.size() + "/20 Slots Used)");
+        // ✅ FIXED: Safe capacityLabel usage
+        if (capacityLabel != null) {
+            capacityLabel.setText("🎒 " + game.getCurrentPlayer().getInventoryStatus() +
+                    " (" + inventory.size() + "/20)");
+        } else {
+            System.err.println("❌ capacityLabel is null - cannot update inventory status");
+            // Fallback: show status in itemDetails if available
+            if (itemDetails != null) {
+                itemDetails.setText("🎒 " + game.getCurrentPlayer().getInventoryStatus() +
+                        " (" + inventory.size() + "/20)\n\n" +
+                        "SELECTED: None\n\n" +
+                        "Click on an item to view details and use/discard options");
+            }
+        }
 
-        // Reset selection
+        // Reset selection and details
         selectedItem = null;
-        itemDetails.setText("SELECTED: None\nSelect an item to view details");
+        if (itemDetails != null) {
+            itemDetails.setText("SELECTED: None\n\n" +
+                    "Click on an item to view details and use/discard options\n\n" +
+                    "🎒 " + game.getCurrentPlayer().getInventorySummary());
+        }
         updateActionButtons();
     }
 
@@ -152,11 +327,11 @@ public class InventoryPanel extends JPanel {
         }
     }
 
-    private Color getRarityColor(model.Rarity rarity) {
+    private Color getRarityColor(Rarity rarity) {
         switch (rarity) {
             case COMMON: return Color.WHITE;
-            case RARE: return new Color(173, 216, 230); // Light blue
-            case EPIC: return new Color(255, 215, 0);   // Gold
+            case RARE: return new Color(173, 216, 230);
+            case EPIC: return new Color(255, 215, 0);
             default: return Color.WHITE;
         }
     }
