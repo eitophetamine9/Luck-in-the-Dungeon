@@ -26,6 +26,7 @@ public class PuzzlePanel extends JPanel {
     private JLabel toolsLabel;
     private JComboBox<String> itemSelector;
     private JLabel answerLabel;
+    private JButton hintButton;
 
     private MainApplication mainApp;
     private GameManager game;
