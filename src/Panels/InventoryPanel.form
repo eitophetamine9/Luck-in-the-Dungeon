@@ -6,9 +6,8 @@
       <xy x="20" y="20" width="506" height="400"/>
     </constraints>
     <properties>
-      <background color="-14916443"/>
-      <font name="Monospaced" size="16" style="1"/>
-      <foreground color="-16711681"/>
+      <background color="-16177589"/>
+      <font name="Monospaced" style="1"/>
     </properties>
     <border type="none"/>
     <children>
@@ -17,7 +16,8 @@
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -26,7 +26,8 @@
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -35,7 +36,8 @@
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -46,9 +48,9 @@
           </grid>
         </constraints>
         <properties>
-          <background color="-16177589"/>
-          <font name="Monospaced" size="16" style="1"/>
-          <foreground color="-16711681"/>
+          <background color="-15058058"/>
+          <font name="Monospaced" style="1"/>
+          <foreground color="-16719391"/>
           <text value="SELECTED: None&#10;Select an item to view details"/>
         </properties>
       </component>
@@ -57,7 +59,8 @@
           <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -66,7 +69,8 @@
           <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -75,7 +79,8 @@
           <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -84,7 +89,8 @@
           <grid row="1" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -93,7 +99,8 @@
           <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -102,7 +109,8 @@
           <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -111,7 +119,8 @@
           <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -120,7 +129,8 @@
           <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -129,7 +139,8 @@
           <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -138,7 +149,8 @@
           <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -147,7 +159,8 @@
           <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -156,7 +169,8 @@
           <grid row="3" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -165,7 +179,8 @@
           <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -174,7 +189,8 @@
           <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -183,7 +199,8 @@
           <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -192,7 +209,8 @@
           <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -203,6 +221,7 @@
         </constraints>
         <properties>
           <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
         </properties>
         <border type="none"/>
         <children>
@@ -211,9 +230,8 @@
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <background color="-16178601"/>
-              <font name="Monospaced" size="16" style="1"/>
-              <foreground color="-16711681"/>
+              <font name="Monospaced" style="1"/>
+              <foreground color="-16719391"/>
               <text value="USE ON PUZZLE"/>
             </properties>
           </component>
@@ -222,9 +240,8 @@
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="1" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <background color="-16178601"/>
-              <font name="Monospaced" size="16" style="1"/>
-              <foreground color="-16711681"/>
+              <font name="Monospaced" style="1"/>
+              <foreground color="-16719391"/>
               <text value="DISCARD"/>
             </properties>
           </component>
@@ -233,9 +250,8 @@
               <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <background color="-16178601"/>
-              <font name="Monospaced" size="16" style="1"/>
-              <foreground color="-16711681"/>
+              <font name="Monospaced" style="1"/>
+              <foreground color="-16719391"/>
               <text value="← BACK TO GAME"/>
             </properties>
           </component>
@@ -246,7 +262,8 @@
           <grid row="4" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-14916443"/>
+          <font name="Monospaced" style="1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -256,7 +273,8 @@
           <grid row="0" column="0" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-16178601"/>
+          <background color="-16177589"/>
+          <font name="Monospaced" style="1"/>
         </properties>
         <border type="none"/>
         <children>
@@ -265,18 +283,18 @@
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <font name="Monospaced" size="16" style="1"/>
-              <foreground color="-16711681"/>
+              <font name="Monospaced" style="1"/>
+              <foreground color="-16719391"/>
               <text value="🎒 INVENTORY"/>
             </properties>
           </component>
           <component id="de2be" class="javax.swing.JLabel">
             <constraints>
-              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <font name="Monospaced" size="16" style="1"/>
-              <foreground color="-16711681"/>
+              <font name="Monospaced" style="1"/>
+              <foreground color="-16719391"/>
               <text value="(0/20 Slots Used)"/>
             </properties>
           </component>
