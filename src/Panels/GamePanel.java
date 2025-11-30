@@ -9,10 +9,10 @@ import java.awt.*;
 import java.util.Map;
 
 public class GamePanel extends JPanel {
-    // ✅ MUST MATCH FORM COMPONENT NAMES EXACTLY
-    private JPanel gamePanel;  // Main container panel from form
-    private JScrollPane descScroll; // Scroll pane from form
-    private JTextArea roomDescriptionTextArea; // Text area inside scroll pane
+    // ✅ ADD saveButton to your component list
+    private JPanel gamePanel;
+    private JScrollPane descScroll;
+    private JTextArea roomDescriptionTextArea;
     private JLabel roomHeaderLabel;
     private JButton puzzleBtn;
     private JButton mainMenuBtn;
@@ -20,6 +20,7 @@ public class GamePanel extends JPanel {
     private JButton inventoryBtn;
     private JButton nextRoomBtn;
     private JButton mapBtn;
+    private JButton saveButton; // ✅ ADD THIS
 
     private MainApplication mainApp;
     private GameManager game;
@@ -28,33 +29,21 @@ public class GamePanel extends JPanel {
         this.mainApp = mainApp;
         this.game = game;
 
-        // ✅ Initialize form components first
-        initializeFormComponents();
-        initializePanel();
-        setupEventHandlers();
-        refresh();
-    }
-
-    private void initializeFormComponents() {
-        // ✅ Set layout and add the main panel from form
         setLayout(new BorderLayout());
         add(gamePanel, BorderLayout.CENTER);
 
-        // ✅ Get the text area from the scroll pane (if not directly bound)
         if (descScroll != null && roomDescriptionTextArea == null) {
             roomDescriptionTextArea = (JTextArea) descScroll.getViewport().getView();
         }
 
-        // ✅ Configure text area properties
         if (roomDescriptionTextArea != null) {
             roomDescriptionTextArea.setEditable(false);
             roomDescriptionTextArea.setLineWrap(true);
             roomDescriptionTextArea.setWrapStyleWord(true);
         }
-    }
 
-    private void initializePanel() {
-        // Additional initialization if needed
+        setupEventHandlers();
+        refresh();
     }
 
     private void setupEventHandlers() {
@@ -64,8 +53,24 @@ public class GamePanel extends JPanel {
         mapBtn.addActionListener(e -> mainApp.showMap());
         nextRoomBtn.addActionListener(e -> handleNextRoom());
         mainMenuBtn.addActionListener(e -> handleMainMenu());
+
+        // ✅ ADD SAVE BUTTON HANDLER
+        if (saveButton != null) {
+            saveButton.addActionListener(e -> handleSaveGame());
+        }
     }
 
+    // ✅ ADD SAVE GAME METHOD
+    private void handleSaveGame() {
+        try {
+            String result = game.saveGameWithBackup();
+            mainApp.showMessage(result);
+        } catch (Exception e) {
+            mainApp.showMessage("❌ Save failed: " + e.getMessage());
+        }
+    }
+
+    // ... rest of your existing methods
     private void handleNextRoom() {
         if (!game.isCurrentRoomComplete()) {
             mainApp.showMessage("Complete all puzzles in this room to proceed!");
@@ -116,6 +121,11 @@ public class GamePanel extends JPanel {
                     "Next Room →" : "Complete Puzzles First");
             puzzleBtn.setText("Solve Puzzles (" + game.getAvailablePuzzles().size() + " available)");
             gachaBtn.setText("Gacha Machine (" + game.getCurrentPlayer().getCoinBalance() + " coins)");
+
+            // ✅ Update save button text
+            if (saveButton != null) {
+                saveButton.setText("💾 Save Game");
+            }
         }
     }
 }

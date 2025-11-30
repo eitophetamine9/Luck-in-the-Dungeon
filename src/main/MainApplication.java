@@ -65,8 +65,13 @@ public class MainApplication extends JFrame {
     }
 
     public void showPuzzle() {
+        System.out.println("🧩 Switching to Puzzle Panel - Room: " + game.getCurrentRoomIndex());
         cardLayout.show(mainPanel, "PUZZLE");
-        puzzlePanel.refresh();
+        if (puzzlePanel != null) {
+            puzzlePanel.refresh();
+        } else {
+            System.err.println("❌ puzzlePanel is null!");
+        }
     }
 
     public void showGacha() {

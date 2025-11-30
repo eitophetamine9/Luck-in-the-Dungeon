@@ -329,44 +329,64 @@ public class PuzzlePanel extends JPanel {
     }
 
     public void refresh() {
+        System.out.println("🔄 PuzzlePanel refresh called");
+
         if (puzzleSelector != null) {
             puzzleSelector.removeAllItems();
-            List<Puzzle> availablePuzzles = game.getAvailablePuzzles();
 
-            for (Puzzle puzzle : availablePuzzles) {
-                puzzleSelector.addItem(puzzle);
-            }
+            // ✅ FIX: Get the CURRENT room properly
+            Room currentRoom = game.getCurrentRoom();
+            if (currentRoom != null) {
+                System.out.println("📍 Current Room: " + currentRoom.getName() +
+                        " (Room " + currentRoom.getRoomNumber() + ")");
 
-            if (puzzleSelector.getItemCount() > 0) {
-                puzzleSelector.setSelectedIndex(0);
-                updatePuzzleDisplay();
+                List<Puzzle> roomPuzzles = currentRoom.getPuzzles();
+                System.out.println("🎯 Found " + roomPuzzles.size() + " puzzles in this room");
+
+                int availablePuzzles = 0;
+                for (Puzzle puzzle : roomPuzzles) {
+                    // Show ALL puzzles from current room, but mark solved ones differently
+                    puzzleSelector.addItem(puzzle);
+                    availablePuzzles++;
+
+                    System.out.println("   - " + puzzle.getDescription().substring(0, Math.min(40, puzzle.getDescription().length())) +
+                            " [Solved: " + puzzle.isSolved() + "]");
+                }
+
+                if (availablePuzzles > 0) {
+                    puzzleSelector.setSelectedIndex(0);
+                    updatePuzzleDisplay();
+                    System.out.println("✅ Loaded " + availablePuzzles + " puzzles into selector");
+                } else {
+                    System.out.println("❌ No puzzles found in current room!");
+                    showNoPuzzlesMessage();
+                }
             } else {
-                if (puzzleDescription != null) {
-                    puzzleDescription.setText("🎯 No puzzles available in this room.");
-                }
-                // ✅ CHANGED: hintArea → hintTextArea
-                if (hintTextArea != null) {
-                    hintTextArea.setText("All puzzles in this room are completed! 🏆\n\n" +
-                            "Return to the game to proceed to the next room.");
-                }
-                if (coinRewardLabel != null) {
-                    coinRewardLabel.setText("💰 Reward: 0 coins");
-                }
-                if (difficultyLabel != null) {
-                    difficultyLabel.setText("⭐ Difficulty: None");
-                }
-                if (solveButton != null) {
-                    solveButton.setEnabled(false);
-                }
-                if (useItemButton != null) {
-                    useItemButton.setEnabled(false);
-                }
+                System.out.println("❌ Current room is null!");
+                showNoPuzzlesMessage();
             }
+        } else {
+            System.out.println("❌ puzzleSelector is null!");
         }
 
         if (answerField != null) {
             answerField.setText("");
             answerField.requestFocus();
+        }
+    }
+
+    private void showNoPuzzlesMessage() {
+        if (puzzleDescription != null) {
+            puzzleDescription.setText("❌ No puzzles available in this room.\n\nThis might be a bug - check console for details.");
+        }
+        if (hintTextArea != null) {
+            hintTextArea.setText("If you just moved to a new room, try:\n1. Going back to Game panel\n2. Returning to Puzzle panel\n3. If still broken, check console logs");
+        }
+        if (solveButton != null) {
+            solveButton.setEnabled(false);
+        }
+        if (useItemButton != null) {
+            useItemButton.setEnabled(false);
         }
     }
 }

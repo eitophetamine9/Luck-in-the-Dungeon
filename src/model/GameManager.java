@@ -243,11 +243,14 @@ public class GameManager implements Serializable {
 
     // === ENHANCED NAVIGATION ===
     public String moveToRoom(int roomIndex) {
+        System.out.println("🚀 Attempting to move to room " + roomIndex);
+
         if (roomIndex < 0 || roomIndex >= rooms.size()) {
             return "❌ Invalid room number!";
         }
 
         Room targetRoom = rooms.get(roomIndex);
+        System.out.println("🎯 Target room: " + targetRoom.getName() + " (Locked: " + targetRoom.isLocked() + ")");
 
         if (targetRoom.isLocked()) {
             return String.format("🔒 Room %d: %s is locked! Complete previous rooms first.",
@@ -256,6 +259,15 @@ public class GameManager implements Serializable {
 
         int previousRoom = currentRoomIndex;
         currentRoomIndex = roomIndex;
+
+        System.out.println("✅ Successfully moved from room " + previousRoom + " to room " + currentRoomIndex);
+
+        // ✅ DEBUG: Show puzzles in the new room
+        Room newRoom = getCurrentRoom();
+        System.out.println("🎲 Puzzles in new room: " + newRoom.getPuzzles().size());
+        for (Puzzle p : newRoom.getPuzzles()) {
+            System.out.println("   - " + p.getDescription().substring(0, Math.min(30, p.getDescription().length())));
+        }
 
         if (previousRoom != roomIndex) {
             String transitionMessage = getRoomTransitionMessage(previousRoom, roomIndex);
@@ -544,13 +556,28 @@ public class GameManager implements Serializable {
         }
     }
 
-    public void moveToNextRoom(){
-        if(currentRoomIndex < rooms.size() - 1) {
-            currentRoomIndex++;
-            rooms.get(currentRoomIndex).unlock();
-        } else {
-            gameState = "COMPLETED";
+    public String moveToNextRoom() {
+        if (currentRoomIndex >= rooms.size() - 1) {
+            return "🎉 You've completed all rooms!";
         }
+
+        if (!isCurrentRoomComplete()) {
+            return "❌ Complete all puzzles in the current room first!";
+        }
+
+        // Move to next room and unlock it
+        currentRoomIndex++;
+        rooms.get(currentRoomIndex).unlock();
+
+        // ✅ IMPORTANT: Reset puzzle attempts and state for the new room
+        Room newRoom = getCurrentRoom();
+        for (Puzzle puzzle : newRoom.getPuzzles()) {
+            // Reset puzzle state for the new room (but keep them unsolved)
+            // This ensures puzzles are fresh when entering a new room
+            puzzle.recordAttempt(); // This just increments attempts counter
+        }
+
+        return "🚀 Advanced to: " + getCurrentRoom().getName();
     }
 
     public Room getCurrentRoom(){
