@@ -1,9 +1,7 @@
 package main;
 
 import Panels.MainMenuPanel;
-import Panels.PuzzlePanel;
 import Panels.GachaPanel;
-import Panels.InventoryPanel;
 import model.GameManager;
 import javax.swing.*;
 import java.awt.*;
