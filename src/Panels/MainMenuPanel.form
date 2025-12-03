@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="Panels.MainMenuPanel">
-  <grid id="27dc6" binding="mainPanel" layout-manager="GridBagLayout">
+  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="652" height="539"/>
+      <xy x="20" y="20" width="1042" height="539"/>
     </constraints>
     <properties>
-      <background color="-14803396"/>
-      <preferredSize width="500" height="600"/>
+      <autoscrolls value="true"/>
+      <background color="-13026296"/>
+      <opaque value="true"/>
+      <preferredSize width="1000" height="700"/>
     </properties>
     <border type="none"/>
     <children>
       <component id="e77f2" class="javax.swing.JLabel" binding="titleLabel">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-          <gridbag weightx="1.0" weighty="1.0"/>
         </constraints>
         <properties>
-          <font name="Papyrus" size="29" style="1"/>
+          <font name="Goudy Stout" size="36" style="1"/>
           <foreground color="-1841920"/>
           <text value="LUCK IN THE DUNGEON"/>
         </properties>
@@ -28,29 +30,35 @@
             <preferred-size width="300" height="60"/>
             <maximum-size width="300" height="60"/>
           </grid>
-          <gridbag weightx="1.0" weighty="1.0" ipadx="100" ipady="30"/>
         </constraints>
         <properties>
           <background color="-14211024"/>
-          <font name="Papyrus" size="22" style="1"/>
-          <foreground color="-16711681"/>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="false"/>
+          <focusPainted value="true"/>
+          <font name="Goudy Stout" size="24" style="1"/>
+          <foreground color="-10496"/>
           <margin top="10" left="10" bottom="10" right="10"/>
+          <opaque value="false"/>
           <text value="NEW GAME"/>
         </properties>
       </component>
       <component id="ddc7b" class="javax.swing.JButton" binding="loadGameButton">
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
-            <minimum-size width="300" height="60"/>
-            <preferred-size width="300" height="60"/>
-            <maximum-size width="300" height="60"/>
+            <minimum-size width="400" height="60"/>
+            <preferred-size width="400" height="60"/>
+            <maximum-size width="400" height="60"/>
           </grid>
-          <gridbag weightx="1.0" weighty="1.0" ipadx="90" ipady="30"/>
         </constraints>
         <properties>
           <background color="-14211024"/>
-          <font name="Papyrus" size="21" style="1"/>
-          <foreground color="-16711681"/>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="false"/>
+          <focusPainted value="true"/>
+          <font name="Goudy Stout" size="24" style="1"/>
+          <foreground color="-10496"/>
+          <opaque value="false"/>
           <text value="LOAD GAME"/>
         </properties>
       </component>
@@ -61,13 +69,16 @@
             <preferred-size width="300" height="60"/>
             <maximum-size width="300" height="60"/>
           </grid>
-          <gridbag weightx="1.0" weighty="1.0" ipadx="200" ipady="30"/>
         </constraints>
         <properties>
           <background color="-14211024"/>
+          <borderPainted value="false"/>
+          <contentAreaFilled value="false"/>
           <enabled value="true"/>
-          <font name="Papyrus" size="22" style="1"/>
-          <foreground color="-16711681"/>
+          <focusPainted value="true"/>
+          <font name="Goudy Stout" size="24" style="1"/>
+          <foreground color="-10496"/>
+          <opaque value="false"/>
           <text value="EXIT"/>
         </properties>
       </component>
