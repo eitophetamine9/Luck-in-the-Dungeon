@@ -28,17 +28,30 @@ public class GamePanel extends JPanel {
     private MainApplication mainApp;
     private GameManager game;
     private Image backgroundImage;
+    private String[] roomBackgrounds = { // 🆕 ADDED: Room-specific background names
+            "room1_lab.png",
+            "room2_archives.png",
+            "room3_alchemy.png",
+            "room4_observatory.png"
+    };
+
+    // 🆕 ADD: Room change tracker
+    private int lastRoomIndex = -1;
 
     public GamePanel(MainApplication mainApp, GameManager game) {
         this.mainApp = mainApp;
         this.game = game;
+        this.lastRoomIndex = -1; // Initialize tracker
 
         // ✅ Initialize form components
         setLayout(new BorderLayout());
         add(gamePanel, BorderLayout.CENTER);
 
-        // ✅ Load background image (same as MainMenuPanel)
-        loadBackgroundImage();
+        // 🆕 Test image loading first
+        testImageLoading();
+
+        // ✅ Load room-specific background image
+        updateBackground();
 
         // ✅ Make main panel transparent to show background
         setOpaque(false);
@@ -53,15 +66,26 @@ public class GamePanel extends JPanel {
             roomDescriptionTextArea = (JTextArea) descScroll.getViewport().getView();
         }
 
+        // ✅ FIX: Make JScrollPane and viewport transparent
+        if (descScroll != null) {
+            descScroll.setOpaque(false);
+            descScroll.getViewport().setOpaque(false);
+            descScroll.setBackground(new Color(20, 20, 30, 180));
+            descScroll.getViewport().setBackground(new Color(30, 30, 60, 200));
+            descScroll.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        }
+
         // ✅ Configure text area with monospaced font
         if (roomDescriptionTextArea != null) {
             roomDescriptionTextArea.setEditable(false);
             roomDescriptionTextArea.setLineWrap(true);
             roomDescriptionTextArea.setWrapStyleWord(true);
-            roomDescriptionTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-            roomDescriptionTextArea.setForeground(Color.WHITE);
-            roomDescriptionTextArea.setBackground(new Color(0, 0, 0, 150)); // Semi-transparent black
-            roomDescriptionTextArea.setCaretColor(Color.WHITE);
+            roomDescriptionTextArea.setFont(new Font("Monospaced", Font.BOLD, 14));
+            roomDescriptionTextArea.setForeground(Color.orange);
+            roomDescriptionTextArea.setBackground(new Color(30, 30, 60, 180)); // Semi-transparent
+            roomDescriptionTextArea.setCaretColor(Color.orange);
+            roomDescriptionTextArea.setText(""); // Clear any initial text
+            roomDescriptionTextArea.setDisabledTextColor(new Color(255, 255, 200));
         }
 
         setupEventHandlers();
@@ -72,25 +96,76 @@ public class GamePanel extends JPanel {
         refresh();
     }
 
-    private void loadBackgroundImage() {
+    // 🆕 DEBUG: Test image loading
+    private void testImageLoading() {
+        System.out.println("\n🔍 TESTING IMAGE LOADING...");
+
+        // Test all room images
+        for (int i = 0; i < roomBackgrounds.length; i++) {
+            String imagePath = "images/rooms/" + roomBackgrounds[i];
+            java.net.URL url = getClass().getClassLoader().getResource(imagePath);
+            System.out.println((i+1) + ". " + imagePath + " → " +
+                    (url != null ? "✅ FOUND" : "❌ NOT FOUND"));
+        }
+
+        // Test default
+        java.net.URL defaultURL = getClass().getClassLoader().getResource("images/dungeon_bg.jpeg");
+        System.out.println("Default: images/dungeon_bg.jpeg → " +
+                (defaultURL != null ? "✅ FOUND" : "❌ NOT FOUND"));
+    }
+
+    // 🆕 UPDATED: Now loads room-specific backgrounds with room change detection
+    private void updateBackground() {
+        System.out.println("\n=== UPDATE BACKGROUND ===");
+        System.out.println("Current room index: " + game.getCurrentRoomIndex());
+
         try {
-            System.out.println("🔍 Loading background image for GamePanel...");
+            int roomIndex = game.getCurrentRoomIndex();
+            System.out.println("Room index: " + roomIndex);
 
-            // Try to load the same background as MainMenuPanel
-            java.net.URL imageURL = getClass().getClassLoader().getResource("images/dungeon_bg.jpeg");
-
-            if (imageURL != null) {
-                System.out.println("✅ Found image at URL: " + imageURL);
-                backgroundImage = new ImageIcon(imageURL).getImage();
-                System.out.println("✅ GamePanel background loaded!");
+            // 🆕 Check if room actually changed
+            if (roomIndex == lastRoomIndex && backgroundImage != null) {
+                System.out.println("📌 Same room, keeping current background");
                 return;
-            } else {
-                System.out.println("❌ Image not found, using gradient fallback");
-                backgroundImage = null;
             }
 
+            lastRoomIndex = roomIndex; // Update tracker
+
+            // Try room-specific image first
+            if (roomIndex >= 0 && roomIndex < roomBackgrounds.length) {
+                String imageName = roomBackgrounds[roomIndex];
+                System.out.println("🔍 Looking for: images/rooms/" + imageName);
+
+                java.net.URL imageURL = getClass().getClassLoader().getResource("images/rooms/" + imageName);
+
+                if (imageURL != null) {
+                    System.out.println("✅ Found room image!");
+                    backgroundImage = new ImageIcon(imageURL).getImage();
+                    System.out.println("🎨 Loaded Room " + (roomIndex + 1) + " background");
+
+                    // Force immediate repaint
+                    SwingUtilities.invokeLater(() -> repaint());
+                    return;
+                }
+            }
+
+            // Fallback: Default dungeon background
+            System.out.println("🔍 Trying default: images/dungeon_bg.jpeg");
+            java.net.URL defaultURL = getClass().getClassLoader().getResource("images/dungeon_bg.jpeg");
+
+            if (defaultURL != null) {
+                System.out.println("✅ Found default image");
+                backgroundImage = new ImageIcon(defaultURL).getImage();
+                System.out.println("🏰 Using default background");
+                return;
+            }
+
+            // Final fallback: Gradient
+            backgroundImage = null;
+            System.out.println("🎨 Using gradient background");
+
         } catch (Exception e) {
-            System.out.println("❌ Error loading background: " + e.getMessage());
+            System.out.println("💥 ERROR loading background: " + e.getMessage());
             backgroundImage = null;
         }
     }
@@ -99,15 +174,14 @@ public class GamePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // ✅ Draw background image or gradient (same as MainMenuPanel)
         if (backgroundImage != null) {
             // Draw background image
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         } else {
             // Fallback gradient background
             Graphics2D g2d = (Graphics2D) g;
-            Color color1 = new Color(30, 30, 60);     // Dark blue
-            Color color2 = new Color(10, 10, 30);     // Darker blue
+            Color color1 = new Color(30, 30, 60);
+            Color color2 = new Color(10, 10, 30);
 
             GradientPaint gradient = new GradientPaint(
                     0, 0, color1,
@@ -116,6 +190,22 @@ public class GamePanel extends JPanel {
 
             g2d.setPaint(gradient);
             g2d.fillRect(0, 0, getWidth(), getHeight());
+        }
+    }
+
+    @Override
+    public void doLayout() {
+        super.doLayout();
+
+        // Prevent components from getting too small
+        if (descScroll != null) {
+            // Ensure scroll pane has minimum size
+            if (descScroll.getWidth() < 300 || descScroll.getHeight() < 150) {
+                descScroll.setSize(
+                        Math.max(300, descScroll.getWidth()),
+                        Math.max(150, descScroll.getHeight())
+                );
+            }
         }
     }
 
@@ -332,10 +422,34 @@ public class GamePanel extends JPanel {
         }
     }
 
+    // 🆕 COMPLETELY UPDATED refresh() method with room change detection
     public void refresh() {
+        System.out.println("\n🔄 === GAMEPANEL REFRESH ===");
+
+        // 🆕 UPDATE BACKGROUND (checks if room changed internally)
+        updateBackground();
+
         Room currentRoom = game.getCurrentRoom();
         if (currentRoom != null && roomDescriptionTextArea != null) {
             double completion = game.getCurrentRoomCompletion();
+
+            System.out.println("📊 Current room: " + currentRoom.getName());
+            System.out.println("📈 Room completion: " + completion + "%");
+
+            // 🆕 METHOD 3: DIRECT STRING ASSIGNMENT (NO DUPLICATION)
+            String roomText =
+                    "📍 " + currentRoom.getName().toUpperCase() + " 📍\n" +
+                            "════════════════════════════════════════\n\n" +
+                            currentRoom.getRoomDescription() + "\n\n" +
+                            "════════════════════════════════════════\n" +
+                            "📋 CURRENT MISSION:\n" +
+                            game.getCurrentObjective() + "\n" +
+                            "════════════════════════════════════════\n\n" +
+                            "🎮 Available Actions:";
+
+            // 🆕 SET TEXT ONCE - REPLACES EVERYTHING
+            roomDescriptionTextArea.setText(roomText);
+            roomDescriptionTextArea.setCaretPosition(0);
 
             // Update room header
             if (roomHeaderLabel != null) {
@@ -344,17 +458,7 @@ public class GamePanel extends JPanel {
                         String.format(" (%.0f%% Complete)", completion));
             }
 
-            // Update room description with mission
-            roomDescriptionTextArea.setText("📍 " + currentRoom.getName().toUpperCase() + " 📍\n" +
-                    "════════════════════════════════════════\n\n" +
-                    currentRoom.getRoomDescription() +
-                    "\n\n════════════════════════════════════════\n" +
-                    "📋 CURRENT MISSION:\n" +
-                    game.getCurrentObjective() +
-                    "\n════════════════════════════════════════\n\n" +
-                    "🎮 Available Actions:");
-
-            // Update button states and text
+            // Update button states
             boolean canGoNext = game.isCurrentRoomComplete() &&
                     game.getCurrentRoomIndex() < game.getRooms().size() - 1;
 
@@ -367,7 +471,7 @@ public class GamePanel extends JPanel {
             puzzleBtn.setText("🧩 Solve Puzzles (" + game.getAvailablePuzzles().size() + " available)");
             gachaBtn.setText("🎰 Gacha Machine (" + game.getCurrentPlayer().getCoinBalance() + " coins)");
 
-            // ✅ Update info labels
+            // Update info labels
             if (coinsLabel != null) {
                 coinsLabel.setText("🪙 Coins: " + game.getCurrentPlayer().getCoinBalance());
             }
@@ -378,13 +482,18 @@ public class GamePanel extends JPanel {
                 roomProgressLabel.setText("📊 Progress: " + String.format("%.0f%%", completion));
             }
 
-            // ✅ Update save button text
+            // Update save button
             if (saveButton != null) {
                 saveButton.setText("💾 Save Game");
             }
+
+            System.out.println("✅ UI updated successfully");
+        } else {
+            System.out.println("⚠️ Could not update UI - null components");
         }
 
-        // Repaint to update background
+        // Force repaint
         repaint();
+        System.out.println("✅ REFRESH COMPLETE\n");
     }
 }
