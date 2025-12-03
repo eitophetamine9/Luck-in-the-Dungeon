@@ -18,6 +18,7 @@ public class MapPanel extends JPanel {
 
     private MainApplication mainApp;
     private GameManager game;
+    private Image mapImage;
 
     public MapPanel(MainApplication mainApp, GameManager game) {
         this.mainApp = mainApp;
@@ -28,6 +29,7 @@ public class MapPanel extends JPanel {
         add(mapPanel, BorderLayout.CENTER);
 
         setupEventHandlers();
+        loadMapImage();
         refresh();
     }
 
@@ -86,5 +88,28 @@ public class MapPanel extends JPanel {
         button.setFont(new Font("Arial", Font.BOLD, 12));
         button.setPreferredSize(new Dimension(180, 70));
         button.setFocusPainted(false);
+    }
+
+    private void loadMapImage() {
+        try {
+            System.out.println("🔍 Loading background image for MapPanel...");
+
+            // Try to load the same background as MainMenuPanel
+            java.net.URL imageURL = getClass().getClassLoader().getResource("images/top_downview.jpeg");
+
+            if (imageURL != null) {
+                System.out.println("✅ Found image at URL: " + imageURL);
+                mapImage = new ImageIcon(imageURL).getImage();
+                System.out.println("✅ Map background loaded!");
+                return;
+            } else {
+                System.out.println("❌ Image not found, using gradient fallback");
+                mapImage = null;
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Error loading background: " + e.getMessage());
+            mapImage = null;
+        }
     }
 }
