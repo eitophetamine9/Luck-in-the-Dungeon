@@ -307,7 +307,7 @@
             </constraints>
             <properties>
               <font name="Monospaced" style="1"/>
-              <foreground color="-10496"/>
+              <foreground color="-6656"/>
               <text value="🎒 INVENTORY"/>
             </properties>
           </component>
@@ -317,7 +317,7 @@
             </constraints>
             <properties>
               <font name="Monospaced" style="1"/>
-              <foreground color="-10496"/>
+              <foreground color="-6656"/>
               <text value="(0/20 Slots Used)"/>
             </properties>
           </component>

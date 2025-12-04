@@ -96,7 +96,7 @@ public class MapPanel extends JPanel {
 
     private void loadMapImage() {
         try {
-            System.out.println("🔍 Loading background image for MapPanel...");
+            System.out.println("🔍 Loading background image for Map Panel...");
 
             // Try to load the same background as MainMenuPanel
             java.net.URL imageURL = getClass().getClassLoader().getResource("images/top_downview.jpeg");
