@@ -3,11 +3,12 @@
   <grid id="27dc6" binding="inventoryPanel" layout-manager="GridLayoutManager" row-count="7" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="10" left="10" bottom="10" right="10"/>
     <constraints>
-      <xy x="20" y="20" width="506" height="400"/>
+      <xy x="20" y="20" width="516" height="974"/>
     </constraints>
     <properties>
-      <background color="-10140895"/>
+      <background color="-13947600"/>
       <font name="Monospaced" style="1"/>
+      <opaque value="false"/>
     </properties>
     <border type="none"/>
     <children>
@@ -16,9 +17,10 @@
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -27,9 +29,10 @@
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -38,9 +41,10 @@
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -51,10 +55,16 @@
           </grid>
         </constraints>
         <properties>
-          <background color="-7650029"/>
-          <font name="Monospaced" style="1"/>
-          <foreground color="-10496"/>
-          <text value="SELECTED: None&#10;Select an item to view details"/>
+          <background color="-14803396"/>
+          <columns value="30"/>
+          <editable value="false"/>
+          <font name="Monospaced" size="12" style="1"/>
+          <foreground color="-1"/>
+          <lineWrap value="true"/>
+          <margin top="10" left="10" bottom="0" right="0"/>
+          <rows value="8"/>
+          <text value="Select an item slot to view details..."/>
+          <wrapStyleWord value="true"/>
         </properties>
       </component>
       <component id="db4c8" class="javax.swing.JButton" binding="slot01">
@@ -62,9 +72,10 @@
           <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -73,9 +84,10 @@
           <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -84,9 +96,10 @@
           <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -95,9 +108,10 @@
           <grid row="1" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -106,9 +120,10 @@
           <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -117,9 +132,10 @@
           <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -128,9 +144,10 @@
           <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -139,9 +156,10 @@
           <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -150,9 +168,10 @@
           <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -161,9 +180,10 @@
           <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -172,9 +192,10 @@
           <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -183,9 +204,10 @@
           <grid row="3" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -194,9 +216,10 @@
           <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -205,9 +228,10 @@
           <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -216,9 +240,10 @@
           <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -227,9 +252,10 @@
           <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -250,9 +276,9 @@
             </constraints>
             <properties>
               <background color="-6270419"/>
-              <font name="Monospaced" style="1"/>
+              <font name="Monospaced" size="16" style="1"/>
               <foreground color="-10496"/>
-              <text value="USE ON PUZZLE"/>
+              <text value="🛠️ USE ITEM"/>
             </properties>
           </component>
           <component id="800e8" class="javax.swing.JButton" binding="discardButton">
@@ -261,9 +287,9 @@
             </constraints>
             <properties>
               <background color="-6270419"/>
-              <font name="Monospaced" style="1"/>
+              <font name="Monospaced" size="16" style="1"/>
               <foreground color="-10496"/>
-              <text value="DISCARD"/>
+              <text value="🗑️ DISCARD"/>
             </properties>
           </component>
           <component id="3e4f2" class="javax.swing.JButton" binding="backButton">
@@ -272,9 +298,9 @@
             </constraints>
             <properties>
               <background color="-6270419"/>
-              <font name="Monospaced" style="1"/>
+              <font name="Monospaced" size="16" style="1"/>
               <foreground color="-10496"/>
-              <text value="← BACK TO GAME"/>
+              <text value="🔙 BACK TO GAME"/>
             </properties>
           </component>
         </children>
@@ -284,9 +310,10 @@
           <grid row="4" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-7650029"/>
+          <background color="-12174286"/>
+          <focusPainted value="false"/>
           <font name="Monospaced" style="1"/>
-          <foreground color="-11448496"/>
+          <foreground color="-1"/>
           <text value="➕"/>
         </properties>
       </component>
@@ -303,21 +330,22 @@
         <children>
           <component id="142f5" class="javax.swing.JLabel" binding="titleLabel">
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="1" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <font name="Monospaced" style="1"/>
-              <foreground color="-6656"/>
-              <text value="🎒 INVENTORY"/>
+              <font name="Monospaced" size="28" style="1"/>
+              <foreground color="-10496"/>
+              <horizontalAlignment value="0"/>
+              <text value="🎒 INVENTORY 🎒"/>
             </properties>
           </component>
-          <component id="de2be" class="javax.swing.JLabel">
+          <component id="de2be" class="javax.swing.JLabel" binding="capacityLabel">
             <constraints>
-              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <font name="Monospaced" style="1"/>
-              <foreground color="-6656"/>
+              <font name="Monospaced" size="16" style="1"/>
+              <foreground color="-6506"/>
               <text value="(0/20 Slots Used)"/>
             </properties>
           </component>

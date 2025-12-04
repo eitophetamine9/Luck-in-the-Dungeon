@@ -1,173 +1,235 @@
 package Panels;
 
 import main.MainApplication;
-import model.GameManager;
-import model.GachaItem;
-import model.Puzzle;
-import model.Rarity;
-
+import model.*;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
 public class InventoryPanel extends JPanel {
-    // Form components
     private JPanel inventoryPanel;
     private JTextArea itemDetails;
-
-    // Inventory Slots
     private JButton slot00, slot01, slot02, slot03, slot04;
     private JButton slot10, slot11, slot12, slot13, slot14;
     private JButton slot20, slot21, slot22, slot23, slot24;
     private JButton slot30, slot31, slot32, slot33, slot34;
-
-    // Action Buttons
-    private JButton useButton;
-    private JButton discardButton;
-    private JButton backButton;
-    private JLabel titleLabel;
-    private JLabel capacityLabel; // This was null in your form
+    private JButton useButton, discardButton, backButton;
+    private JLabel titleLabel, capacityLabel;
 
     private MainApplication mainApp;
     private GameManager game;
     private GachaItem selectedItem;
     private JButton[] allSlots;
-    private Image invImage;
 
     public InventoryPanel(MainApplication mainApp, GameManager game) {
         this.mainApp = mainApp;
         this.game = game;
 
-        // Initialize form components
         setLayout(new BorderLayout());
+        add(inventoryPanel, BorderLayout.CENTER);
 
-        // ✅ SAFE: Check if inventoryPanel exists before adding
-        if (inventoryPanel != null) {
-            add(inventoryPanel, BorderLayout.CENTER);
-        } else {
-            // Fallback: create basic panel
-            System.err.println("❌ inventoryPanel is null - creating fallback UI");
-            createFallbackUI();
-        }
-
-        initializePanel();
+        initializeComponents();
         setupEventHandlers();
-        loadinvImage();
+        styleComponents();
+        refresh();
+    }
+
+    private void initializeComponents() {
         setOpaque(false);
-        if (inventoryPanel != null){
+        if (inventoryPanel != null) {
             inventoryPanel.setOpaque(false);
         }
 
-        // ✅ SAFE: Only refresh if components are initialized
-        if (componentsInitialized()) {
-            refresh();
-        } else {
-            System.err.println("❌ Components not initialized - skipping refresh");
-        }
-    }
+        // Initialize slot array
+        allSlots = new JButton[]{
+                slot00, slot01, slot02, slot03, slot04,
+                slot10, slot11, slot12, slot13, slot14,
+                slot20, slot21, slot22, slot23, slot24,
+                slot30, slot31, slot32, slot33, slot34
+        };
 
-    private void createFallbackUI() {
-        JPanel fallbackPanel = new JPanel(new BorderLayout());
-        JLabel fallbackLabel = new JLabel("Inventory Panel - Form not loaded properly", JLabel.CENTER);
-        fallbackLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        fallbackPanel.add(fallbackLabel, BorderLayout.CENTER);
-
-        JButton backBtn = new JButton("Back to Game");
-        backBtn.addActionListener(e -> mainApp.showGame());
-        fallbackPanel.add(backBtn, BorderLayout.SOUTH);
-
-        add(fallbackPanel, BorderLayout.CENTER);
-    }
-
-    private boolean componentsInitialized() {
-        // Check if critical components are initialized
-        boolean slotsInitialized = allSlots != null && allSlots.length > 0;
-        boolean buttonsInitialized = useButton != null && discardButton != null && backButton != null;
-
-        return slotsInitialized && buttonsInitialized;
-    }
-
-    private void initializePanel() {
-        // ✅ SAFE: Check before configuring
+        // Configure text area
         if (itemDetails != null) {
             itemDetails.setEditable(false);
             itemDetails.setLineWrap(true);
             itemDetails.setWrapStyleWord(true);
             itemDetails.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        } else {
-            System.err.println("❌ itemDetails is null");
-        }
-
-        // ✅ SAFE: Initialize slot array
-        if (slot00 != null && slot01 != null && slot02 != null && slot03 != null && slot04 != null &&
-                slot10 != null && slot11 != null && slot12 != null && slot13 != null && slot14 != null &&
-                slot20 != null && slot21 != null && slot22 != null && slot23 != null && slot24 != null &&
-                slot30 != null && slot31 != null && slot32 != null && slot33 != null && slot34 != null) {
-
-            allSlots = new JButton[]{
-                    slot00, slot01, slot02, slot03, slot04,
-                    slot10, slot11, slot12, slot13, slot14,
-                    slot20, slot21, slot22, slot23, slot24,
-                    slot30, slot31, slot32, slot33, slot34
-            };
-        } else {
-            System.err.println("❌ Some slot buttons are null");
-            allSlots = new JButton[0]; // Empty array to prevent NPE
+            itemDetails.setBackground(new Color(40, 35, 25, 230));
+            itemDetails.setForeground(new Color(255, 255, 200));
+            itemDetails.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(180, 150, 100), 2),
+                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
+            ));
         }
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+
+        // Draw leather-like background
+        GradientPaint gradient = new GradientPaint(
+                0, 0, new Color(50, 40, 30),
+                0, getHeight(), new Color(70, 55, 40)
+        );
+        g2d.setPaint(gradient);
+        g2d.fillRect(0, 0, getWidth(), getHeight());
+
+        // Add subtle texture
+        g2d.setColor(new Color(40, 30, 20, 30));
+        for (int i = 0; i < getWidth(); i += 30) {
+            for (int j = 0; j < getHeight(); j += 30) {
+                g2d.fillOval(i, j, 20, 10);
+            }
+        }
+    }
+
+    private void styleComponents() {
+        // Style title
+        if (titleLabel != null) {
+            titleLabel.setForeground(new Color(255, 215, 0));
+            titleLabel.setFont(new Font("Monospaced", Font.BOLD, 28));
+            titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            titleLabel.setText("🎒 INVENTORY BAG 🎒");
+        }
+
+        // Style capacity label
+        if (capacityLabel != null) {
+            capacityLabel.setForeground(new Color(255, 255, 150));
+            capacityLabel.setFont(new Font("Monospaced", Font.BOLD, 14));
+            capacityLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        }
+
+        // Style action buttons (SIMPLE - no custom painting)
+        styleSimpleButton(useButton, "🛠️ USE");
+        styleSimpleButton(discardButton, "🗑️ DISCARD");
+        styleSimpleButton(backButton, "🔙 BACK");
+
+        // Style slot buttons (SIMPLE - no custom painting)
+        for (JButton slot : allSlots) {
+            if (slot != null) styleSimpleSlot(slot);
+        }
+    }
+
+    private void styleSimpleButton(JButton button, String text) {
+        if (button == null) return;
+
+        button.setText(text);
+        button.setForeground(new Color(255, 215, 0));
+        button.setFont(new Font("Monospaced", Font.BOLD, 14));
+        button.setFocusPainted(false);
+
+        // Stone-like appearance
+        Color stoneColor = new Color(80, 70, 60, 220);
+        Color stoneBorder = new Color(150, 140, 130);
+
+        button.setBackground(stoneColor);
+        button.setOpaque(true);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(stoneBorder, 2),
+                BorderFactory.createEmptyBorder(8, 15, 8, 15)
+        ));
+
+        // Simple hover effect
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                if (button.isEnabled()) {
+                    button.setBackground(new Color(120, 60, 40, 220));
+                    button.setForeground(Color.YELLOW);
+                    button.setBorder(BorderFactory.createCompoundBorder(
+                            BorderFactory.createLineBorder(Color.ORANGE, 2),
+                            BorderFactory.createEmptyBorder(8, 15, 8, 15)
+                    ));
+                }
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                button.setBackground(stoneColor);
+                button.setForeground(new Color(255, 215, 0));
+                button.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(stoneBorder, 2),
+                        BorderFactory.createEmptyBorder(8, 15, 8, 15)
+                ));
+            }
+        });
+    }
+
+    private void styleSimpleSlot(JButton button) {
+        if (button == null) return;
+
+        button.setFont(new Font("Monospaced", Font.BOLD, 14));
+        button.setFocusPainted(false);
+        button.setOpaque(true);
+
+        // Default empty slot style
+        button.setBackground(new Color(60, 50, 40, 220));
+        button.setForeground(new Color(200, 200, 180));
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(120, 110, 100), 2),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+        button.setText("➕");
+
+        // Simple hover effect
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                button.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(new Color(255, 200, 100), 2),
+                        BorderFactory.createEmptyBorder(10, 10, 10, 10)
+                ));
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                button.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(new Color(120, 110, 100), 2),
+                        BorderFactory.createEmptyBorder(10, 10, 10, 10)
+                ));
+            }
+        });
+    }
+
     private void setupEventHandlers() {
-        // ✅ SAFE: Setup slot buttons
         for (int i = 0; i < allSlots.length; i++) {
+            final int index = i;
             if (allSlots[i] != null) {
-                final int index = i;
                 allSlots[i].addActionListener(e -> selectSlot(index));
             }
         }
 
-        // ✅ SAFE: Setup action buttons
-        if (useButton != null) {
-            useButton.addActionListener(e -> useSelectedItem());
-        } else {
-            System.err.println("❌ useButton is null");
-        }
-
-        if (discardButton != null) {
-            discardButton.addActionListener(e -> discardSelectedItem());
-        } else {
-            System.err.println("❌ discardButton is null");
-        }
-
-        if (backButton != null) {
-            backButton.addActionListener(e -> mainApp.showGame());
-        } else {
-            System.err.println("❌ backButton is null");
-        }
+        if (useButton != null) useButton.addActionListener(e -> useSelectedItem());
+        if (discardButton != null) discardButton.addActionListener(e -> discardSelectedItem());
+        if (backButton != null) backButton.addActionListener(e -> mainApp.showGame());
     }
 
     private void selectSlot(int slotIndex) {
-        if (slotIndex < 0 || slotIndex >= allSlots.length || allSlots[slotIndex] == null) {
-            return;
-        }
-
         List<GachaItem> inventory = game.getCurrentPlayer().getInventory();
+
+        // Reset all slot borders first
+        for (JButton slot : allSlots) {
+            if (slot != null) {
+                slot.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(new Color(120, 110, 100), 2),
+                        BorderFactory.createEmptyBorder(10, 10, 10, 10)
+                ));
+            }
+        }
 
         if (slotIndex < inventory.size()) {
             selectedItem = inventory.get(slotIndex);
             updateItemDetails();
 
-            // Visual feedback for selected slot
-            for (int i = 0; i < allSlots.length; i++) {
-                if (allSlots[i] != null) {
-                    allSlots[i].setBorder(i == slotIndex ?
-                            BorderFactory.createLineBorder(Color.RED, 3) :
-                            BorderFactory.createLineBorder(Color.GRAY, 1));
-                }
+            // Highlight selected slot with gold border
+            if (allSlots[slotIndex] != null) {
+                allSlots[slotIndex].setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(new Color(255, 215, 0), 3),
+                        BorderFactory.createEmptyBorder(10, 10, 10, 10)
+                ));
             }
         } else {
             selectedItem = null;
             if (itemDetails != null) {
-                itemDetails.setText("SELECTED: None\n\nSelect an item to view details and actions");
+                itemDetails.setText("Empty pouch selected.\n\nClick on a filled pouch to view item details.");
             }
         }
 
@@ -175,25 +237,28 @@ public class InventoryPanel extends JPanel {
     }
 
     private void updateItemDetails() {
-        if (selectedItem != null && itemDetails != null) {
-            String details = "🎒 SELECTED ITEM:\n" +
-                    "📛 Name: " + selectedItem.getName() + "\n" +
-                    "⭐ Rarity: " + selectedItem.getRarity() + "\n" +
-                    "🔧 Type: " + selectedItem.getItemType() + "\n" +
-                    "📖 " + selectedItem.getDescription() + "\n\n";
+        if (selectedItem == null || itemDetails == null) return;
 
-            if (selectedItem instanceof model.KeyItem) {
-                model.KeyItem key = (model.KeyItem) selectedItem;
-                details += "🔑 Key Color: " + key.getKeyColor() + "\n";
-                details += key.isMasterKey() ? "🌟 MASTER KEY (opens any lock)" : "Standard key";
-            } else if (selectedItem instanceof model.ToolItem) {
-                model.ToolItem tool = (model.ToolItem) selectedItem;
-                details += "🛠️ Tool Type: " + tool.getToolType() + "\n";
-                details += "📊 Uses Remaining: " + tool.getUsesRemaining();
-            }
+        StringBuilder details = new StringBuilder();
+        details.append("══════════════════════════════\n");
+        details.append("        ITEM DETAILS          \n");
+        details.append("══════════════════════════════\n\n");
 
-            itemDetails.setText(details);
+        details.append("📛 ").append(selectedItem.getName()).append("\n");
+        details.append("⭐ Rarity: ").append(selectedItem.getRarity()).append("\n");
+        details.append("📖 ").append(selectedItem.getDescription()).append("\n\n");
+
+        if (selectedItem instanceof KeyItem) {
+            KeyItem key = (KeyItem) selectedItem;
+            details.append("🔑 Key Color: ").append(key.getKeyColor()).append("\n");
+            if (key.isMasterKey()) details.append("🌟 MASTER KEY\n");
+        } else if (selectedItem instanceof ToolItem) {
+            ToolItem tool = (ToolItem) selectedItem;
+            details.append("🛠️ Type: ").append(tool.getToolType()).append("\n");
+            details.append("📊 Uses: ").append(tool.getUsesRemaining()).append("\n");
         }
+
+        itemDetails.setText(details.toString());
     }
 
     private void updateActionButtons() {
@@ -201,56 +266,49 @@ public class InventoryPanel extends JPanel {
 
         if (useButton != null) {
             useButton.setEnabled(hasSelection);
+            useButton.setText(hasSelection ?
+                    (selectedItem.getItemType() == ItemType.KEY ? "USE KEY 🔑" : "USE TOOL 🛠️") :
+                    "🛠️ USE");
         }
 
         if (discardButton != null) {
             discardButton.setEnabled(hasSelection);
-        }
-
-        if (hasSelection && useButton != null) {
-            useButton.setText(selectedItem.getItemType() == model.ItemType.KEY ?
-                    "Use Key 🔑" : "Use Tool 🛠️");
         }
     }
 
     private void useSelectedItem() {
         if (selectedItem == null) return;
 
-        List<Puzzle> availablePuzzles = game.getAvailablePuzzles();
-        if (availablePuzzles.isEmpty()) {
-            mainApp.showMessage("❌ No puzzles available to use this item on!\n" +
-                    "Go to the Puzzle panel to find puzzles.");
+        List<Puzzle> puzzles = game.getAvailablePuzzles();
+        if (puzzles.isEmpty()) {
+            mainApp.showMessage("⚠️ No puzzles available!\nGo to Puzzle panel first.");
             return;
         }
 
-        Puzzle[] puzzleArray = availablePuzzles.toArray(new Puzzle[0]);
-        String[] puzzleNames = new String[puzzleArray.length];
-        for (int i = 0; i < puzzleArray.length; i++) {
-            puzzleNames[i] = (i+1) + ". " + puzzleArray[i].getDescription().substring(0,
-                    Math.min(50, puzzleArray[i].getDescription().length())) +
-                    (puzzleArray[i].getDescription().length() > 50 ? "..." : "");
-        }
+        String[] puzzleOptions = puzzles.stream()
+                .map(p -> p.getDescription().length() > 40 ?
+                        p.getDescription().substring(0, 37) + "..." : p.getDescription())
+                .toArray(String[]::new);
 
-        String selectedPuzzleName = (String) JOptionPane.showInputDialog(
+        String choice = (String) JOptionPane.showInputDialog(
                 mainApp,
-                "Select a puzzle to use " + selectedItem.getName() + " on:",
-                "Use Item on Puzzle",
+                "Use " + selectedItem.getName() + " on:",
+                "Use Item",
                 JOptionPane.QUESTION_MESSAGE,
                 null,
-                puzzleNames,
-                puzzleNames[0]
+                puzzleOptions,
+                puzzleOptions[0]
         );
 
-        if (selectedPuzzleName != null) {
-            int puzzleIndex = Integer.parseInt(selectedPuzzleName.split("\\.")[0]) - 1;
-            Puzzle selectedPuzzle = puzzleArray[puzzleIndex];
+        if (choice != null) {
+            int index = List.of(puzzleOptions).indexOf(choice);
+            Puzzle puzzle = puzzles.get(index);
 
-            String result = game.getCurrentPlayer().useItemWithFeedback(selectedItem, selectedPuzzle);
+            String result = game.getCurrentPlayer().useItemWithFeedback(selectedItem, puzzle);
             mainApp.showMessage(result);
 
-            if (selectedPuzzle.isSolved()) {
-                mainApp.showMessage("🎉 Puzzle Solved!\n" +
-                        "💰 Earned: " + selectedPuzzle.getCoinReward() + " coins!");
+            if (puzzle.isSolved()) {
+                mainApp.showMessage("🎉 Solved!\n💰 +" + puzzle.getCoinReward() + " coins!");
             }
 
             refresh();
@@ -260,125 +318,77 @@ public class InventoryPanel extends JPanel {
     private void discardSelectedItem() {
         if (selectedItem == null) return;
 
-        String result = game.getCurrentPlayer().safeRemoveItem(selectedItem);
+        int confirm = JOptionPane.showConfirmDialog(
+                mainApp,
+                "Discard " + selectedItem.getName() + "?",
+                "Confirm",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
 
-        if (result.contains("✅")) {
-            mainApp.showMessage("🗑️ Discarded: " + selectedItem.getName());
+        if (confirm == JOptionPane.YES_OPTION) {
+            String result = game.getCurrentPlayer().safeRemoveItem(selectedItem);
+            mainApp.showMessage(result);
             selectedItem = null;
             refresh();
-        } else {
-            mainApp.showMessage("❌ Failed to discard: " + result);
         }
     }
 
     public void refresh() {
-        // ✅ SAFE: Check if components are initialized before refreshing
-        if (!componentsInitialized()) {
-            System.err.println("❌ Cannot refresh - components not initialized");
-            return;
-        }
-
         List<GachaItem> inventory = game.getCurrentPlayer().getInventory();
 
-        // ✅ SAFE: Update slot buttons with null checks
+        // Update slot buttons
         for (int i = 0; i < allSlots.length; i++) {
             if (allSlots[i] != null) {
                 if (i < inventory.size()) {
                     GachaItem item = inventory.get(i);
-                    allSlots[i].setText("<html><center>" + getItemIcon(item) + "<br>" +
-                            item.getName().substring(0, Math.min(8, item.getName().length())) +
-                            "</center></html>");
+                    String emoji = item.getItemType() == ItemType.KEY ? "🔑" : "🛠️";
+
+                    // Shorten long item names
+                    String displayName = item.getName();
+                    if (displayName.length() > 8) {
+                        displayName = displayName.substring(0, 7) + ".";
+                    }
+
+                    allSlots[i].setText("<html><center>" + emoji + "<br>" + displayName + "</center></html>");
                     allSlots[i].setBackground(getRarityColor(item.getRarity()));
+                    allSlots[i].setForeground(Color.BLACK);
                     allSlots[i].setToolTipText(item.getName() + " (" + item.getRarity() + ")");
                 } else {
                     allSlots[i].setText("➕");
-                    allSlots[i].setBackground(Color.LIGHT_GRAY);
-                    allSlots[i].setToolTipText("Empty Slot");
+                    allSlots[i].setBackground(new Color(60, 50, 40, 220));
+                    allSlots[i].setForeground(new Color(200, 200, 180));
+                    allSlots[i].setToolTipText("Empty slot");
                 }
-
-                allSlots[i].setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
             }
         }
 
-        // ✅ FIXED: Safe capacityLabel usage
+        // Update capacity label
         if (capacityLabel != null) {
-            capacityLabel.setText("🎒 " + game.getCurrentPlayer().getInventoryStatus() +
-                    " (" + inventory.size() + "/20)");
-        } else {
-            System.err.println("❌ capacityLabel is null - cannot update inventory status");
-            // Fallback: show status in itemDetails if available
-            if (itemDetails != null) {
-                itemDetails.setText("🎒 " + game.getCurrentPlayer().getInventoryStatus() +
-                        " (" + inventory.size() + "/20)\n\n" +
-                        "SELECTED: None\n\n" +
-                        "Click on an item to view details and use/discard options");
-            }
+            capacityLabel.setText(String.format("🎒 %d/20 Slots • %d Time Parts",
+                    inventory.size(), game.getCurrentPlayer().getTimeMachinePartsCollected()));
         }
 
-        // Reset selection and details
-        selectedItem = null;
-        if (itemDetails != null) {
-            itemDetails.setText("SELECTED: None\n\n" +
-                    "Click on an item to view details and use/discard options\n\n" +
-                    "🎒 " + game.getCurrentPlayer().getInventorySummary());
+        // Update details if no selection
+        if (selectedItem == null && itemDetails != null) {
+            itemDetails.setText("══════════════════════════════\n" +
+                    "      BAG CONTENTS            \n" +
+                    "══════════════════════════════\n\n" +
+                    "Items: " + inventory.size() + "/20\n" +
+                    "Time Parts: " + game.getCurrentPlayer().getTimeMachinePartsCollected() + "/6\n\n" +
+                    "Click any item to inspect.");
         }
+
         updateActionButtons();
-    }
-
-    private String getItemIcon(GachaItem item) {
-        switch (item.getItemType()) {
-            case KEY: return "🔑";
-            case TOOL: return "🛠️";
-            default: return "❓";
-        }
+        repaint();
     }
 
     private Color getRarityColor(Rarity rarity) {
         switch (rarity) {
-            case COMMON: return Color.WHITE;
-            case RARE: return new Color(173, 216, 230);
-            case EPIC: return new Color(255, 215, 0);
+            case COMMON: return new Color(220, 220, 220);
+            case RARE: return new Color(150, 200, 255);
+            case EPIC: return new Color(255, 215, 100);
             default: return Color.WHITE;
-        }
-    }
-
-
-    private void loadinvImage() {
-        try {
-            System.out.println("🔍 Loading background image for Inventory Panel...");
-
-            // Try to load the same background as MainMenuPanel
-            java.net.URL imageURL = getClass().getClassLoader().getResource("images/leather-texture-background.jpg");
-
-            if (imageURL != null) {
-                System.out.println("✅ Found image at URL: " + imageURL);
-                invImage = new ImageIcon(imageURL).getImage();
-                System.out.println("✅ Map background loaded!");
-                return;
-            } else {
-                System.out.println("❌ Image not found, using gradient fallback");
-                invImage = null;
-            }
-
-        } catch (Exception e) {
-            System.out.println("❌ Error loading background: " + e.getMessage());
-            invImage = null;
-        }
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        if (invImage != null) {
-            // Draw image scaled to panel size
-            g.drawImage(invImage, 0, 0, getWidth(), getHeight(), this);
-        } else {
-            // Fallback gradient
-            Graphics2D g2d = (Graphics2D) g;
-            Color color1 = new Color(30, 30, 60);
-            Color color2 = new Color(50, 50, 100);
-            g2d.setPaint(new GradientPaint(0, 0, color1, 0, getHeight(), color2));
-            g2d.fillRect(0, 0, getWidth(), getHeight());
         }
     }
 }

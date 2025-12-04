@@ -4,8 +4,12 @@ import main.MainApplication;
 import model.GameManager;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
-import java.io.File;
+import java.awt.geom.Ellipse2D;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class MainMenuPanel extends JPanel {
     // ✅ MUST MATCH FORM COMPONENT NAMES
@@ -23,66 +27,35 @@ public class MainMenuPanel extends JPanel {
         this.mainApp = mainApp;
         this.game = game;
 
-        // ✅ Initialize form components (KEEP YOUR EXISTING LAYOUT)
+        // ✅ Initialize form components
         setLayout(new BorderLayout());
         add(mainPanel, BorderLayout.CENTER);
 
         // ✅ Load background image
         loadBackgroundImage();
 
-        // ✅ Make main panel transparent to show background
+        // ✅ Make panels transparent to show background
         setOpaque(false);
-
-        // ✅ Make the form's panel transparent
         if (mainPanel != null) {
             mainPanel.setOpaque(false);
         }
 
         setupEventHandlers();
 
-        // ✅ Apply dungeon-themed button styling
-        setupSimpleDungeonButtons();
+        // ✅ Apply the ADVANCED fire styling
+        setupDungeonButtons();
 
         refresh();
     }
 
     private void loadBackgroundImage() {
         try {
-            System.out.println("🔍 Loading background image...");
-
-            // NOTE: Changed extension to .jpeg!
             java.net.URL imageURL = getClass().getClassLoader().getResource("images/dungeon_bg.jpeg");
-
             if (imageURL != null) {
-                System.out.println("✅ Found image at URL: " + imageURL);
                 backgroundImage = new ImageIcon(imageURL).getImage();
-                System.out.println("✅ Background loaded from resources!");
-                return;
             } else {
-                System.out.println("❌ Image not found via getResource()");
-
-                // Debug: List all resources
-                System.out.println("🔍 Listing available resources:");
-                try {
-                    java.net.URL resourceURL = getClass().getClassLoader().getResource("images/");
-                    if (resourceURL != null) {
-                        java.io.File resourceDir = new java.io.File(resourceURL.toURI());
-                        String[] files = resourceDir.list();
-                        if (files != null) {
-                            for (String file : files) {
-                                System.out.println("   - " + file);
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    System.out.println("❌ Could not list resources: " + e.getMessage());
-                }
+                backgroundImage = null; // Will fallback to gradient in paintComponent
             }
-
-            // Fallback to gradient
-            System.out.println("🎨 Using gradient fallback");
-            backgroundImage = null;
-
         } catch (Exception e) {
             System.out.println("❌ Error loading background: " + e.getMessage());
             backgroundImage = null;
@@ -95,19 +68,14 @@ public class MainMenuPanel extends JPanel {
 
         // ✅ Draw background image or gradient
         if (backgroundImage != null) {
-            // Draw background image
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         } else {
             // Fallback gradient background
             Graphics2D g2d = (Graphics2D) g;
-            Color color1 = new Color(30, 30, 60);     // Dark blue
-            Color color2 = new Color(10, 10, 30);     // Darker blue
-
             GradientPaint gradient = new GradientPaint(
-                    0, 0, color1,
-                    getWidth(), getHeight(), color2
+                    0, 0, new Color(30, 30, 60),
+                    getWidth(), getHeight(), new Color(10, 10, 30)
             );
-
             g2d.setPaint(gradient);
             g2d.fillRect(0, 0, getWidth(), getHeight());
         }
@@ -119,11 +87,59 @@ public class MainMenuPanel extends JPanel {
         exitButton.addActionListener(e -> handleExit());
     }
 
+    private void setupDungeonButtons() {
+        // Apply the advanced UI to all buttons
+        applyFireUI(newGameButton, "🔥 NEW GAME 🔥");
+        applyFireUI(loadGameButton, "📜 LOAD GAME 📜");
+        applyFireUI(exitButton, "🚪 EXIT 🚪");
+    }
+
+    private void applyFireUI(JButton button, String text) {
+        button.setText(text);
+
+        // Preserve original font but make it bold/larger if needed
+        Font original = button.getFont();
+        button.setFont(original.deriveFont(Font.BOLD, 16f));
+
+        // Set the custom UI renderer
+        button.setUI(new FireButtonUI());
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Add padding for the bevel effect
+        button.setBorder(BorderFactory.createEmptyBorder(12, 25, 12, 25));
+    }
+
+    public void refresh() {
+        // Check save status
+        boolean hasSave = game.saveExists();
+
+        // 1. UPDATE NEW GAME BUTTON
+        newGameButton.setBackground(new Color(70, 60, 50)); // Normal Stone
+        newGameButton.setForeground(new Color(255, 215, 0)); // Gold Text
+
+        // 2. UPDATE LOAD GAME BUTTON (Handle Disabled State)
+        // ⚠️ logic currently disabled as requested, but set up for future use
+        loadGameButton.setEnabled(hasSave);
+
+        if (loadGameButton.isEnabled()) {
+            loadGameButton.setBackground(new Color(70, 60, 50)); // Normal Stone
+            loadGameButton.setForeground(new Color(255, 215, 0)); // Gold
+            loadGameButton.setToolTipText("Load your previous adventure");
+        } else {
+            // DISABLED LOOK (Gray Stone)
+            loadGameButton.setBackground(new Color(60, 55, 55)); // Dark Grey Stone
+            loadGameButton.setForeground(Color.GRAY); // Gray Text
+            loadGameButton.setToolTipText("No save file found");
+        }
+
+        // 3. UPDATE EXIT BUTTON
+        exitButton.setBackground(new Color(70, 60, 50));
+        exitButton.setForeground(new Color(255, 215, 0));
+    }
+
     private void handleNewGame() {
         if (game.saveExists()) {
-            boolean confirm = mainApp.showConfirmDialog(
-                    "Starting a new game will overwrite your existing save. Continue?"
-            );
+            boolean confirm = mainApp.showConfirmDialog("Starting a new game will overwrite your existing save. Continue?");
             if (!confirm) return;
         }
 
@@ -138,8 +154,7 @@ public class MainMenuPanel extends JPanel {
     private void handleLoadGame() {
         try {
             if (game.loadGame()) {
-                mainApp.showMessage("Game loaded successfully! Welcome back, " +
-                        game.getCurrentPlayer().getName() + "!");
+                mainApp.showMessage("Game loaded successfully! Welcome back, " + game.getCurrentPlayer().getName() + "!");
                 mainApp.showGame();
             } else {
                 mainApp.showMessage("No save file found or load failed!");
@@ -157,173 +172,145 @@ public class MainMenuPanel extends JPanel {
 
     private String showCharacterNameDialog() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
-
         JLabel titleLabel = new JLabel("Create Your Character", JLabel.CENTER);
         titleLabel.setFont(new Font("Serif", Font.BOLD, 18));
-        titleLabel.setForeground(Color.YELLOW);
+        titleLabel.setForeground(Color.BLACK); // Changed to black for better visibility in dialogs
 
         JLabel nameLabel = new JLabel("Enter Character Name:");
-        nameLabel.setForeground(Color.WHITE);
-
         JTextField nameField = new JTextField(20);
-        nameField.setBackground(new Color(60, 60, 110));
-        nameField.setForeground(Color.WHITE);
-        nameField.setCaretColor(Color.WHITE);
 
-        panel.setBackground(new Color(30, 30, 60));
         panel.add(titleLabel, BorderLayout.NORTH);
-
         JPanel inputPanel = new JPanel(new GridLayout(2, 1, 5, 5));
-        inputPanel.setBackground(new Color(30, 30, 60));
         inputPanel.add(nameLabel);
         inputPanel.add(nameField);
-
         panel.add(inputPanel, BorderLayout.CENTER);
 
-        int result = JOptionPane.showConfirmDialog(
-                mainApp,
-                panel,
-                "Character Creation",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE
-        );
-
+        int result = JOptionPane.showConfirmDialog(mainApp, panel, "Character Creation", JOptionPane.OK_CANCEL_OPTION);
         if (result == JOptionPane.OK_OPTION) {
             String name = nameField.getText().trim();
-            if (name.length() > 20) {
-                mainApp.showMessage("Name too long! Maximum 20 characters.");
-                return showCharacterNameDialog();
-            }
+            if (name.length() > 20) return showCharacterNameDialog(); // Recurse if too long
             return name.isEmpty() ? "Adventurer" : name;
         }
         return null;
     }
 
-    private void setupSimpleDungeonButtons() {
-        // Add fire icons to existing buttons
-        if (newGameButton != null) {
-            styleButtonWithFire(newGameButton, "🔥 NEW GAME 🔥");
+    // ==========================================
+    //  ADVANCED FIRE BUTTON UI CLASS (Shared)
+    // ==========================================
+    private static class FireButtonUI extends BasicButtonUI {
+        private Timer animationTimer;
+        private float phase = 0;
+        private final List<Ember> embers = new ArrayList<>();
+
+        private static class Ember {
+            double x, y, speedY, size;
+            float alpha;
+            Ember(int w, int h) { reset(w, h, true); }
+            void reset(int w, int h, boolean startRandomY) {
+                x = Math.random() * w;
+                y = startRandomY ? Math.random() * h : h;
+                speedY = 1.0 + Math.random() * 2.0;
+                size = 2.0 + Math.random() * 3.0;
+                alpha = 1.0f;
+            }
         }
-        if (loadGameButton != null) {
-            // ⚠️ TEMPORARY FIX: Always show "LOAD GAME" until save system works
-            styleButtonWithFire(loadGameButton, "📜 LOAD GAME 📜");
-        }
-        if (exitButton != null) {
-            styleButtonWithFire(exitButton, "🚪 EXIT 🚪");
-        }
-    }
 
-    private void styleButtonWithFire(JButton button, String text) {
-        button.setText(text);
-        button.setForeground(new Color(255, 215, 0)); // Gold
+        @Override
+        public void installUI(JComponent c) {
+            super.installUI(c);
+            AbstractButton button = (AbstractButton) c;
+            button.setOpaque(false);
+            button.setContentAreaFilled(false);
+            button.setFocusPainted(false);
+            button.setBorderPainted(false);
 
-        // Make sure font is preserved (your Goudy Stout)
-        Font originalFont = button.getFont();
-        button.setFont(originalFont.deriveFont(Font.BOLD, Math.max(16f, originalFont.getSize())));
+            for(int i = 0; i < 20; i++) embers.add(new Ember(100, 30));
 
-        // Create rock-like look
-        Color stoneColor = new Color(70, 60, 50); // Dark stone
-        Color stoneBorder = new Color(150, 140, 130); // Light stone border
-
-        button.setBackground(stoneColor);
-        button.setOpaque(true);
-        button.setBorderPainted(true);
-        button.setFocusPainted(false);
-        button.setContentAreaFilled(true);
-
-        // Create 3D stone border effect
-        button.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createRaisedBevelBorder(),
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(stoneBorder, 2),
-                        BorderFactory.createEmptyBorder(12, 25, 12, 25)
-                )
-        ));
-
-        // Fire hover effect
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent e) {
-                button.setBackground(new Color(120, 50, 30)); // Fire-like red/orange
-                button.setForeground(Color.YELLOW);
-
-                // Create fiery border
-                button.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(Color.ORANGE, 3),
-                        BorderFactory.createCompoundBorder(
-                                BorderFactory.createLineBorder(new Color(255, 200, 0), 1),
-                                BorderFactory.createEmptyBorder(12, 25, 12, 25)
-                        )
-                ));
-
-                // Add subtle fire animation with timer
-                Timer fireTimer = new Timer(200, null);
-                final boolean[] isBright = {false};
-
-                fireTimer.addActionListener(evt -> {
-                    if (isBright[0]) {
-                        button.setForeground(new Color(255, 255, 150)); // Bright yellow
-                        button.setBorder(BorderFactory.createCompoundBorder(
-                                BorderFactory.createLineBorder(new Color(255, 150, 0), 3),
-                                BorderFactory.createCompoundBorder(
-                                        BorderFactory.createLineBorder(new Color(255, 220, 0), 1),
-                                        BorderFactory.createEmptyBorder(12, 25, 12, 25)
-                                )
-                        ));
-                    } else {
-                        button.setForeground(Color.ORANGE);
-                        button.setBorder(BorderFactory.createCompoundBorder(
-                                BorderFactory.createLineBorder(Color.ORANGE, 3),
-                                BorderFactory.createCompoundBorder(
-                                        BorderFactory.createLineBorder(new Color(255, 200, 0), 1),
-                                        BorderFactory.createEmptyBorder(12, 25, 12, 25)
-                                )
-                        ));
+            animationTimer = new Timer(16, e -> {
+                if (button.getModel().isRollover() && button.isEnabled()) {
+                    phase += 0.1f;
+                    for (Ember ember : embers) {
+                        ember.y -= ember.speedY;
+                        ember.alpha -= 0.03f;
+                        ember.x += Math.sin(phase + ember.y * 0.1) * 0.5;
+                        if (ember.y < 0 || ember.alpha <= 0) ember.reset(button.getWidth(), button.getHeight(), false);
                     }
-                    isBright[0] = !isBright[0];
                     button.repaint();
-                });
-
-                button.putClientProperty("fireTimer", fireTimer);
-                fireTimer.start();
-            }
-
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent e) {
-                // Stop fire animation timer
-                Object timer = button.getClientProperty("fireTimer");
-                if (timer instanceof Timer) {
-                    ((Timer) timer).stop();
                 }
+            });
+        }
 
-                // Back to stone appearance
-                button.setBackground(stoneColor);
-                button.setForeground(new Color(255, 215, 0)); // Gold
+        @Override
+        public void uninstallUI(JComponent c) {
+            if (animationTimer != null) animationTimer.stop();
+            super.uninstallUI(c);
+        }
 
-                // Restore stone border
-                button.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createRaisedBevelBorder(),
-                        BorderFactory.createCompoundBorder(
-                                BorderFactory.createLineBorder(stoneBorder, 2),
-                                BorderFactory.createEmptyBorder(12, 25, 12, 25)
-                        )
-                ));
+        @Override
+        public void paint(Graphics g, JComponent c) {
+            AbstractButton b = (AbstractButton) c;
+            int w = b.getWidth();
+            int h = b.getHeight();
+            Graphics2D g2d = (Graphics2D) g.create();
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            if (b.getModel().isRollover() && b.isEnabled()) {
+                if (!animationTimer.isRunning()) animationTimer.start();
+                paintFireEffect(g2d, w, h);
+            } else {
+                if (animationTimer.isRunning()) animationTimer.stop();
+                paintStoneEffect(g2d, b, w, h);
             }
-        });
-    }
 
-    public void refresh() {
-        // ⚠️ TEMPORARY: Disable load button until save system works
-        // loadGameButton.setEnabled(game.saveExists());
-        loadGameButton.setEnabled(false); // Disable for now
+            super.paint(g2d, c);
+            g2d.dispose();
+        }
 
-        // Update tooltip to explain why it's disabled
-        loadGameButton.setToolTipText("Save system under development - Coming soon!");
+        private void paintFireEffect(Graphics2D g2d, int w, int h) {
+            // Background Fire Gradient
+            GradientPaint fireBase = new GradientPaint(0, h, new Color(140, 20, 10), 0, 0, new Color(255, 100, 0));
+            g2d.setPaint(fireBase);
+            g2d.fillRoundRect(0, 0, w, h, 10, 10);
 
-        // Optional: Gray out the button to show it's disabled
-        if (!loadGameButton.isEnabled()) {
-            loadGameButton.setForeground(Color.GRAY);
-            loadGameButton.setBackground(new Color(90, 80, 70)); // Darker stone
+            // Core Heat
+            RadialGradientPaint heat = new RadialGradientPaint(
+                    new java.awt.geom.Point2D.Float(w/2.0f, h), w/1.5f,
+                    new float[]{0.0f, 1.0f},
+                    new Color[]{new Color(255, 220, 100, 150), new Color(255, 100, 0, 0)}
+            );
+            g2d.setPaint(heat);
+            g2d.fillRoundRect(0, 0, w, h, 10, 10);
+
+            // Embers
+            g2d.setColor(new Color(255, 255, 200));
+            for (Ember e : embers) {
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.max(0, e.alpha)));
+                g2d.fill(new Ellipse2D.Double(e.x, e.y, e.size, e.size));
+            }
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+
+            // Fire Border
+            g2d.setColor(new Color(255, 180, 50));
+            g2d.setStroke(new BasicStroke(2));
+            g2d.drawRoundRect(1, 1, w-2, h-2, 10, 10);
+        }
+
+        private void paintStoneEffect(Graphics2D g2d, AbstractButton b, int w, int h) {
+            g2d.setColor(b.getBackground());
+            g2d.fillRoundRect(2, 2, w-4, h-4, 8, 8);
+
+            // Texture
+            g2d.setColor(new Color(0,0,0,30));
+            for(int i=0; i<w; i+=4) if(i%3==0) g2d.fillRect(i, (i*7)%h, 2, 2);
+
+            // Bevels
+            g2d.setStroke(new BasicStroke(2));
+            g2d.setColor(new Color(255, 255, 255, 50)); // Highlight
+            g2d.drawRoundRect(2, 2, w-5, h-5, 8, 8);
+            g2d.setColor(new Color(0, 0, 0, 100)); // Shadow
+            g2d.drawRoundRect(1, 1, w-2, h-2, 8, 8);
+            g2d.setColor(new Color(150, 140, 130)); // Border
+            g2d.drawRoundRect(0, 0, w-1, h-1, 8, 8);
         }
     }
 }
