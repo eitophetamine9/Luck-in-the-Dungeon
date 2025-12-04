@@ -32,6 +32,7 @@ public class InventoryPanel extends JPanel {
     private GameManager game;
     private GachaItem selectedItem;
     private JButton[] allSlots;
+    private Image invImage;
 
     public InventoryPanel(MainApplication mainApp, GameManager game) {
         this.mainApp = mainApp;
@@ -51,6 +52,11 @@ public class InventoryPanel extends JPanel {
 
         initializePanel();
         setupEventHandlers();
+        loadinvImage();
+        setOpaque(false);
+        if (inventoryPanel != null){
+            inventoryPanel.setOpaque(false);
+        }
 
         // ✅ SAFE: Only refresh if components are initialized
         if (componentsInitialized()) {
@@ -333,6 +339,46 @@ public class InventoryPanel extends JPanel {
             case RARE: return new Color(173, 216, 230);
             case EPIC: return new Color(255, 215, 0);
             default: return Color.WHITE;
+        }
+    }
+
+
+    private void loadinvImage() {
+        try {
+            System.out.println("🔍 Loading background image for Inventory Panel...");
+
+            // Try to load the same background as MainMenuPanel
+            java.net.URL imageURL = getClass().getClassLoader().getResource("images/leather-texture-background.jpg");
+
+            if (imageURL != null) {
+                System.out.println("✅ Found image at URL: " + imageURL);
+                invImage = new ImageIcon(imageURL).getImage();
+                System.out.println("✅ Map background loaded!");
+                return;
+            } else {
+                System.out.println("❌ Image not found, using gradient fallback");
+                invImage = null;
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Error loading background: " + e.getMessage());
+            invImage = null;
+        }
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (invImage != null) {
+            // Draw image scaled to panel size
+            g.drawImage(invImage, 0, 0, getWidth(), getHeight(), this);
+        } else {
+            // Fallback gradient
+            Graphics2D g2d = (Graphics2D) g;
+            Color color1 = new Color(30, 30, 60);
+            Color color2 = new Color(50, 50, 100);
+            g2d.setPaint(new GradientPaint(0, 0, color1, 0, getHeight(), color2));
+            g2d.fillRect(0, 0, getWidth(), getHeight());
         }
     }
 }
