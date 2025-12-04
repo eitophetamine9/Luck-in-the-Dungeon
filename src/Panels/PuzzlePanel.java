@@ -64,8 +64,8 @@ public class PuzzlePanel extends JPanel {
             hintTextArea.setEditable(false);
             hintTextArea.setLineWrap(true);
             hintTextArea.setWrapStyleWord(true);
-            hintTextArea.setBackground(new Color(255, 255, 200));
-            hintTextArea.setFont(new Font("Monospaced", Font.ITALIC, 11));
+            hintTextArea.setBackground(new Color(160, 86, 45));
+            hintTextArea.setFont(new Font("Monospaced", Font.ITALIC, 12));
         }
 
         // ✅ Configure toolsLabel if it exists

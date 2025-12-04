@@ -81,9 +81,9 @@ public class GamePanel extends JPanel {
             roomDescriptionTextArea.setLineWrap(true);
             roomDescriptionTextArea.setWrapStyleWord(true);
             roomDescriptionTextArea.setFont(new Font("Monospaced", Font.BOLD, 14));
-            roomDescriptionTextArea.setForeground(Color.orange);
+            roomDescriptionTextArea.setForeground(Color.cyan);
             roomDescriptionTextArea.setBackground(new Color(30, 30, 60, 180)); // Semi-transparent
-            roomDescriptionTextArea.setCaretColor(Color.orange);
+            roomDescriptionTextArea.setCaretColor(Color.cyan);
             roomDescriptionTextArea.setText(""); // Clear any initial text
             roomDescriptionTextArea.setDisabledTextColor(new Color(255, 255, 200));
         }

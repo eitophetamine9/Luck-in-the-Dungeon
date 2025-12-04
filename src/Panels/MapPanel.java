@@ -4,6 +4,7 @@ import main.MainApplication;
 import model.GameManager;
 
 import javax.swing.*;
+import javax.swing.border.Border; // 🆕 IMPORT ADDED
 import java.awt.*;
 
 public class MapPanel extends JPanel {
@@ -19,10 +20,15 @@ public class MapPanel extends JPanel {
     private GameManager game;
     private Image mapImage;
 
+    // 🆕 FIX: Store button dimensions
+    private static final Dimension ROOM_BUTTON_SIZE = new Dimension(250, 60);
+    private static final Dimension BACK_BUTTON_SIZE = new Dimension(200, 50);
+
     public MapPanel(MainApplication mainApp, GameManager game) {
         this.mainApp = mainApp;
         this.game = game;
 
+        // Keep your original layout
         setLayout(new BorderLayout());
         add(mapPanel, BorderLayout.CENTER);
 
@@ -46,7 +52,28 @@ public class MapPanel extends JPanel {
     }
 
     private void setupDungeonButtons() {
-        // Style all buttons with FIRE effects
+        // Set fixed sizes for all buttons
+        room1Button.setPreferredSize(ROOM_BUTTON_SIZE);
+        room1Button.setMaximumSize(ROOM_BUTTON_SIZE);
+        room1Button.setMinimumSize(ROOM_BUTTON_SIZE);
+
+        room2Button.setPreferredSize(ROOM_BUTTON_SIZE);
+        room2Button.setMaximumSize(ROOM_BUTTON_SIZE);
+        room2Button.setMinimumSize(ROOM_BUTTON_SIZE);
+
+        room3Button.setPreferredSize(ROOM_BUTTON_SIZE);
+        room3Button.setMaximumSize(ROOM_BUTTON_SIZE);
+        room3Button.setMinimumSize(ROOM_BUTTON_SIZE);
+
+        room4Button.setPreferredSize(ROOM_BUTTON_SIZE);
+        room4Button.setMaximumSize(ROOM_BUTTON_SIZE);
+        room4Button.setMinimumSize(ROOM_BUTTON_SIZE);
+
+        backButton.setPreferredSize(BACK_BUTTON_SIZE);
+        backButton.setMaximumSize(BACK_BUTTON_SIZE);
+        backButton.setMinimumSize(BACK_BUTTON_SIZE);
+
+        // Style all buttons with FIRE effects (FIXED VERSION)
         styleButtonWithFire(room1Button, "🏰 ROOM 1");
         styleButtonWithFire(room2Button, "🏰 ROOM 2");
         styleButtonWithFire(room3Button, "🏰 ROOM 3");
@@ -62,16 +89,16 @@ public class MapPanel extends JPanel {
         }
     }
 
+    // 🆕 COMPLETELY FIXED VERSION: No border changes during hover
     private void styleButtonWithFire(JButton button, String text) {
+        // Set text and font
         button.setText(text);
         button.setForeground(new Color(255, 215, 0)); // Gold
-
-        // Use monospaced font
-        button.setFont(new Font("Monospaced", Font.BOLD, Math.max(14, button.getFont().getSize())));
+        button.setFont(new Font("Monospaced", Font.BOLD, 14));
 
         // Create stone-like look
         Color stoneColor = new Color(70, 60, 50, 200); // Dark stone with transparency
-        Color stoneBorder = new Color(150, 140, 130); // Light stone border
+        Color stoneBorderColor = new Color(150, 140, 130); // Light stone border
 
         button.setBackground(stoneColor);
         button.setOpaque(true);
@@ -79,16 +106,18 @@ public class MapPanel extends JPanel {
         button.setFocusPainted(false);
         button.setContentAreaFilled(true);
 
-        // Create 3D stone border effect
-        button.setBorder(BorderFactory.createCompoundBorder(
+        // 🆕 FIX: Create ONE permanent border that won't change
+        Border permanentBorder = BorderFactory.createCompoundBorder(
                 BorderFactory.createRaisedBevelBorder(),
                 BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(stoneBorder, 2),
+                        BorderFactory.createLineBorder(stoneBorderColor, 2),
                         BorderFactory.createEmptyBorder(10, 15, 10, 15)
                 )
-        ));
+        );
 
-        // Fire hover effect
+        button.setBorder(permanentBorder);
+
+        // 🆕 FIXED: Fire hover effect - only changes colors, NOT border
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
@@ -96,38 +125,15 @@ public class MapPanel extends JPanel {
                     button.setBackground(new Color(120, 50, 30, 220)); // Fire-like red/orange
                     button.setForeground(Color.YELLOW);
 
-                    // Create fiery border
-                    button.setBorder(BorderFactory.createCompoundBorder(
-                            BorderFactory.createLineBorder(Color.ORANGE, 3),
-                            BorderFactory.createCompoundBorder(
-                                    BorderFactory.createLineBorder(new Color(255, 200, 0), 1),
-                                    BorderFactory.createEmptyBorder(10, 15, 10, 15)
-                            )
-                    ));
-
-                    // Add subtle fire animation with timer
+                    // 🆕 NO BORDER CHANGES - only color animation
                     Timer fireTimer = new Timer(200, null);
                     final boolean[] isBright = {false};
 
                     fireTimer.addActionListener(evt -> {
                         if (button.isEnabled() && isBright[0]) {
                             button.setForeground(new Color(255, 255, 150)); // Bright yellow
-                            button.setBorder(BorderFactory.createCompoundBorder(
-                                    BorderFactory.createLineBorder(new Color(255, 150, 0), 3),
-                                    BorderFactory.createCompoundBorder(
-                                            BorderFactory.createLineBorder(new Color(255, 220, 0), 1),
-                                            BorderFactory.createEmptyBorder(10, 15, 10, 15)
-                                    )
-                            ));
                         } else if (button.isEnabled()) {
                             button.setForeground(Color.ORANGE);
-                            button.setBorder(BorderFactory.createCompoundBorder(
-                                    BorderFactory.createLineBorder(Color.ORANGE, 3),
-                                    BorderFactory.createCompoundBorder(
-                                            BorderFactory.createLineBorder(new Color(255, 200, 0), 1),
-                                            BorderFactory.createEmptyBorder(10, 15, 10, 15)
-                                    )
-                            ));
                         }
                         isBright[0] = !isBright[0];
                         button.repaint();
@@ -195,35 +201,36 @@ public class MapPanel extends JPanel {
         updateButtonAppearance(button);
     }
 
+    // 🆕 FIXED: Update appearance without changing border size
     private void updateButtonAppearance(JButton button) {
         if (button == null) return;
 
         String text = button.getText();
         Color stoneColor = new Color(70, 60, 50, 200);
-        Color stoneBorder = new Color(150, 140, 130);
+        Color stoneBorderColor = new Color(150, 140, 130);
 
         if (text.contains("🔒")) {
             // Locked room - gray stone
             stoneColor = new Color(100, 90, 80, 180);
-            stoneBorder = new Color(120, 110, 100);
+            stoneBorderColor = new Color(120, 110, 100);
             button.setForeground(Color.GRAY);
         }
         else if (text.contains("📍")) {
             // Current room - green stone
             stoneColor = new Color(80, 120, 80, 220);
-            stoneBorder = new Color(120, 180, 120);
+            stoneBorderColor = new Color(120, 180, 120);
             button.setForeground(Color.WHITE);
         }
         else if (text.contains("✅")) {
             // Completed room - blue stone
             stoneColor = new Color(80, 100, 140, 220);
-            stoneBorder = new Color(120, 150, 200);
+            stoneBorderColor = new Color(120, 150, 200);
             button.setForeground(Color.WHITE);
         }
         else if (text.contains("⚪")) {
             // Unlocked room - yellow stone
             stoneColor = new Color(140, 130, 80, 220);
-            stoneBorder = new Color(200, 190, 120);
+            stoneBorderColor = new Color(200, 190, 120);
             button.setForeground(Color.BLACK);
         }
         else {
@@ -231,7 +238,7 @@ public class MapPanel extends JPanel {
             button.setForeground(new Color(255, 215, 0));
         }
 
-        // Update button appearance
+        // Update button colors
         if (button.isEnabled()) {
             button.setBackground(stoneColor);
         } else {
@@ -239,14 +246,16 @@ public class MapPanel extends JPanel {
             button.setForeground(Color.GRAY);
         }
 
-        // Restore stone border
-        button.setBorder(BorderFactory.createCompoundBorder(
+        // 🆕 FIXED: Update border COLOR only, not size
+        Border newBorder = BorderFactory.createCompoundBorder(
                 BorderFactory.createRaisedBevelBorder(),
                 BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(stoneBorder, 2),
+                        BorderFactory.createLineBorder(stoneBorderColor, 2),
                         BorderFactory.createEmptyBorder(10, 15, 10, 15)
                 )
-        ));
+        );
+
+        button.setBorder(newBorder);
     }
 
     private void loadMapImage() {
