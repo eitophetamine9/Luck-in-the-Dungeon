@@ -30,6 +30,10 @@ public class MapPanel extends JPanel {
 
         setupEventHandlers();
         loadMapImage();
+        setOpaque(false);
+        if (mapPanel != null){
+            mapPanel.setOpaque(false);
+        }
         refresh();
     }
 
@@ -110,6 +114,22 @@ public class MapPanel extends JPanel {
         } catch (Exception e) {
             System.out.println("❌ Error loading background: " + e.getMessage());
             mapImage = null;
+        }
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (mapImage != null) {
+            // Draw image scaled to panel size
+            g.drawImage(mapImage, 0, 0, getWidth(), getHeight(), this);
+        } else {
+            // Fallback gradient
+            Graphics2D g2d = (Graphics2D) g;
+            Color color1 = new Color(30, 30, 60);
+            Color color2 = new Color(50, 50, 100);
+            g2d.setPaint(new GradientPaint(0, 0, color1, 0, getHeight(), color2));
+            g2d.fillRect(0, 0, getWidth(), getHeight());
         }
     }
 }
