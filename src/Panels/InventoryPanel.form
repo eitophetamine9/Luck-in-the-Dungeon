@@ -59,7 +59,7 @@
           <columns value="30"/>
           <editable value="false"/>
           <font name="Monospaced" size="12" style="1"/>
-          <foreground color="-1"/>
+          <foreground color="-1828"/>
           <lineWrap value="true"/>
           <margin top="10" left="10" bottom="0" right="0"/>
           <rows value="8"/>
