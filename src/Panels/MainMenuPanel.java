@@ -6,6 +6,8 @@ import model.GameManager;
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -152,15 +154,60 @@ public class MainMenuPanel extends JPanel {
     }
 
     private void handleLoadGame() {
-        try {
-            if (game.loadGame()) {
-                mainApp.showMessage("Game loaded successfully! Welcome back, " + game.getCurrentPlayer().getName() + "!");
-                mainApp.showGame();
-            } else {
-                mainApp.showMessage("No save file found or load failed!");
-            }
-        } catch (Exception e) {
-            mainApp.showMessage("Error loading game: " + e.getMessage());
+        if (!game.saveExists()) {
+            mainApp.showMessage("❌ No save file found!\nStart a new game to begin your adventure.");
+            return;
+        }
+
+        int choice = JOptionPane.showConfirmDialog(
+                mainApp,
+                "Load saved game?\n\nCurrent progress will be lost.",
+                "Load Game",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (choice == JOptionPane.YES_OPTION) {
+            loadGameButton.setText("⏳ Loading...");
+            loadGameButton.setEnabled(false);
+
+            Timer loadTimer = new Timer(300, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        String result = game.loadGameWithFeedback();
+
+                        if (result.startsWith("✅")) {
+                            // DEBUG: Show what was loaded
+                            game.debugCurrentState();
+
+                            // Refresh the main menu
+                            refresh();
+
+                            // Show success message
+                            JOptionPane.showMessageDialog(
+                                    mainApp,
+                                    result + "\n\nClick 'Continue' to play.",
+                                    "Game Loaded",
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+
+                            // Switch to game screen
+                            mainApp.showGame();
+                        } else {
+                            mainApp.showMessage(result);
+                        }
+                    } catch (Exception ex) {
+                        mainApp.showMessage("❌ Load error: " + ex.getMessage());
+                    } finally {
+                        loadGameButton.setText("📜 LOAD GAME 📜");
+                        loadGameButton.setEnabled(true);
+                        ((Timer) e.getSource()).stop();
+                    }
+                }
+            });
+            loadTimer.setRepeats(false);
+            loadTimer.start();
         }
     }
 

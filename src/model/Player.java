@@ -401,6 +401,38 @@ public class Player implements  Serializable{
         return false;
     }
 
+    public void restoreFromSavedPlayer(Player savedPlayer) {
+        // Since name is final, we need to restore it through reflection
+        try {
+            // Use reflection to copy the name field
+            java.lang.reflect.Field nameField = Player.class.getDeclaredField("name");
+            nameField.setAccessible(true);
+            nameField.set(this, savedPlayer.name);
+
+            // Copy all other fields that might not have setters
+            java.lang.reflect.Field[] fields = Player.class.getDeclaredFields();
+
+            for (java.lang.reflect.Field field : fields) {
+                field.setAccessible(true);
+
+                // Skip final fields that we've already handled
+                if (field.getName().equals("name")) continue;
+
+                // Skip static fields
+                if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
+
+                // Copy the value
+                Object value = field.get(savedPlayer);
+                field.set(this, value);
+            }
+
+            System.out.println("✅ Player restored from save: " + this.name);
+
+        } catch (Exception e) {
+            System.err.println("❌ Failed to restore player: " + e.getMessage());
+        }
+    }
+
     // === PROGRESS TRACKING ===
     public void recordCoinsEarned(int amount) {
         this.totalCoinsEarned += amount;

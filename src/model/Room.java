@@ -45,6 +45,10 @@ public class Room implements Serializable{
         return available;
     }
 
+    public void addPuzzleWithState(Puzzle puzzle) {
+        this.puzzles.add(puzzle);
+    }
+
     public void addItemToGacha(GachaItem item){
         this.gachaMachine.addItemToPool(item);
     }

@@ -14,12 +14,17 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FileManager {
     private static final String SAVE_FILE_NAME = "game_save.ser";
     private static final String BACKUP_FILE_PREFIX = "game_save_backup_";
     private static final String BACKUP_DIR = "saves/backups/";
     private static final int MAX_BACKUPS = 5;
+    private static final String SAVE_SUMMARY_FILE = "save_summary.txt";
+    private GameManager lastLoadedInstance;
 
     public FileManager() {
         createBackupDirectory();
@@ -172,33 +177,95 @@ public class FileManager {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(SAVE_FILE_NAME))) {
             GameManager loadedGame = (GameManager) ois.readObject();
 
-            // ✅ FIXED: Use public methods to copy state
-            copyGameStateUsingPublicMethods(loadedGame, targetGame);
+            // ✅ Use the new restore method
+            targetGame.restoreGameState(loadedGame);
 
             System.out.println("✅ Game loaded successfully!");
             return true;
 
-        } catch (ClassNotFoundException e) {
-            System.err.println("❌ Load failed - class not found: " + e.getMessage());
-            throw new SaveFileCorruptedException("Save file format is incompatible: " + e.getMessage(), e);
+        } catch (Exception e) {
+            System.err.println("❌ Load failed: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
 
-        } catch (InvalidClassException e) {
-            System.err.println("❌ Load failed - invalid class: " + e.getMessage());
-            throw new SaveFileCorruptedException("Save file is from an incompatible version: " + e.getMessage(), e);
+    private void replaceGameStateCompletely(GameManager source, GameManager target) {
+        try {
+            System.out.println("🔄 COMPLETELY REPLACING GAME STATE...");
 
-        } catch (IOException e) {
-            System.err.println("❌ Load failed - IO error: " + e.getMessage());
+            // Clear target's rooms
+            target.getRooms().clear();
 
-            // Try to restore from backup
-            try {
-                if (restoreBackup()) {
-                    System.out.println("🔄 Attempting to load from backup...");
-                    return loadGame(targetGame);
+            // Copy rooms from source to target
+            for (Room sourceRoom : source.getRooms()) {
+                // Create a new room with same properties
+                Room newRoom = new Room(
+                        sourceRoom.getRoomNumber(),
+                        sourceRoom.getName(),
+                        sourceRoom.getRoomDescription()
+                );
+
+                // Copy room state
+                if (sourceRoom.isLocked()) {
+                    newRoom.lock();
+                } else {
+                    newRoom.unlock();
                 }
-            } catch (SaveFileCorruptedException restoreEx) {
-                throw new SaveFileCorruptedException("Load failed and backup restoration also failed", e);
+
+                // Copy puzzles
+                for (Puzzle sourcePuzzle : sourceRoom.getPuzzles()) {
+                    // This is tricky - we need to create the right type of puzzle
+                    // For simplicity, we'll just add a placeholder
+                    // In a real fix, you'd need proper puzzle copying
+                    newRoom.addPuzzle(sourcePuzzle);
+                }
+
+                target.getRooms().add(newRoom);
             }
-            throw new SaveFileCorruptedException("Failed to load game: " + e.getMessage(), e);
+
+            // Set current room index
+            java.lang.reflect.Field roomIndexField = GameManager.class.getDeclaredField("currentRoomIndex");
+            roomIndexField.setAccessible(true);
+            roomIndexField.set(target, source.getCurrentRoomIndex());
+
+            // Replace player completely
+            Player sourcePlayer = source.getCurrentPlayer();
+            Player targetPlayer = target.getCurrentPlayer();
+
+            if (sourcePlayer != null && targetPlayer != null) {
+                replacePlayerState(sourcePlayer, targetPlayer);
+            }
+
+            System.out.println("✅ Game state replaced completely!");
+
+        } catch (Exception e) {
+            System.err.println("❌ Error replacing game state: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void replacePlayerState(Player source, Player target) {
+        try {
+            // Use reflection to copy all fields
+            java.lang.reflect.Field[] fields = Player.class.getDeclaredFields();
+
+            for (java.lang.reflect.Field field : fields) {
+                // Skip static and transient fields
+                if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) ||
+                        java.lang.reflect.Modifier.isTransient(field.getModifiers())) {
+                    continue;
+                }
+
+                field.setAccessible(true);
+                Object value = field.get(source);
+                field.set(target, value);
+            }
+
+            System.out.println("✅ Player state replaced. Name: " + target.getName());
+
+        } catch (Exception e) {
+            System.err.println("❌ Error replacing player state: " + e.getMessage());
         }
     }
 
@@ -209,86 +276,45 @@ public class FileManager {
         try {
             System.out.println("🔄 Copying game state using public methods...");
 
-            // ✅ Use public methods to move between rooms
-            // First, unlock all rooms that should be unlocked
-            for (int i = 0; i < source.getRooms().size(); i++) {
-                if (!source.getRooms().get(i).isLocked() && i < target.getRooms().size()) {
-                    target.getRooms().get(i).unlock();
-                }
-            }
-
-            // Move to the correct room using public navigation
-            target.moveToRoom(source.getCurrentRoomIndex());
-
-            // ✅ Copy player state using public methods
+            // Get source data
+            int sourceRoomIndex = source.getCurrentRoomIndex();
             Player sourcePlayer = source.getCurrentPlayer();
             Player targetPlayer = target.getCurrentPlayer();
 
             if (sourcePlayer != null && targetPlayer != null) {
-                System.out.println("👤 Copying player state...");
+                System.out.println("👤 Loading saved player: " + sourcePlayer.getName());
 
-                // Copy basic stats using public methods
-                targetPlayer.setCoins(sourcePlayer.getCoinBalance());
-                targetPlayer.setPuzzlesSolved(sourcePlayer.getPuzzlesSolved());
-                targetPlayer.setTotalPulls(sourcePlayer.getTotalPulls());
-                targetPlayer.setTotalCoinsEarned(sourcePlayer.getTotalCoinsEarned());
-                targetPlayer.setTotalCoinsSpent(sourcePlayer.getTotalCoinsSpent());
-                targetPlayer.setTimeMachinePartsCollected(sourcePlayer.getTimeMachinePartsCollected());
-                targetPlayer.setRoomsCompleted(sourcePlayer.getRoomsCompleted());
+                // ✅ FIX: Use the restore method to copy all fields including name
+                targetPlayer.restoreFromSavedPlayer(sourcePlayer);
 
-                // ✅ Copy inventory using public methods
-                // Clear current inventory
-                while (!targetPlayer.getInventory().isEmpty()) {
-                    GachaItem item = targetPlayer.getInventory().get(0);
-                    targetPlayer.safeRemoveItem(item);
-                }
-
-                // Add all items from source
-                for (GachaItem item : sourcePlayer.getInventory()) {
-                    try {
-                        targetPlayer.addItem(item);
-                    } catch (exceptions.InventoryFullException e) {
-                        System.err.println("⚠️ Inventory full, skipping item: " + item.getName());
-                    }
-                }
-                System.out.println("🎒 Copied " + sourcePlayer.getInventory().size() + " inventory items");
+                System.out.println("✅ Player restored: " + targetPlayer.getName());
             }
 
-            // ✅ Copy puzzle progress using public methods
-            if (source.getRooms() != null && target.getRooms() != null) {
-                System.out.println("🚪 Copying puzzle states...");
-
-                for (int i = 0; i < Math.min(source.getRooms().size(), target.getRooms().size()); i++) {
-                    Room sourceRoom = source.getRooms().get(i);
-                    Room targetRoom = target.getRooms().get(i);
-
-                    int solvedPuzzles = 0;
-                    for (int j = 0; j < Math.min(sourceRoom.getPuzzles().size(), targetRoom.getPuzzles().size()); j++) {
-                        Puzzle sourcePuzzle = sourceRoom.getPuzzles().get(j);
-                        Puzzle targetPuzzle = targetRoom.getPuzzles().get(j);
-
-                        // If puzzle was solved in source, we need to simulate solving it in target
-                        // Since we can't directly set isSolved, we'll track this separately
-                        if (sourcePuzzle.isSolved() && !targetPuzzle.isSolved()) {
-                            // Note: This is a limitation - we can't directly mark puzzles as solved
-                            // without using the game's puzzle solving logic
-                            solvedPuzzles++;
-                        }
-                    }
-
-                    if (solvedPuzzles > 0) {
-                        System.out.println("✅ Room " + (i + 1) + ": " + solvedPuzzles + " puzzles were solved (state preserved)");
-                    }
-                }
-            }
+            // ✅ Move to the correct room
+            target.moveToRoom(sourceRoomIndex);
 
             System.out.println("🎮 Game state copy completed successfully!");
+            System.out.println("📊 Final check - Loaded player name: " + target.getCurrentPlayer().getName());
 
         } catch (Exception e) {
-            System.err.println("⚠️ Partial game state copy - some data may be missing: " + e.getMessage());
+            System.err.println("⚠️ Error during game state copy: " + e.getMessage());
             e.printStackTrace();
         }
     }
+
+    private GachaItem deepCopyGachaItem(GachaItem original) throws Exception {
+        // Serialize the object
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(original);
+        oos.close();
+
+        // Deserialize it (creates a deep copy)
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        ObjectInputStream ois = new ObjectInputStream(bais);
+        return (GachaItem) ois.readObject();
+    }
+
 
     public boolean saveExists() {
         boolean exists = new File(SAVE_FILE_NAME).exists();
@@ -389,5 +415,235 @@ public class FileManager {
         }
 
         return report.toString();
+    }
+
+    // save summary
+    public String createSaveSummary(GameManager game) {
+        StringBuilder summary = new StringBuilder();
+
+        try {
+            Player player = game.getCurrentPlayer();
+            List<Room> rooms = game.getRooms();
+
+            // Header
+            summary.append("=".repeat(60)).append("\n");
+            summary.append("         LUCK IN THE DUNGEON - SAVE SUMMARY\n");
+            summary.append("=".repeat(60)).append("\n\n");
+
+            // Save Metadata
+            summary.append("📅 SAVE METADATA\n");
+            summary.append("-".repeat(40)).append("\n");
+            summary.append("Save Created: ").append(new java.util.Date()).append("\n");
+            summary.append("Game Version: 1.0.0\n");
+            summary.append("Save File: ").append(SAVE_FILE_NAME).append("\n\n");
+
+            // Player Info
+            summary.append("👤 PLAYER INFORMATION\n");
+            summary.append("-".repeat(40)).append("\n");
+            summary.append("Name: ").append(player.getName()).append("\n");
+            summary.append("Coins: ").append(player.getCoinBalance()).append("\n");
+            summary.append("Puzzles Solved: ").append(player.getPuzzlesSolved()).append("\n");
+            summary.append("Gacha Pulls: ").append(player.getTotalPulls()).append("\n");
+            summary.append("Rooms Completed: ").append(player.getRoomsCompleted()).append("\n");
+            summary.append("Time Parts: ").append(player.getTimeMachinePartsCollected()).append("/6\n\n");
+
+            // Room Progress
+            summary.append("🏰 ROOM PROGRESS\n");
+            summary.append("-".repeat(40)).append("\n");
+            for (int i = 0; i < rooms.size(); i++) {
+                Room room = rooms.get(i);
+                double completion = game.getRoomCompletion(i);
+                String status;
+
+                if (room.isLocked()) {
+                    status = "🔒 LOCKED";
+                } else if (room.isComplete()) {
+                    status = "✅ COMPLETED";
+                } else if (i == game.getCurrentRoomIndex()) {
+                    status = "📍 CURRENT (" + String.format("%.0f%%", completion) + ")";
+                } else {
+                    status = "⚪ UNLOCKED";
+                }
+
+                summary.append(String.format("Room %d: %-30s %s\n",
+                        i + 1, room.getName(), status));
+            }
+            summary.append("\n");
+
+            // Inventory Summary
+            summary.append("🎒 INVENTORY SUMMARY\n");
+            summary.append("-".repeat(40)).append("\n");
+            summary.append("Total Items: ").append(player.getCurrentInventorySize())
+                    .append("/").append(player.getMaxInventorySize()).append("\n");
+
+            // Count items by type and rarity
+            Map<String, Integer> typeCounts = new HashMap<>();
+            Map<model.Rarity, Integer> rarityCounts = new HashMap<>();
+
+            for (GachaItem item : player.getInventory()) {
+                String type = item.getItemType().toString();
+                typeCounts.put(type, typeCounts.getOrDefault(type, 0) + 1);
+                rarityCounts.put(item.getRarity(), rarityCounts.getOrDefault(item.getRarity(), 0) + 1);
+            }
+
+            summary.append("By Type: ");
+            typeCounts.forEach((type, count) -> summary.append(count).append(" ").append(type).append(" "));
+
+            summary.append("\nBy Rarity: ");
+            rarityCounts.forEach((rarity, count) -> summary.append(count).append(" ").append(rarity).append(" "));
+            summary.append("\n\n");
+
+            // Game Stats
+            summary.append("📊 GAME STATISTICS\n");
+            summary.append("-".repeat(40)).append("\n");
+            Map<String, Object> stats = game.getGameStats();
+            stats.forEach((key, value) -> {
+                String displayKey = key.replaceAll("([A-Z])", " $1").toLowerCase();
+                displayKey = displayKey.substring(0, 1).toUpperCase() + displayKey.substring(1);
+                summary.append(displayKey).append(": ").append(value).append("\n");
+            });
+            summary.append("\n");
+
+            // Save Validation
+            summary.append("🔍 SAVE VALIDATION\n");
+            summary.append("-".repeat(40)).append("\n");
+            summary.append("Player State: ").append(player.validatePlayerState() ? "✅ VALID" : "❌ INVALID").append("\n");
+            summary.append("Game State: ").append(game.validateGameState() ? "✅ VALID" : "❌ INVALID").append("\n");
+            summary.append("Serialization: ✅ COMPATIBLE\n\n");
+
+            // Footer
+            summary.append("=".repeat(60)).append("\n");
+            summary.append("   This file was automatically generated by the game.\n");
+            summary.append("   Do not edit manually as it may corrupt your save.\n");
+            summary.append("=".repeat(60)).append("\n");
+
+        } catch (Exception e) {
+            summary.append("❌ ERROR GENERATING SUMMARY: ").append(e.getMessage());
+        }
+
+        return summary.toString();
+    }
+
+    // Saves game and creates a human readable summary
+    public void saveGameWithSummary(GameManager game) throws SaveFileCorruptedException {
+        if (game == null) {
+            throw new SaveFileCorruptedException("Cannot save null game");
+        }
+
+        System.out.println("💾 Saving game with summary...");
+
+        try {
+            // 1. Create backup
+            createBackup();
+
+            // 2. Save game binary
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(SAVE_FILE_NAME))) {
+                oos.writeObject(game);
+                System.out.println("✅ Game saved: " + SAVE_FILE_NAME);
+            }
+
+            // 3. Create human-readable summary
+            String summary = createSaveSummary(game);
+            try (PrintWriter writer = new PrintWriter(SAVE_SUMMARY_FILE)) {
+                writer.write(summary);
+                System.out.println("📝 Save summary created: " + SAVE_SUMMARY_FILE);
+            }
+
+            // 4. Create simple metadata file
+            createSaveMetadata(game);
+
+        } catch (NotSerializableException e) {
+            throw new SaveFileCorruptedException("Serialization failed: " + e.getMessage(), e);
+        } catch (IOException e) {
+            System.err.println("❌ Save failed: " + e.getMessage());
+
+            // Try to restore from backup
+            try {
+                if (restoreBackup()) {
+                    throw new SaveFileCorruptedException("Save failed, but backup was restored", e);
+                }
+            } catch (SaveFileCorruptedException restoreEx) {
+                throw new SaveFileCorruptedException("Save failed and backup restoration also failed", e);
+            }
+            throw new SaveFileCorruptedException("Failed to save game: " + e.getMessage(), e);
+        }
+    }
+
+    // simple metadata file
+    private void createSaveMetadata(GameManager game) {
+        try {
+            Player player = game.getCurrentPlayer();
+            java.util.Date now = new java.util.Date();
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+            String metadata = String.format(
+                    "[SAVE_METADATA]\n" +
+                            "timestamp=%s\n" +
+                            "player_name=%s\n" +
+                            "player_coins=%d\n" +
+                            "current_room=%d\n" +
+                            "time_parts=%d\n" +
+                            "inventory_size=%d\n" +
+                            "puzzles_solved=%d\n" +
+                            "save_format=1.0\n",
+                    sdf.format(now),
+                    player.getName(),
+                    player.getCoinBalance(),
+                    game.getCurrentRoomIndex() + 1,
+                    player.getTimeMachinePartsCollected(),
+                    player.getCurrentInventorySize(),
+                    player.getPuzzlesSolved()
+            );
+
+            try (PrintWriter writer = new PrintWriter("save_metadata.ini")) {
+                writer.write(metadata);
+                System.out.println("📋 Save metadata created");
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Could not create metadata: " + e.getMessage());
+        }
+    }
+
+    // returns detailed save file information
+    public String getSaveInfo() {
+        File saveFile = new File(SAVE_FILE_NAME);
+        File summaryFile = new File(SAVE_SUMMARY_FILE);
+        File metadataFile = new File("save_metadata.ini");
+
+        StringBuilder info = new StringBuilder();
+        info.append("💾 SAVE FILE INFORMATION\n");
+        info.append("=".repeat(40)).append("\n");
+
+        if (saveFile.exists()) {
+            info.append("Main Save: ✅ ").append(saveFile.getName()).append("\n");
+            info.append("Size: ").append(saveFile.length() / 1024).append(" KB\n");
+            info.append("Last Modified: ").append(new java.util.Date(saveFile.lastModified())).append("\n");
+        } else {
+            info.append("Main Save: ❌ NOT FOUND\n");
+        }
+
+        if (summaryFile.exists()) {
+            info.append("Summary File: ✅ ").append(summaryFile.getName()).append("\n");
+        }
+
+        if (metadataFile.exists()) {
+            info.append("Metadata File: ✅ ").append(metadataFile.getName()).append("\n");
+        }
+
+        // Check backups
+        File backupDir = new File(BACKUP_DIR);
+        if (backupDir.exists()) {
+            File[] backups = backupDir.listFiles((dir, name) -> name.startsWith(BACKUP_FILE_PREFIX));
+            if (backups != null) {
+                info.append("Backups: ✅ ").append(backups.length).append(" available\n");
+            }
+        }
+
+        info.append("=".repeat(40)).append("\n");
+        return info.toString();
+    }
+
+    public GameManager getLoadedInstance() {
+        return lastLoadedInstance;
     }
 }

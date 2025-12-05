@@ -98,4 +98,6 @@ public class MainApplication extends JFrame {
                 JOptionPane.YES_NO_OPTION);
         return result == JOptionPane.YES_OPTION;
     }
+
+
 }

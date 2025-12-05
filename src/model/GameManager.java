@@ -2,6 +2,8 @@ package model;
 
 import exceptions.SaveFileCorruptedException;
 import util.FileManager;
+
+import java.io.IOException;
 import java.io.Serializable;
 
 import java.util.ArrayList;
@@ -17,7 +19,7 @@ public class GameManager implements Serializable {
     private List<Room> rooms;
     private int currentRoomIndex;
     private String gameState;
-    private FileManager fileManager;
+    private transient FileManager fileManager;
 
     private GameManager(){
         this.rooms = new ArrayList<>();
@@ -187,6 +189,14 @@ public class GameManager implements Serializable {
                 return false;
             }
         });
+    }
+
+    public static void replaceInstance(GameManager newInstance) {
+        if (newInstance != null) {
+            instance = newInstance;
+            // Reinitialize fileManager in the new instance
+            instance.fileManager = new FileManager();
+        }
     }
 
     // === ENHANCED SAVE SYSTEM ===
@@ -606,6 +616,214 @@ public class GameManager implements Serializable {
         Room currentRoom = getCurrentRoom();
         return currentRoom != null ? currentRoom.getGachaMachine() : null;
     }
+
+    // enhanced save with human readable summary
+    public String saveGameWithSummary() {
+        try {
+            if (!validateGameState()) {
+                return "⚠️ Save skipped: Game state invalid";
+            }
+
+            fileManager.saveGameWithSummary(this);
+            return "✅ Game saved successfully!\n📝 Save summary created.";
+        } catch (SaveFileCorruptedException e) {
+            return "❌ Save failed: " + e.getMessage();
+        }
+    }
+
+    // enhanced load with better feedback
+    public String loadGameWithFeedback() {
+        try {
+            if (fileManager == null) {
+                fileManager = new FileManager();
+            }
+
+            if (fileManager.loadGame(this)) {
+                // Important: Now refresh the singleton reference
+                GameManager newInstance = fileManager.getLoadedInstance();
+                if (newInstance != null) {
+                    replaceInstance(newInstance);
+                }
+
+                // Validate the loaded game
+                if (!validateGameState()) {
+                    return "⚠️ Loaded game state is invalid!";
+                }
+
+                return String.format("✅ Game loaded successfully!\n" +
+                                "Welcome back, %s!\n" +
+                                "📍 Current room: %s\n" +
+                                "🪙 Coins: %d | 🧩 Puzzles: %d",
+                        getCurrentPlayer().getName(),
+                        getCurrentRoom() != null ? getCurrentRoom().getName() : "Unknown",
+                        getCurrentPlayer().getCoinBalance(),
+                        getCurrentPlayer().getPuzzlesSolved());
+            } else {
+                return "❌ No save file found!";
+            }
+        } catch (Exception e) {
+            return "❌ Load failed: " + e.getMessage();
+        }
+    }
+
+    // gets save file info
+    public String getSaveInfo() {
+        if (fileManager == null) {
+            fileManager = new FileManager();
+        }
+        return fileManager.getSaveInfo();
+    }
+
+    // gets save summary
+    public String getSaveSummary() {
+        if (fileManager == null) {
+            fileManager = new FileManager();
+        }
+        return fileManager.createSaveSummary(this);
+    }
+
+    // deletes save with confirmation
+    public String deleteSaveWithConfirmation() {
+        if (!saveExists()) {
+            return "ℹ️ No save file to delete.";
+        }
+
+        try {
+            // Get backup info before deletion
+            String backupInfo = fileManager.getBackupInfo();
+            fileManager.deleteSave();
+
+            return String.format("🗑️ Save deleted successfully!\n\n" +
+                            "Previous backups available:\n%s",
+                    backupInfo);
+        } catch (SaveFileCorruptedException e) {
+            return "❌ Delete failed: " + e.getMessage();
+        }
+    }
+
+    public void restoreGameState(GameManager loadedGame) {
+        try {
+            if (loadedGame == null) return;
+
+            // Copy player state
+            Player loadedPlayer = loadedGame.getCurrentPlayer();
+            if (loadedPlayer != null && currentPlayer != null) {
+                restorePlayerState(loadedPlayer);
+            }
+
+            // Copy room states
+            List<Room> loadedRooms = loadedGame.getRooms();
+            if (loadedRooms != null && rooms != null) {
+                restoreRoomStates(loadedRooms, loadedGame.getCurrentRoomIndex());
+            }
+
+            // Copy other fields
+            currentRoomIndex = loadedGame.getCurrentRoomIndex();
+            gameState = loadedGame.getGameState();
+
+            System.out.println("✅ Game state restored successfully");
+
+        } catch (Exception e) {
+            System.err.println("❌ Error restoring game state: " + e.getMessage());
+        }
+    }
+
+    private void restorePlayerState(Player loadedPlayer) {
+        try {
+            // Use reflection to copy all non-static fields
+            java.lang.reflect.Field[] fields = Player.class.getDeclaredFields();
+
+            for (java.lang.reflect.Field field : fields) {
+                // Skip static fields
+                if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
+
+                field.setAccessible(true);
+                Object value = field.get(loadedPlayer);
+                field.set(currentPlayer, value);
+            }
+
+            System.out.println("✅ Player state restored: " + currentPlayer.getName());
+
+        } catch (Exception e) {
+            System.err.println("❌ Error restoring player state: " + e.getMessage());
+        }
+    }
+
+    private void restoreRoomStates(List<Room> loadedRooms, int loadedRoomIndex) {
+        try {
+            // Clear current rooms
+            rooms.clear();
+
+            // Copy each room
+            for (Room loadedRoom : loadedRooms) {
+                // Create new room with same properties
+                Room newRoom = new Room(
+                        loadedRoom.getRoomNumber(),
+                        loadedRoom.getName(),
+                        loadedRoom.getRoomDescription()
+                );
+
+                // Copy lock state
+                if (!loadedRoom.isLocked()) {
+                    newRoom.unlock();
+                }
+
+                // Copy puzzles
+                for (Puzzle loadedPuzzle : loadedRoom.getPuzzles()) {
+                    // Create a copy of the puzzle with the same solved state
+                    Puzzle copiedPuzzle = copyPuzzleWithState(loadedPuzzle);
+                    newRoom.addPuzzle(copiedPuzzle);
+                }
+
+                rooms.add(newRoom);
+            }
+
+            // Set current room index
+            currentRoomIndex = loadedRoomIndex;
+
+            System.out.println("✅ Room states restored. Current room: " + currentRoomIndex);
+
+        } catch (Exception e) {
+            System.err.println("❌ Error restoring room states: " + e.getMessage());
+        }
+    }
+
+    private Puzzle copyPuzzleWithState(Puzzle original) throws Exception {
+        // Serialize and deserialize to create a deep copy
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(baos);
+        oos.writeObject(original);
+        oos.close();
+
+        java.io.ByteArrayInputStream bais = new java.io.ByteArrayInputStream(baos.toByteArray());
+        java.io.ObjectInputStream ois = new java.io.ObjectInputStream(bais);
+        return (Puzzle) ois.readObject();
+    }
+
+    public void debugCurrentState() {
+        System.out.println("\n🔍 CURRENT GAME STATE DEBUG:");
+        System.out.println("Player: " + currentPlayer.getName());
+        System.out.println("Coins: " + currentPlayer.getCoinBalance());
+        System.out.println("Current Room Index: " + currentRoomIndex);
+        System.out.println("Total Rooms: " + rooms.size());
+
+        for (int i = 0; i < rooms.size(); i++) {
+            Room room = rooms.get(i);
+            System.out.println("\nRoom " + (i + 1) + ": " + room.getName());
+            System.out.println("  Locked: " + room.isLocked());
+            System.out.println("  Complete: " + room.isComplete());
+            System.out.println("  Puzzles: " + room.getPuzzles().size());
+
+            for (Puzzle puzzle : room.getPuzzles()) {
+                System.out.println("    - " + puzzle.getDescription().substring(0, Math.min(30, puzzle.getDescription().length())) +
+                        " (Solved: " + puzzle.isSolved() + ")");
+            }
+        }
+        System.out.println("\n" + "=".repeat(50));
+    }
+
 
 
 }

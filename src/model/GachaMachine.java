@@ -1,10 +1,12 @@
 package model;
 
 import exceptions.NotEnoughCoinsException;
+import java.io.Serializable;
 
 import java.util.*;
 
-public class GachaMachine {
+public class GachaMachine implements Serializable{
+    private static final long serialVersionUID = 1L;
     private String machineName;
     private int pullCost;
     private List<GachaItem> itemPool;

@@ -6,6 +6,8 @@ import model.Room;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Map;
 
 public class GamePanel extends JPanel {
@@ -24,6 +26,9 @@ public class GamePanel extends JPanel {
     private JLabel coinsLabel;
     private JLabel puzzleAvailableLabel;
     private JLabel roomProgressLabel;
+    private JButton quickSaveButton;
+    private JButton quickLoadButton;
+    private JButton saveInfoButton;
 
     private MainApplication mainApp;
     private GameManager game;
@@ -86,6 +91,16 @@ public class GamePanel extends JPanel {
             roomDescriptionTextArea.setCaretColor(Color.cyan);
             roomDescriptionTextArea.setText(""); // Clear any initial text
             roomDescriptionTextArea.setDisabledTextColor(new Color(255, 255, 200));
+        }
+
+        if (quickSaveButton != null) {
+            styleDungeonButton(quickSaveButton, "💾 QUICK SAVE");
+        }
+        if (quickLoadButton != null) {
+            styleDungeonButton(quickLoadButton, "📂 QUICK LOAD");
+        }
+        if (saveInfoButton != null) {
+            styleDungeonButton(saveInfoButton, "📊 SAVE INFO");
         }
 
         setupEventHandlers();
@@ -221,6 +236,144 @@ public class GamePanel extends JPanel {
         if (saveButton != null) {
             saveButton.addActionListener(e -> handleSaveGame());
         }
+
+        if (quickSaveButton != null) {
+            quickSaveButton.addActionListener(e -> handleQuickSave());
+        }
+        if (quickLoadButton != null) {
+            quickLoadButton.addActionListener(e -> handleQuickLoad());
+        }
+        if (saveInfoButton != null) {
+            saveInfoButton.addActionListener(e -> handleSaveInfo());
+        }
+    }
+
+    private void handleQuickSave() {
+        // Show saving animation/feedback
+        if (quickSaveButton != null) {
+            quickSaveButton.setText("⏳ SAVING...");
+            quickSaveButton.setEnabled(false);
+        }
+
+        // Perform save in background to keep UI responsive
+        Timer saveTimer = new Timer(100, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String result = game.saveGameWithSummary();
+
+                // Show result in a dialog with save summary
+                JTextArea resultArea = new JTextArea(20, 50);
+                resultArea.setEditable(false);
+                resultArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+                resultArea.setText(result + "\n\n" + game.getSaveSummary());
+
+                JScrollPane scrollPane = new JScrollPane(resultArea);
+                scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+                JOptionPane.showMessageDialog(
+                        mainApp,
+                        scrollPane,
+                        "Save Result",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+                // Restore button
+                if (quickSaveButton != null) {
+                    quickSaveButton.setText("💾 QUICK SAVE");
+                    quickSaveButton.setEnabled(true);
+                }
+
+                ((Timer) e.getSource()).stop();
+            }
+        });
+        saveTimer.setRepeats(false);
+        saveTimer.start();
+    }
+
+    private void handleQuickLoad() {
+        if (!game.saveExists()) {
+            mainApp.showMessage("❌ No save file found!");
+            return;
+        }
+
+        // Show confirmation with save info
+        String saveInfo = game.getSaveInfo();
+        int choice = JOptionPane.showConfirmDialog(
+                mainApp,
+                "Load saved game?\n\n" + saveInfo + "\nCurrent progress will be lost.",
+                "Load Game",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (choice == JOptionPane.YES_OPTION) {
+            String result = game.loadGameWithFeedback();
+
+            if (result.startsWith("✅")) {
+                // Success - refresh UI and show welcome back
+                refresh();
+
+                // Show detailed success message
+                JTextArea messageArea = new JTextArea(10, 40);
+                messageArea.setEditable(false);
+                messageArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+                messageArea.setText(result + "\n\n" + game.getSaveSummary());
+
+                JScrollPane scrollPane = new JScrollPane(messageArea);
+                JOptionPane.showMessageDialog(
+                        mainApp,
+                        scrollPane,
+                        "Game Loaded",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+            } else {
+                mainApp.showMessage(result);
+            }
+        }
+    }
+
+    private void handleSaveInfo() {
+        String saveInfo = game.getSaveInfo();
+        String saveSummary = game.getSaveSummary();
+
+        // Create tabbed pane for different info
+        JTabbedPane tabbedPane = new JTabbedPane();
+
+        // Tab 1: File Info
+        JTextArea fileInfoArea = new JTextArea(15, 50);
+        fileInfoArea.setEditable(false);
+        fileInfoArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        fileInfoArea.setText(saveInfo);
+        tabbedPane.addTab("📁 File Info", new JScrollPane(fileInfoArea));
+
+        // Tab 2: Save Summary
+        JTextArea summaryArea = new JTextArea(20, 50);
+        summaryArea.setEditable(false);
+        summaryArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        summaryArea.setText(saveSummary);
+        tabbedPane.addTab("📊 Save Summary", new JScrollPane(summaryArea));
+
+        // Tab 3: Game Stats
+        Map<String, Object> stats = game.getGameStats();
+        StringBuilder statsText = new StringBuilder();
+        stats.forEach((key, value) -> {
+            String displayKey = key.replaceAll("([A-Z])", " $1").toLowerCase();
+            displayKey = displayKey.substring(0, 1).toUpperCase() + displayKey.substring(1);
+            statsText.append(String.format("%-25s: %s\n", displayKey, value));
+        });
+
+        JTextArea statsArea = new JTextArea(15, 50);
+        statsArea.setEditable(false);
+        statsArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        statsArea.setText(statsText.toString());
+        tabbedPane.addTab("📈 Game Stats", new JScrollPane(statsArea));
+
+        JOptionPane.showMessageDialog(
+                mainApp,
+                tabbedPane,
+                "Save Information",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     private void setupDungeonButtons() {
@@ -385,12 +538,64 @@ public class GamePanel extends JPanel {
 
     // ✅ ADD SAVE GAME METHOD
     private void handleSaveGame() {
-        try {
-            String result = game.saveGameWithBackup();
-            mainApp.showMessage(result);
-        } catch (Exception e) {
-            mainApp.showMessage("❌ Save failed: " + e.getMessage());
+        if (saveButton != null) {
+            saveButton.setText("⏳ Saving...");
+            saveButton.setEnabled(false);
         }
+
+        // Use timer to prevent UI freezing
+        Timer saveTimer = new Timer(300, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    // First validate game state
+                    if (!game.validateGameState()) {
+                        JOptionPane.showMessageDialog(
+                                mainApp,
+                                "⚠️ Cannot save: Game state is invalid.",
+                                "Save Error",
+                                JOptionPane.WARNING_MESSAGE
+                        );
+                        return;
+                    }
+
+                    String result = game.saveGameWithBackup();
+
+                    // Show result in a dialog
+                    JTextArea messageArea = new JTextArea(result);
+                    messageArea.setEditable(false);
+                    messageArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+                    JOptionPane.showMessageDialog(
+                            mainApp,
+                            new JScrollPane(messageArea),
+                            "Save Game",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+
+                } catch (Exception ex) {
+                    // Show detailed error
+                    String errorMsg = "❌ Save failed:\n" + ex.getMessage() +
+                            "\n\nMake sure all model classes implement Serializable.";
+                    JOptionPane.showMessageDialog(
+                            mainApp,
+                            errorMsg,
+                            "Save Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                    ex.printStackTrace(); // For debugging
+                } finally {
+                    // Restore button
+                    if (saveButton != null) {
+                        saveButton.setText("💾 Save Game");
+                        saveButton.setEnabled(true);
+                    }
+                    ((Timer) e.getSource()).stop();
+                }
+            }
+        });
+        saveTimer.setRepeats(false);
+        saveTimer.start();
     }
 
     private void handleNextRoom() {

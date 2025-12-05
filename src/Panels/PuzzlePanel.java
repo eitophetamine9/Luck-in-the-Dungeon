@@ -80,13 +80,11 @@ public class PuzzlePanel extends JPanel {
             hintTextArea.setOpaque(false);
         }
 
-        // IMPROVED: Much better puzzle selector renderer with excellent readability
         if (puzzleSelector != null) {
             puzzleSelector.setRenderer(new PuzzleListCellRenderer());
-            puzzleSelector.setMaximumRowCount(5); // Show more items at once
+            puzzleSelector.setMaximumRowCount(5);
         }
 
-        // IMPROVED: Better tools combo box renderer
         if (toolsComboBox != null) {
             toolsComboBox.setRenderer(new ToolsListCellRenderer());
             toolsComboBox.setMaximumRowCount(5);
@@ -97,7 +95,6 @@ public class PuzzlePanel extends JPanel {
         }
     }
 
-    // NEW: Professional Puzzle List Cell Renderer
     private class PuzzleListCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index,
@@ -107,17 +104,14 @@ public class PuzzlePanel extends JPanel {
             if (value instanceof Puzzle) {
                 Puzzle puzzle = (Puzzle) value;
 
-                // Clear readable text with emojis
                 String emoji = puzzle.isSolved() ? "✅ " : "🧩 ";
                 String difficultyStars = puzzle.getDifficultyStars();
 
-                // Truncate description for readability
                 String desc = puzzle.getDescription();
                 if (desc.length() > 50) {
                     desc = desc.substring(0, 47) + "...";
                 }
 
-                // Create formatted text
                 String displayText = String.format(
                         "<html><div style='padding: 5px;'>" +
                                 "<b>%s%s</b><br>" +
@@ -131,9 +125,8 @@ public class PuzzlePanel extends JPanel {
 
                 setText(displayText);
 
-                // Professional background and text colors
                 if (isSelected) {
-                    setBackground(new Color(100, 80, 120, 240)); // Selected - darker
+                    setBackground(new Color(100, 80, 120, 240));
                     setForeground(Color.WHITE);
                     setBorder(BorderFactory.createCompoundBorder(
                             BorderFactory.createLineBorder(new Color(255, 215, 0), 2),
@@ -141,18 +134,17 @@ public class PuzzlePanel extends JPanel {
                     ));
                 } else {
                     if (puzzle.isSolved()) {
-                        setBackground(new Color(60, 100, 60, 180)); // Green for solved
+                        setBackground(new Color(60, 100, 60, 180));
                         setForeground(new Color(200, 255, 200));
                     } else {
                         setBackground(index % 2 == 0 ?
-                                new Color(50, 40, 70, 180) : // Alternate row colors
+                                new Color(50, 40, 70, 180) :
                                 new Color(60, 50, 80, 180));
                         setForeground(new Color(240, 240, 255));
                     }
                     setBorder(BorderFactory.createEmptyBorder(5, 8, 5, 8));
                 }
 
-                // Better font for readability
                 setFont(new Font("Segoe UI", Font.PLAIN, 12));
             }
 
@@ -160,7 +152,6 @@ public class PuzzlePanel extends JPanel {
         }
     }
 
-    // NEW: Professional Tools List Cell Renderer
     private class ToolsListCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index,
@@ -170,7 +161,6 @@ public class PuzzlePanel extends JPanel {
             if (value instanceof GachaItem) {
                 GachaItem item = (GachaItem) value;
 
-                // Skip the "No helpful items" placeholder
                 if (item.getName().equals("No helpful items")) {
                     setText("<html><div style='padding: 5px; color: #888888; font-style: italic;'>" +
                             "No helpful items in inventory</div></html>");
@@ -181,7 +171,6 @@ public class PuzzlePanel extends JPanel {
                     return this;
                 }
 
-                // Rarity colors
                 Color rarityColor;
                 String rarityText;
                 switch (item.getRarity()) {
@@ -201,7 +190,6 @@ public class PuzzlePanel extends JPanel {
                 String itemIcon = item.getItemType() == ItemType.KEY ? "🔑 " : "🛠️ ";
                 String itemType = item.getItemType() == ItemType.KEY ? "Key" : "Tool";
 
-                // Create formatted text
                 String displayText = String.format(
                         "<html><div style='padding: 5px;'>" +
                                 "<b>%s%s</b><br>" +
@@ -217,7 +205,6 @@ public class PuzzlePanel extends JPanel {
 
                 setText(displayText);
 
-                // Background based on selection
                 if (isSelected) {
                     setBackground(new Color(120, 80, 40, 240));
                     setForeground(Color.WHITE);
@@ -327,7 +314,6 @@ public class PuzzlePanel extends JPanel {
             ));
         }
 
-        // IMPROVED: Better combo box styling for readability
         if (puzzleSelector != null) {
             puzzleSelector.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createLineBorder(new Color(150, 130, 180, 200), 2),
@@ -542,6 +528,58 @@ public class PuzzlePanel extends JPanel {
             }
 
             updateToolsComboBox();
+
+            // 🔥 CRITICAL FIX: Update button states based on current puzzle
+            updateButtonStates();
+        }
+    }
+
+    private void updateButtonStates() {
+        if (currentPuzzle != null) {
+            boolean isSolved = currentPuzzle.isSolved();
+
+            // Solve button should be enabled for UNSOLVED puzzles
+            if (solveButton != null) {
+                solveButton.setEnabled(!isSolved);
+                if (!isSolved) {
+                    solveButton.setText("🎯 SOLVE PUZZLE");
+                    solveButton.setBackground(new Color(80, 160, 80, 200));
+                } else {
+                    solveButton.setText("✅ ALREADY SOLVED");
+                    solveButton.setBackground(new Color(100, 100, 100, 180));
+                }
+            }
+
+            // Hint button should be enabled for UNSOLVED puzzles
+            if (hintButton != null) {
+                hintButton.setEnabled(!isSolved);
+                if (!isSolved) {
+                    hintButton.setText("💡 GET HINT");
+                    hintButton.setBackground(new Color(160, 80, 160, 200));
+                } else {
+                    hintButton.setText("✅ NO HINT NEEDED");
+                    hintButton.setBackground(new Color(100, 100, 100, 180));
+                }
+            }
+
+            // Use item button should be enabled for UNSOLVED puzzles with helpful items
+            if (useItemButton != null) {
+                boolean hasHelpfulItems = toolsComboBox != null &&
+                        toolsComboBox.getItemCount() > 0 &&
+                        !currentPuzzle.isSolved() &&
+                        !toolsComboBox.getItemAt(0).getName().equals("No helpful items");
+                useItemButton.setEnabled(hasHelpfulItems && !isSolved);
+                if (hasHelpfulItems && !isSolved) {
+                    useItemButton.setText("🔧 USE ITEM");
+                    useItemButton.setBackground(new Color(160, 120, 80, 200));
+                } else if (isSolved) {
+                    useItemButton.setText("✅ NO ITEM NEEDED");
+                    useItemButton.setBackground(new Color(100, 100, 100, 180));
+                } else {
+                    useItemButton.setText("🔧 NO HELPFUL ITEMS");
+                    useItemButton.setBackground(new Color(100, 100, 100, 180));
+                }
+            }
         }
     }
 
@@ -555,10 +593,6 @@ public class PuzzlePanel extends JPanel {
             toolsComboBox.addItem(item);
         }
 
-        if (useItemButton != null) {
-            useItemButton.setEnabled(toolsComboBox.getItemCount() > 0 && !currentPuzzle.isSolved());
-        }
-
         if (toolsComboBox.getItemCount() == 0 && !currentPuzzle.isSolved()) {
             toolsComboBox.addItem(new GachaItem("No helpful items", "Check your inventory",
                     Rarity.COMMON, ItemType.TOOL) {
@@ -567,9 +601,8 @@ public class PuzzlePanel extends JPanel {
             });
         }
 
-        if (itemSelector != null && itemSelector.isVisible()) {
-            updateItemSelector();
-        }
+        // 🔥 IMPORTANT: Update button states after changing tools combo box
+        updateButtonStates();
     }
 
     private void updateItemSelector() {
@@ -655,9 +688,11 @@ public class PuzzlePanel extends JPanel {
 
         if (currentPuzzle.isSolved()) {
             handlePuzzleSolved();
+        } else {
+            // 🔥 Update button states even if puzzle wasn't solved (item might be used up)
+            updateButtonStates();
+            refresh();
         }
-
-        refresh();
     }
 
     private void handlePuzzleSolved() {
@@ -678,7 +713,9 @@ public class PuzzlePanel extends JPanel {
                     "!\nYou can now proceed to the next room.");
         }
 
+        // 🔥 CRITICAL: Refresh the display AND update button states
         refresh();
+        updateButtonStates();
     }
 
     public void refresh() {
@@ -725,8 +762,8 @@ public class PuzzlePanel extends JPanel {
             answerField.requestFocus();
         }
 
-        if (solveButton != null) solveButton.setEnabled(currentPuzzle != null && !currentPuzzle.isSolved());
-        if (hintButton != null) hintButton.setEnabled(currentPuzzle != null && !currentPuzzle.isSolved());
+        // 🔥 CRITICAL: Always update button states after refresh
+        updateButtonStates();
 
         repaint();
     }
@@ -740,12 +777,18 @@ public class PuzzlePanel extends JPanel {
         }
         if (solveButton != null) {
             solveButton.setEnabled(false);
+            solveButton.setText("❌ NO PUZZLES");
+            solveButton.setBackground(new Color(100, 100, 100, 180));
         }
         if (useItemButton != null) {
             useItemButton.setEnabled(false);
+            useItemButton.setText("❌ NO PUZZLES");
+            useItemButton.setBackground(new Color(100, 100, 100, 180));
         }
         if (hintButton != null) {
             hintButton.setEnabled(false);
+            hintButton.setText("❌ NO PUZZLES");
+            hintButton.setBackground(new Color(100, 100, 100, 180));
         }
     }
 }
