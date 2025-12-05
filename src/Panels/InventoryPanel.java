@@ -21,6 +21,8 @@ public class InventoryPanel extends JPanel {
     private GachaItem selectedItem;
     private JButton[] allSlots;
 
+    private Image backgroundImage;
+
     public InventoryPanel(MainApplication mainApp, GameManager game) {
         this.mainApp = mainApp;
         this.game = game;
@@ -35,6 +37,8 @@ public class InventoryPanel extends JPanel {
     }
 
     private void initializeComponents() {
+        loadInvImage();
+
         setOpaque(false);
         if (inventoryPanel != null) {
             inventoryPanel.setOpaque(false);
@@ -67,6 +71,10 @@ public class InventoryPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
+
+        if (backgroundImage != null){
+            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+        }
 
         // Draw leather-like background
         GradientPaint gradient = new GradientPaint(
@@ -389,6 +397,35 @@ public class InventoryPanel extends JPanel {
             case RARE: return new Color(150, 200, 255);
             case EPIC: return new Color(255, 215, 100);
             default: return Color.WHITE;
+        }
+    }
+
+    private void loadInvImage() {
+        try {
+            // Try different image names
+            String[] possibleImages = {
+                    "images/leather-texture-background.jpg",
+                    "images/leather-texture-background.jpeg",
+                    "images/leather-texture-background.png",
+                    "images/inventory_background.jpeg",
+                    "images/backpack_bg.jpeg"
+            };
+
+            for (String imagePath : possibleImages) {
+                java.net.URL imageURL = getClass().getClassLoader().getResource(imagePath);
+                if (imageURL != null) {
+                    System.out.println("✅ Found inventory image: " + imagePath);
+                    backgroundImage = new ImageIcon(imageURL).getImage();
+                    return;
+                }
+            }
+
+            System.out.println("❌ No inventory image found, using gradient");
+            backgroundImage = null;
+
+        } catch (Exception e) {
+            System.out.println("❌ Error loading inventory image: " + e.getMessage());
+            backgroundImage = null;
         }
     }
 }

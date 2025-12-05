@@ -55,7 +55,7 @@
           </grid>
         </constraints>
         <properties>
-          <background color="-14803396"/>
+          <background color="-10140895"/>
           <columns value="30"/>
           <editable value="false"/>
           <font name="Monospaced" size="12" style="1"/>
