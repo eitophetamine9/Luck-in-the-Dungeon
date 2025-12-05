@@ -7,12 +7,11 @@ import java.awt.*;
 import java.util.List;
 
 public class PuzzlePanel extends JPanel {
-    // ✅ UPDATED: Added all missing components from your form
     private JPanel puzzlePanel;
     private JScrollPane descScroll;
     private JComboBox<Puzzle> puzzleSelector;
     private JTextArea puzzleDescription;
-    private JTextArea hintTextArea;   // ✅ CHANGED: hintArea → hintTextArea
+    private JTextArea hintTextArea;
     private JTextField answerField;
     private JButton solveButton;
     private JComboBox<GachaItem> toolsComboBox;
@@ -21,11 +20,10 @@ public class PuzzlePanel extends JPanel {
     private JLabel titleLabel;
     private JLabel coinRewardLabel;
     private JLabel difficultyLabel;
-
-    // ✅ ADDED: Missing components from your form
     private JLabel toolsLabel;
     private JComboBox<String> itemSelector;
     private JLabel answerLabel;
+    private JLabel selectPuzzleLabel;
     private JButton hintButton;
 
     private MainApplication mainApp;
@@ -36,95 +34,441 @@ public class PuzzlePanel extends JPanel {
         this.mainApp = mainApp;
         this.game = game;
 
-        // ✅ Initialize form components
         setLayout(new BorderLayout());
         add(puzzlePanel, BorderLayout.CENTER);
 
-        // ✅ Get text area from scroll pane if not directly bound
         if (descScroll != null && puzzleDescription == null) {
             puzzleDescription = (JTextArea) descScroll.getViewport().getView();
         }
 
         initializePanel();
         setupEventHandlers();
+        stylePuzzleComponents();
         refresh();
     }
 
     private void initializePanel() {
-        // Configure text areas
+        setOpaque(false);
+        if (puzzlePanel != null) {
+            puzzlePanel.setOpaque(false);
+        }
+
+        makeLabelTransparent(titleLabel);
+        makeLabelTransparent(coinRewardLabel);
+        makeLabelTransparent(difficultyLabel);
+        makeLabelTransparent(toolsLabel);
+        makeLabelTransparent(answerLabel);
+        makeLabelTransparent(selectPuzzleLabel);
+
         if (puzzleDescription != null) {
             puzzleDescription.setEditable(false);
             puzzleDescription.setLineWrap(true);
             puzzleDescription.setWrapStyleWord(true);
-            puzzleDescription.setFont(new Font("Monospaced", Font.PLAIN, 12));
+            puzzleDescription.setFont(new Font("Monospaced", Font.PLAIN, 13));
+            puzzleDescription.setForeground(new Color(220, 220, 255));
+            puzzleDescription.setCaretColor(Color.YELLOW);
+            puzzleDescription.setOpaque(false);
         }
 
-        // ✅ CHANGED: hintArea → hintTextArea
         if (hintTextArea != null) {
             hintTextArea.setEditable(false);
             hintTextArea.setLineWrap(true);
             hintTextArea.setWrapStyleWord(true);
-            hintTextArea.setBackground(new Color(160, 86, 45));
             hintTextArea.setFont(new Font("Monospaced", Font.ITALIC, 12));
+            hintTextArea.setForeground(new Color(255, 255, 180));
+            hintTextArea.setCaretColor(Color.ORANGE);
+            hintTextArea.setOpaque(false);
         }
 
-        // ✅ Configure toolsLabel if it exists
-        if (toolsLabel != null) {
-            toolsLabel.setText("Available Tools:");
-            toolsLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        }
-
-        // ✅ Configure answerLabel if it exists
-        if (answerLabel != null) {
-            answerLabel.setText("Your Answer:");
-            answerLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        }
-
-        // Configure combo box renderers
+        // IMPROVED: Much better puzzle selector renderer with excellent readability
         if (puzzleSelector != null) {
-            puzzleSelector.setRenderer(new DefaultListCellRenderer() {
-                @Override
-                public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                              boolean isSelected, boolean cellHasFocus) {
-                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                    if (value instanceof Puzzle) {
-                        Puzzle puzzle = (Puzzle) value;
-                        String status = puzzle.isSolved() ? "✅ " : "❓ ";
-                        setText(status + puzzle.getDescription().substring(0,
-                                Math.min(40, puzzle.getDescription().length())) +
-                                (puzzle.getDescription().length() > 40 ? "..." : ""));
-                    }
-                    return this;
-                }
-            });
+            puzzleSelector.setRenderer(new PuzzleListCellRenderer());
+            puzzleSelector.setMaximumRowCount(5); // Show more items at once
         }
 
+        // IMPROVED: Better tools combo box renderer
         if (toolsComboBox != null) {
-            toolsComboBox.setRenderer(new DefaultListCellRenderer() {
-                @Override
-                public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                              boolean isSelected, boolean cellHasFocus) {
-                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                    if (value instanceof GachaItem) {
-                        GachaItem item = (GachaItem) value;
-                        String icon = item.getItemType() == ItemType.KEY ? "🔑 " : "🛠️ ";
-                        setText(icon + item.getName() + " (" + item.getRarity() + ")");
-
-                        switch (item.getRarity()) {
-                            case EPIC: setForeground(new Color(255, 215, 0)); break;
-                            case RARE: setForeground(new Color(65, 105, 225)); break;
-                            default: setForeground(Color.BLACK);
-                        }
-                    }
-                    return this;
-                }
-            });
+            toolsComboBox.setRenderer(new ToolsListCellRenderer());
+            toolsComboBox.setMaximumRowCount(5);
         }
 
-        // ✅ Configure itemSelector if it exists
         if (itemSelector != null) {
             itemSelector.setVisible(false);
         }
+    }
+
+    // NEW: Professional Puzzle List Cell Renderer
+    private class PuzzleListCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                      boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+            if (value instanceof Puzzle) {
+                Puzzle puzzle = (Puzzle) value;
+
+                // Clear readable text with emojis
+                String emoji = puzzle.isSolved() ? "✅ " : "🧩 ";
+                String difficultyStars = puzzle.getDifficultyStars();
+
+                // Truncate description for readability
+                String desc = puzzle.getDescription();
+                if (desc.length() > 50) {
+                    desc = desc.substring(0, 47) + "...";
+                }
+
+                // Create formatted text
+                String displayText = String.format(
+                        "<html><div style='padding: 5px;'>" +
+                                "<b>%s%s</b><br>" +
+                                "<font size='-1' color='#AAAAAA'>%s</font><br>" +
+                                "<font size='-2'>Difficulty: %s | Reward: %d coins</font>" +
+                                "</div></html>",
+                        emoji, desc,
+                        puzzle.isSolved() ? "✓ SOLVED" : "✗ UNSOLVED",
+                        difficultyStars, puzzle.getCoinReward()
+                );
+
+                setText(displayText);
+
+                // Professional background and text colors
+                if (isSelected) {
+                    setBackground(new Color(100, 80, 120, 240)); // Selected - darker
+                    setForeground(Color.WHITE);
+                    setBorder(BorderFactory.createCompoundBorder(
+                            BorderFactory.createLineBorder(new Color(255, 215, 0), 2),
+                            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+                    ));
+                } else {
+                    if (puzzle.isSolved()) {
+                        setBackground(new Color(60, 100, 60, 180)); // Green for solved
+                        setForeground(new Color(200, 255, 200));
+                    } else {
+                        setBackground(index % 2 == 0 ?
+                                new Color(50, 40, 70, 180) : // Alternate row colors
+                                new Color(60, 50, 80, 180));
+                        setForeground(new Color(240, 240, 255));
+                    }
+                    setBorder(BorderFactory.createEmptyBorder(5, 8, 5, 8));
+                }
+
+                // Better font for readability
+                setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            }
+
+            return this;
+        }
+    }
+
+    // NEW: Professional Tools List Cell Renderer
+    private class ToolsListCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                      boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+            if (value instanceof GachaItem) {
+                GachaItem item = (GachaItem) value;
+
+                // Skip the "No helpful items" placeholder
+                if (item.getName().equals("No helpful items")) {
+                    setText("<html><div style='padding: 5px; color: #888888; font-style: italic;'>" +
+                            "No helpful items in inventory</div></html>");
+                    setBackground(isSelected ? new Color(80, 80, 100, 200) : new Color(60, 60, 80, 180));
+                    setForeground(new Color(180, 180, 180));
+                    setBorder(BorderFactory.createEmptyBorder(5, 8, 5, 8));
+                    setFont(new Font("Segoe UI", Font.ITALIC, 12));
+                    return this;
+                }
+
+                // Rarity colors
+                Color rarityColor;
+                String rarityText;
+                switch (item.getRarity()) {
+                    case EPIC:
+                        rarityColor = new Color(255, 215, 0);
+                        rarityText = "✨ EPIC";
+                        break;
+                    case RARE:
+                        rarityColor = new Color(100, 200, 255);
+                        rarityText = "⭐ RARE";
+                        break;
+                    default:
+                        rarityColor = new Color(200, 200, 200);
+                        rarityText = "○ COMMON";
+                }
+
+                String itemIcon = item.getItemType() == ItemType.KEY ? "🔑 " : "🛠️ ";
+                String itemType = item.getItemType() == ItemType.KEY ? "Key" : "Tool";
+
+                // Create formatted text
+                String displayText = String.format(
+                        "<html><div style='padding: 5px;'>" +
+                                "<b>%s%s</b><br>" +
+                                "<font color='#%02X%02X%02X'>%s</font> | <font size='-1'>%s</font><br>" +
+                                "<font size='-2' color='#AAAAAA'>%s</font>" +
+                                "</div></html>",
+                        itemIcon, item.getName(),
+                        rarityColor.getRed(), rarityColor.getGreen(), rarityColor.getBlue(), rarityText,
+                        itemType,
+                        item.getDescription().length() > 60 ?
+                                item.getDescription().substring(0, 57) + "..." : item.getDescription()
+                );
+
+                setText(displayText);
+
+                // Background based on selection
+                if (isSelected) {
+                    setBackground(new Color(120, 80, 40, 240));
+                    setForeground(Color.WHITE);
+                    setBorder(BorderFactory.createCompoundBorder(
+                            BorderFactory.createLineBorder(rarityColor, 2),
+                            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+                    ));
+                } else {
+                    setBackground(index % 2 == 0 ?
+                            new Color(70, 60, 50, 180) :
+                            new Color(80, 70, 60, 180));
+                    setForeground(new Color(240, 240, 255));
+                    setBorder(BorderFactory.createEmptyBorder(5, 8, 5, 8));
+                }
+
+                setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            }
+
+            return this;
+        }
+    }
+
+    private void makeLabelTransparent(JLabel label) {
+        if (label != null) {
+            label.setOpaque(false);
+            label.setBackground(new Color(0, 0, 0, 0));
+        }
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+
+        Color color1 = new Color(30, 25, 40, 255);
+        Color color2 = new Color(50, 40, 65, 255);
+
+        GradientPaint gradient = new GradientPaint(
+                0, 0, color1,
+                getWidth(), getHeight(), color2
+        );
+        g2d.setPaint(gradient);
+        g2d.fillRect(0, 0, getWidth(), getHeight());
+
+        g2d.setColor(new Color(255, 255, 255, 10));
+        for (int i = 0; i < getWidth(); i += 30) {
+            g2d.drawLine(i, 0, i, getHeight());
+        }
+        for (int i = 0; i < getHeight(); i += 30) {
+            g2d.drawLine(0, i, getWidth(), i);
+        }
+
+        g2d.setColor(new Color(100, 150, 255, 15));
+        int centerX = getWidth() / 2;
+        int centerY = getHeight() / 2;
+        int glowSize = Math.min(getWidth(), getHeight()) / 2;
+        g2d.fillOval(centerX - glowSize/2, centerY - glowSize/2, glowSize, glowSize);
+
+        g2d.setColor(new Color(255, 255, 200, 40));
+        int particleCount = 20;
+        for (int i = 0; i < particleCount; i++) {
+            int x = (int)(Math.random() * getWidth());
+            int y = (int)(Math.random() * getHeight());
+            int size = (int)(Math.random() * 4) + 1;
+            g2d.fillOval(x, y, size, size);
+        }
+
+        g2d.setColor(new Color(150, 100, 255, 25));
+        g2d.setStroke(new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        for (int i = 0; i < 3; i++) {
+            int circleSize = 100 + i * 80;
+            g2d.drawOval(centerX - circleSize/2, centerY - circleSize/2, circleSize, circleSize);
+        }
+    }
+
+    private void stylePuzzleComponents() {
+        if (titleLabel != null) {
+            titleLabel.setForeground(new Color(255, 215, 0));
+            titleLabel.setFont(new Font("Monospaced", Font.BOLD, 28));
+            titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            titleLabel.setText("🧠 ANCIENT PUZZLES 🧠");
+        }
+
+        stylePuzzleLabel(coinRewardLabel, "💰 Reward:", new Color(255, 255, 150));
+        stylePuzzleLabel(difficultyLabel, "⭐ Difficulty:", new Color(150, 255, 255));
+        stylePuzzleLabel(toolsLabel, "🛠️ Available Tools:", new Color(180, 220, 255));
+        stylePuzzleLabel(answerLabel, "📝 Your Answer:", new Color(255, 200, 150));
+        stylePuzzleLabel(selectPuzzleLabel, "🔍 Select Puzzle:", new Color(200, 255, 200));
+
+        if (puzzleDescription != null) {
+            puzzleDescription.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(100, 80, 120, 200), 2),
+                    BorderFactory.createCompoundBorder(
+                            BorderFactory.createLineBorder(new Color(150, 130, 180, 100), 1),
+                            BorderFactory.createEmptyBorder(15, 15, 15, 15)
+                    )
+            ));
+        }
+
+        if (hintTextArea != null) {
+            hintTextArea.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(80, 120, 100, 200), 2),
+                    BorderFactory.createCompoundBorder(
+                            BorderFactory.createLineBorder(new Color(130, 180, 150, 100), 1),
+                            BorderFactory.createEmptyBorder(12, 12, 12, 12)
+                    )
+            ));
+        }
+
+        // IMPROVED: Better combo box styling for readability
+        if (puzzleSelector != null) {
+            puzzleSelector.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(150, 130, 180, 200), 2),
+                    BorderFactory.createEmptyBorder(8, 12, 8, 12)
+            ));
+            puzzleSelector.setBackground(new Color(60, 50, 80, 220));
+            puzzleSelector.setForeground(Color.WHITE);
+            puzzleSelector.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        }
+
+        if (toolsComboBox != null) {
+            toolsComboBox.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(130, 150, 180, 200), 2),
+                    BorderFactory.createEmptyBorder(8, 12, 8, 12)
+            ));
+            toolsComboBox.setBackground(new Color(60, 50, 80, 220));
+            toolsComboBox.setForeground(Color.WHITE);
+            toolsComboBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        }
+
+        stylePuzzleButton(solveButton, "🎯 SOLVE PUZZLE", new Color(80, 160, 80));
+        stylePuzzleButton(useItemButton, "🔧 USE ITEM", new Color(160, 120, 80));
+        stylePuzzleButton(backButton, "🔙 BACK TO GAME", new Color(80, 80, 120));
+        stylePuzzleButton(hintButton, "💡 GET HINT", new Color(160, 80, 160));
+
+        if (answerField != null) {
+            answerField.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            answerField.setForeground(new Color(255, 255, 200));
+            answerField.setCaretColor(Color.YELLOW);
+            answerField.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(180, 150, 100, 200), 2),
+                    BorderFactory.createCompoundBorder(
+                            BorderFactory.createLineBorder(new Color(220, 200, 150, 100), 1),
+                            BorderFactory.createEmptyBorder(10, 15, 10, 15)
+                    )
+            ));
+            answerField.setOpaque(false);
+        }
+
+        if (descScroll != null) {
+            descScroll.setOpaque(false);
+            descScroll.getViewport().setOpaque(false);
+            descScroll.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+            descScroll.getViewport().setBorder(null);
+        }
+    }
+
+    private void stylePuzzleLabel(JLabel label, String defaultText, Color color) {
+        if (label == null) return;
+
+        if (!label.getText().isEmpty()) {
+            label.setText("✨ " + label.getText());
+        } else {
+            label.setText(defaultText);
+        }
+        label.setForeground(color);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        label.setHorizontalAlignment(SwingConstants.LEFT);
+    }
+
+    private void stylePuzzleButton(JButton button, String defaultText, Color baseColor) {
+        if (button == null) return;
+
+        if (button.getText().isEmpty()) {
+            button.setText(defaultText);
+        }
+
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setFocusPainted(false);
+
+        Color buttonBg = new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), 200);
+        Color hoverColor = new Color(
+                Math.min(255, baseColor.getRed() + 40),
+                Math.min(255, baseColor.getGreen() + 40),
+                Math.min(255, baseColor.getBlue() + 40),
+                230
+        );
+
+        button.setBackground(buttonBg);
+        button.setForeground(Color.WHITE);
+        button.setOpaque(true);
+
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(255, 255, 220, 150), 2),
+                BorderFactory.createEmptyBorder(12, 25, 12, 25)
+        ));
+
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                if (button.isEnabled()) {
+                    button.setBackground(hoverColor);
+                    button.setForeground(Color.YELLOW);
+                    button.setBorder(BorderFactory.createCompoundBorder(
+                            BorderFactory.createLineBorder(Color.ORANGE, 3),
+                            BorderFactory.createEmptyBorder(12, 25, 12, 25)
+                    ));
+
+                    Timer glowTimer = new Timer(150, null);
+                    final boolean[] isBright = {false};
+                    glowTimer.addActionListener(evt -> {
+                        if (button.isEnabled()) {
+                            if (isBright[0]) {
+                                button.setForeground(new Color(255, 255, 180));
+                                button.setBorder(BorderFactory.createCompoundBorder(
+                                        BorderFactory.createLineBorder(new Color(255, 200, 100), 3),
+                                        BorderFactory.createEmptyBorder(12, 25, 12, 25)
+                                ));
+                            } else {
+                                button.setForeground(Color.YELLOW);
+                                button.setBorder(BorderFactory.createCompoundBorder(
+                                        BorderFactory.createLineBorder(Color.ORANGE, 3),
+                                        BorderFactory.createEmptyBorder(12, 25, 12, 25)
+                                ));
+                            }
+                            isBright[0] = !isBright[0];
+                            button.repaint();
+                        } else {
+                            glowTimer.stop();
+                        }
+                    });
+                    button.putClientProperty("glowTimer", glowTimer);
+                    glowTimer.start();
+                }
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                Object timer = button.getClientProperty("glowTimer");
+                if (timer instanceof Timer) {
+                    ((Timer) timer).stop();
+                }
+
+                button.setBackground(buttonBg);
+                button.setForeground(Color.WHITE);
+                button.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(new Color(255, 255, 220, 150), 2),
+                        BorderFactory.createEmptyBorder(12, 25, 12, 25)
+                ));
+            }
+        });
     }
 
     private void setupEventHandlers() {
@@ -140,12 +484,31 @@ public class PuzzlePanel extends JPanel {
         if (backButton != null) {
             backButton.addActionListener(e -> mainApp.showGame());
         }
+        if (hintButton != null) {
+            hintButton.addActionListener(e -> showAdditionalHint());
+        }
 
         if (itemSelector != null) {
-            itemSelector.addActionListener(e -> {
-                // Optional: Add functionality if itemSelector is used
-            });
+            itemSelector.addActionListener(e -> {});
         }
+    }
+
+    private void showAdditionalHint() {
+        if (currentPuzzle == null) {
+            mainApp.showMessage("Please select a puzzle first!");
+            return;
+        }
+
+        if (currentPuzzle.isSolved()) {
+            mainApp.showMessage("This puzzle is already solved!");
+            return;
+        }
+
+        String detailedHint = currentPuzzle.getDetailedHint();
+        if (hintTextArea != null) {
+            hintTextArea.setText("💡 ADVANCED HINT:\n" + detailedHint);
+        }
+        mainApp.showMessage("💡 Advanced hint revealed!");
     }
 
     private void updatePuzzleDisplay() {
@@ -159,7 +522,6 @@ public class PuzzlePanel extends JPanel {
                         "\n\n" + currentPuzzle.getDifficultyStars() + " Difficulty");
             }
 
-            // ✅ CHANGED: hintArea → hintTextArea
             if (hintTextArea != null) {
                 hintTextArea.setText("💡 HINT:\n" + currentPuzzle.getProgressiveHint());
             }
@@ -172,7 +534,6 @@ public class PuzzlePanel extends JPanel {
                 difficultyLabel.setText("⭐ Difficulty: " + currentPuzzle.getDifficultyStars());
             }
 
-            // ✅ CHANGED: hintArea → hintTextArea
             if (currentPuzzle.requiresGachaItem() && hintTextArea != null) {
                 hintTextArea.append("\n\n🔒 SPECIAL REQUIREMENT: This puzzle needs a specific item!");
                 if (currentPuzzle.getRequiredToolType() != null) {
@@ -212,14 +573,7 @@ public class PuzzlePanel extends JPanel {
     }
 
     private void updateItemSelector() {
-        if (itemSelector == null || currentPuzzle == null) return;
-
-        itemSelector.removeAllItems();
-        List<GachaItem> inventory = game.getCurrentPlayer().getInventory();
-
-        for (GachaItem item : inventory) {
-            itemSelector.addItem(item.getName() + " (" + item.getRarity() + ")");
-        }
+        if (itemSelector != null || currentPuzzle == null) return;
     }
 
     private void attemptSolve() {
@@ -266,7 +620,6 @@ public class PuzzlePanel extends JPanel {
             currentPuzzle.recordAttempt();
             mainApp.showMessage("Incorrect " + puzzleType + "! Try again. Attempts: " +
                     currentPuzzle.getPuzzleStats().get("attempts"));
-            // ✅ CHANGED: hintArea → hintTextArea
             if (hintTextArea != null) {
                 hintTextArea.setText("💡 HINT:\n" + currentPuzzle.getProgressiveHint());
             }
@@ -296,7 +649,6 @@ public class PuzzlePanel extends JPanel {
         }
 
         String result = game.getCurrentPlayer().useItemWithFeedback(selectedItem, currentPuzzle);
-        // ✅ CHANGED: hintArea → hintTextArea
         if (hintTextArea != null) {
             hintTextArea.setText("🛠️ ITEM USAGE RESULT:\n" + result);
         }
@@ -335,7 +687,6 @@ public class PuzzlePanel extends JPanel {
         if (puzzleSelector != null) {
             puzzleSelector.removeAllItems();
 
-            // ✅ FIX: Get the CURRENT room properly
             Room currentRoom = game.getCurrentRoom();
             if (currentRoom != null) {
                 System.out.println("📍 Current Room: " + currentRoom.getName() +
@@ -346,7 +697,6 @@ public class PuzzlePanel extends JPanel {
 
                 int availablePuzzles = 0;
                 for (Puzzle puzzle : roomPuzzles) {
-                    // Show ALL puzzles from current room, but mark solved ones differently
                     puzzleSelector.addItem(puzzle);
                     availablePuzzles++;
 
@@ -374,6 +724,11 @@ public class PuzzlePanel extends JPanel {
             answerField.setText("");
             answerField.requestFocus();
         }
+
+        if (solveButton != null) solveButton.setEnabled(currentPuzzle != null && !currentPuzzle.isSolved());
+        if (hintButton != null) hintButton.setEnabled(currentPuzzle != null && !currentPuzzle.isSolved());
+
+        repaint();
     }
 
     private void showNoPuzzlesMessage() {
@@ -388,6 +743,9 @@ public class PuzzlePanel extends JPanel {
         }
         if (useItemButton != null) {
             useItemButton.setEnabled(false);
+        }
+        if (hintButton != null) {
+            hintButton.setEnabled(false);
         }
     }
 }
