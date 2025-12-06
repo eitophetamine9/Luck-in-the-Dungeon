@@ -4,11 +4,14 @@ import Panels.*;
 import model.GameManager;
 import javax.swing.*;
 import java.awt.*;
+import audio.AudioManager;
+import audio.AudioFiles;
 
 public class MainApplication extends JFrame {
     private GameManager game;
     private CardLayout cardLayout;
     private JPanel mainPanel;
+    private AudioManager audioManager;
 
     // Panel references
     private MainMenuPanel mainMenuPanel;
@@ -19,9 +22,13 @@ public class MainApplication extends JFrame {
     private MapPanel mapPanel;
 
     public MainApplication() {
+        audioManager = AudioManager.getInstance();
+        audioManager.setVolume(0.6f);
+
         game = GameManager.getInstance();
         initializeGUI();
         showMainMenu();
+
     }
 
     private void initializeGUI() {
@@ -53,15 +60,44 @@ public class MainApplication extends JFrame {
         setContentPane(mainPanel);
     }
 
+    public AudioManager getAudioManager() {
+        return audioManager;
+    }
+
     // Navigation methods
     public void showMainMenu() {
+        // Play main menu music
+        audioManager.playMusic(AudioFiles.MAIN_MENU);
+
         cardLayout.show(mainPanel, "MAIN_MENU");
         mainMenuPanel.refresh();
+
+        cardLayout.show(mainPanel, "MENU");
+        if (mainMenuPanel != null) {
+            mainMenuPanel.refresh();
+        }
     }
 
     public void showGame() {
+        // Determine which music to play based on current room
+        int roomIndex = game.getCurrentRoomIndex();
+
+        switch(roomIndex) {
+            case 0: audioManager.playMusic(AudioFiles.ROOM_1); break;
+            case 1: audioManager.playMusic(AudioFiles.ROOM_2); break;
+            case 2: audioManager.playMusic(AudioFiles.ROOM_3); break;
+            case 3: audioManager.playMusic(AudioFiles.ROOM_4); break;
+            case 4: audioManager.playMusic(AudioFiles.ROOM_5); break;  // Room 5 - Temporal Nexus
+            default: audioManager.playMusic(AudioFiles.ROOM_1);
+        }
+
         cardLayout.show(mainPanel, "GAME");
         gamePanel.refresh();
+
+        cardLayout.show(mainPanel, "GAME");
+        if (gamePanel != null) {
+            gamePanel.refresh();
+        }
     }
 
     public void showPuzzle() {
@@ -90,6 +126,12 @@ public class MainApplication extends JFrame {
     }
 
     public void showMessage(String message) {
+        // If it's an error message, play error sound
+        if (message.contains("❌") || message.contains("error") ||
+                message.contains("Error") || message.contains("failed")) {
+            audioManager.playSound(AudioFiles.ERROR);
+        }
+
         JOptionPane.showMessageDialog(this, message);
     }
 
@@ -99,5 +141,8 @@ public class MainApplication extends JFrame {
         return result == JOptionPane.YES_OPTION;
     }
 
+    public void playVictoryMusic() {
+        audioManager.playMusic(AudioFiles.ROOM_5); // Or play special victory music
+    }
 
 }

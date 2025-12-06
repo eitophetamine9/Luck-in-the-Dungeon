@@ -5,6 +5,8 @@ import model.*;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import audio.AudioFiles;
+
 
 public class PuzzlePanel extends JPanel {
     private JPanel puzzlePanel;
@@ -459,23 +461,34 @@ public class PuzzlePanel extends JPanel {
 
     private void setupEventHandlers() {
         if (puzzleSelector != null) {
-            puzzleSelector.addActionListener(e -> updatePuzzleDisplay());
+            puzzleSelector.addActionListener(e -> {
+                mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+                updatePuzzleDisplay();
+            });
         }
         if (solveButton != null) {
-            solveButton.addActionListener(e -> attemptSolve());
+            solveButton.addActionListener(e -> {
+                mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+                attemptSolve();
+            });
         }
         if (useItemButton != null) {
-            useItemButton.addActionListener(e -> useSelectedItem());
+            useItemButton.addActionListener(e -> {
+                mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+                useSelectedItem();
+            });
         }
         if (backButton != null) {
-            backButton.addActionListener(e -> mainApp.showGame());
+            backButton.addActionListener(e -> {
+                mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+                mainApp.showGame();
+            });
         }
         if (hintButton != null) {
-            hintButton.addActionListener(e -> showAdditionalHint());
-        }
-
-        if (itemSelector != null) {
-            itemSelector.addActionListener(e -> {});
+            hintButton.addActionListener(e -> {
+                mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+                showAdditionalHint();
+            });
         }
     }
 
@@ -696,8 +709,12 @@ public class PuzzlePanel extends JPanel {
     }
 
     private void handlePuzzleSolved() {
+        mainApp.getAudioManager().playSound(AudioFiles.SUCCESS);
+        mainApp.getAudioManager().playSound(AudioFiles.COIN);
+
         int reward = currentPuzzle.getCoinReward();
         game.getCurrentPlayer().earnCoins(reward);
+
 
         java.util.Map<String, Object> stats = currentPuzzle.getPuzzleStats();
         String message = "🎉 PUZZLE SOLVED!\n" +

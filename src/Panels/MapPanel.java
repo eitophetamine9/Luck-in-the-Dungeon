@@ -6,6 +6,7 @@ import model.GameManager;
 import javax.swing.*;
 import javax.swing.border.Border; // 🆕 IMPORT ADDED
 import java.awt.*;
+import audio.AudioFiles;
 
 public class MapPanel extends JPanel {
     private JPanel mapPanel;
@@ -48,7 +49,10 @@ public class MapPanel extends JPanel {
         room2Button.addActionListener(e -> navigateToRoom(1));
         room3Button.addActionListener(e -> navigateToRoom(2));
         room4Button.addActionListener(e -> navigateToRoom(3));
-        backButton.addActionListener(e -> mainApp.showGame());
+        backButton.addActionListener(e -> {
+            mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+            mainApp.showGame();
+        });
     }
 
     private void setupDungeonButtons() {
@@ -159,7 +163,14 @@ public class MapPanel extends JPanel {
     }
 
     private void navigateToRoom(int roomIndex) {
+        mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+
         String result = game.moveToRoom(roomIndex);
+
+        // Play unlock sound if successful
+        if (result.contains("✅") || !result.contains("🔒")) {
+            mainApp.getAudioManager().playSound(AudioFiles.UNLOCK);
+        }
 
         if (result.contains("🔒")) {
             mainApp.showMessage(result);

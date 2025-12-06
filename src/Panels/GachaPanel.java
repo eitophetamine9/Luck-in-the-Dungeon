@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import audio.AudioFiles;
 
 public class GachaPanel extends JPanel {
     private JPanel gachaPanel;
@@ -218,15 +219,22 @@ public class GachaPanel extends JPanel {
 
     private void setupEventHandlers() {
         if (pullButton != null) {
-            pullButton.addActionListener(e -> pullGacha());
+            pullButton.addActionListener(e -> {
+                mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+                pullGacha();
+            });
         }
         if (backButton != null) {
-            backButton.addActionListener(e -> mainApp.showGame());
+            backButton.addActionListener(e -> {
+                mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+                mainApp.showGame();
+            });
         }
     }
 
     private void pullGacha() {
         try {
+            mainApp.getAudioManager().playSound(AudioFiles.GACHA);
             if (game.getCurrentGachaMachine() == null) {
                 mainApp.showMessage("❌ No gacha machine here!");
                 return;

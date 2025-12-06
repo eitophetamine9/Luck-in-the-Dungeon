@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Map;
+import audio.AudioFiles;
 
 public class GamePanel extends JPanel {
     // ✅ ADD saveButton to your component list
@@ -226,26 +227,62 @@ public class GamePanel extends JPanel {
     }
 
     private void setupEventHandlers() {
-        puzzleBtn.addActionListener(e -> mainApp.showPuzzle());
-        gachaBtn.addActionListener(e -> mainApp.showGacha());
-        inventoryBtn.addActionListener(e -> mainApp.showInventory());
-        mapBtn.addActionListener(e -> mainApp.showMap());
-        nextRoomBtn.addActionListener(e -> handleNextRoom());
-        mainMenuBtn.addActionListener(e -> handleMainMenu());
+        puzzleBtn.addActionListener(e -> {
+            mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+            mainApp.showPuzzle();
+        });
 
-        // ✅ ADD SAVE BUTTON HANDLER
+        gachaBtn.addActionListener(e -> {
+            mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+            mainApp.showGacha();
+        });
+
+        inventoryBtn.addActionListener(e -> {
+            mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+            mainApp.showInventory();
+        });
+
+        mapBtn.addActionListener(e -> {
+            mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+            mainApp.showMap();
+        });
+
+        nextRoomBtn.addActionListener(e -> {
+            mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+            handleNextRoom();
+        });
+
+        mainMenuBtn.addActionListener(e -> {
+            mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+            handleMainMenu();
+        });
+
         if (saveButton != null) {
-            saveButton.addActionListener(e -> handleSaveGame());
+            saveButton.addActionListener(e -> {
+                mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+                handleSaveGame();
+            });
         }
 
         if (quickSaveButton != null) {
-            quickSaveButton.addActionListener(e -> handleQuickSave());
+            quickSaveButton.addActionListener(e -> {
+                mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+                handleQuickSave();
+            });
         }
+
         if (quickLoadButton != null) {
-            quickLoadButton.addActionListener(e -> handleQuickLoad());
+            quickLoadButton.addActionListener(e -> {
+                mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+                handleQuickLoad();
+            });
         }
+
         if (saveInfoButton != null) {
-            saveInfoButton.addActionListener(e -> handleSaveInfo());
+            saveInfoButton.addActionListener(e -> {
+                mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+                handleSaveInfo();
+            });
         }
     }
 

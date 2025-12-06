@@ -12,6 +12,7 @@ import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import audio.AudioFiles;
 
 public class MainMenuPanel extends JPanel {
     // ✅ MUST MATCH FORM COMPONENT NAMES
@@ -84,11 +85,21 @@ public class MainMenuPanel extends JPanel {
     }
 
     private void setupEventHandlers() {
-        newGameButton.addActionListener(e -> handleNewGame());
-        loadGameButton.addActionListener(e -> handleLoadGame());
-        exitButton.addActionListener(e -> handleExit());
-    }
+        newGameButton.addActionListener(e -> {
+            mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+            handleNewGame();
+        });
 
+        loadGameButton.addActionListener(e -> {
+            mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+            handleLoadGame();
+        });
+
+        exitButton.addActionListener(e -> {
+            mainApp.getAudioManager().playSound(AudioFiles.CLICK);
+            handleExit();
+        });
+    }
     private void setupDungeonButtons() {
         // Apply the advanced UI to all buttons
         applyFireUI(newGameButton, "🔥 NEW GAME 🔥");
