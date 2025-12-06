@@ -37,7 +37,8 @@ public class GamePanel extends JPanel {
             "room1_lab.png",
             "room2_archives.png",
             "room3_alchemy.png",
-            "room4_observatory.png"
+            "room4_observatory.png",
+            "room5_nexus.png"
     };
 
     // 🆕 ADD: Room change tracker
@@ -630,8 +631,8 @@ public class GamePanel extends JPanel {
     // 🆕 COMPLETELY UPDATED refresh() method with room change detection
     public void refresh() {
         System.out.println("\n🔄 === GAMEPANEL REFRESH ===");
+        System.out.println("Current room index: " + game.getCurrentRoomIndex());
 
-        // 🆕 UPDATE BACKGROUND (checks if room changed internally)
         updateBackground();
 
         Room currentRoom = game.getCurrentRoom();
@@ -641,48 +642,51 @@ public class GamePanel extends JPanel {
             System.out.println("📊 Current room: " + currentRoom.getName());
             System.out.println("📈 Room completion: " + completion + "%");
 
-            // 🆕 METHOD 3: DIRECT STRING ASSIGNMENT (NO DUPLICATION)
-            String roomText =
-                    "📍 " + currentRoom.getName().toUpperCase() + " 📍\n" +
-                            "════════════════════════════════════════\n\n" +
-                            currentRoom.getRoomDescription() + "\n\n" +
-                            "════════════════════════════════════════\n" +
-                            "📋 CURRENT MISSION:\n" +
-                            game.getCurrentObjective() + "\n" +
-                            "════════════════════════════════════════\n\n" +
-                            "🎮 Available Actions:";
+            // ✅ SPECIAL HANDLING FOR ROOM 5
+            if (game.getCurrentRoomIndex() == 4) { // Room 5 (index 4)
+                handleRoom5Display(currentRoom);
+            } else {
+                // Normal room handling
+                String roomText =
+                        "📍 " + currentRoom.getName().toUpperCase() + " 📍\n" +
+                                "════════════════════════════════════════\n\n" +
+                                currentRoom.getRoomDescription() + "\n\n" +
+                                "════════════════════════════════════════\n" +
+                                "📋 CURRENT MISSION:\n" +
+                                game.getCurrentObjective() + "\n" +
+                                "════════════════════════════════════════\n\n" +
+                                "🎮 Available Actions:";
 
-            // 🆕 SET TEXT ONCE - REPLACES EVERYTHING
-            roomDescriptionTextArea.setText(roomText);
-            roomDescriptionTextArea.setCaretPosition(0);
+                roomDescriptionTextArea.setText(roomText);
+                roomDescriptionTextArea.setCaretPosition(0);
 
-            // Update room header
+                // Normal room button states
+                puzzleBtn.setEnabled(!game.getAvailablePuzzles().isEmpty());
+                gachaBtn.setEnabled(game.canAffordGachaPull());
+
+                boolean canGoNext = game.isCurrentRoomComplete() &&
+                        game.getCurrentRoomIndex() < game.getRooms().size() - 1;
+                nextRoomBtn.setEnabled(canGoNext);
+                nextRoomBtn.setText(canGoNext ? "🚪 NEXT ROOM →" : "Complete Puzzles First");
+
+                puzzleBtn.setText("🧩 Solve Puzzles (" + game.getAvailablePuzzles().size() + " available)");
+
+                if (puzzleAvailableLabel != null) {
+                    puzzleAvailableLabel.setText("🧩 Puzzles: " + game.getAvailablePuzzles().size() + " available");
+                }
+            }
+
+            // Update common UI elements
             if (roomHeaderLabel != null) {
                 roomHeaderLabel.setText("Room " + currentRoom.getRoomNumber() + ": " +
                         currentRoom.getName() +
                         String.format(" (%.0f%% Complete)", completion));
             }
 
-            // Update button states
-            boolean canGoNext = game.isCurrentRoomComplete() &&
-                    game.getCurrentRoomIndex() < game.getRooms().size() - 1;
-
-            nextRoomBtn.setEnabled(canGoNext);
-            puzzleBtn.setEnabled(!game.getAvailablePuzzles().isEmpty());
-            gachaBtn.setEnabled(game.canAffordGachaPull());
-
-            nextRoomBtn.setText(canGoNext ?
-                    "🚪 NEXT ROOM →" : "Complete Puzzles First");
-            puzzleBtn.setText("🧩 Solve Puzzles (" + game.getAvailablePuzzles().size() + " available)");
-            gachaBtn.setText("🎰 Gacha Machine (" + game.getCurrentPlayer().getCoinBalance() + " coins)");
-
-            // Update info labels
             if (coinsLabel != null) {
                 coinsLabel.setText("🪙 Coins: " + game.getCurrentPlayer().getCoinBalance());
             }
-            if (puzzleAvailableLabel != null) {
-                puzzleAvailableLabel.setText("🧩 Puzzles: " + game.getAvailablePuzzles().size() + " available");
-            }
+
             if (roomProgressLabel != null) {
                 roomProgressLabel.setText("📊 Progress: " + String.format("%.0f%%", completion));
             }
@@ -697,8 +701,77 @@ public class GamePanel extends JPanel {
             System.out.println("⚠️ Could not update UI - null components");
         }
 
-        // Force repaint
         repaint();
         System.out.println("✅ REFRESH COMPLETE\n");
+    }
+
+    private void handleRoom5Display(Room currentRoom) {
+        if (roomDescriptionTextArea == null) return;
+
+        String roomText =
+                "⚡ TEMPORAL NEXUS ⚡\n" +
+                        "════════════════════════════════════════\n\n" +
+                        "You stand before a shimmering portal of pure temporal energy.\n" +
+                        "The air crackles with possibilities of untold adventures.\n\n" +
+                        "✨ This gateway leads to:\n" +
+                        "   • Ancient temporal civilizations\n" +
+                        "   • Parallel reality exploration\n" +
+                        "   • Future dystopia intervention\n" +
+                        "   • Time paradox resolution\n\n" +
+                        "════════════════════════════════════════\n" +
+                        "📋 EXPANSION PREVIEW:\n" +
+                        "The adventure continues in future updates!\n\n" +
+                        "🔧 Development Status: COMING SOON\n" +
+                        "📅 Estimated: Next Semester\n\n" +
+                        "🎮 Available Actions:";
+
+        roomDescriptionTextArea.setText(roomText);
+        roomDescriptionTextArea.setCaretPosition(0);
+
+        // Disable puzzle button for room 5 (it's a preview room)
+        puzzleBtn.setEnabled(false);
+        puzzleBtn.setText("🧩 Expansion Content (Coming Soon)");
+
+        // Enable gacha with special text
+        gachaBtn.setEnabled(game.canAffordGachaPull());
+        gachaBtn.setText("🎰 Special Nexus Gacha");
+
+        // Disable next room button (this is the last room)
+        nextRoomBtn.setEnabled(false);
+        nextRoomBtn.setText("🌌 Gateway Active");
+
+        // Update info labels
+        if (puzzleAvailableLabel != null) {
+            puzzleAvailableLabel.setText("🧩 Puzzles: Expansion Content");
+        }
+    }
+
+    private void addExpansionInfoButton() {
+        JButton expansionInfoBtn = new JButton("🌌 Expansion Info");
+        styleDungeonButton(expansionInfoBtn, "🌌 EXPANSION INFO");
+        expansionInfoBtn.addActionListener(e -> showExpansionInfo());
+
+        // Add to your button panel (you might need to adjust layout)
+        // For example, if you have a panel for additional buttons:
+        // buttonPanel.add(expansionInfoBtn);
+    }
+
+    private void showExpansionInfo() {
+        if (game.getCurrentRoomIndex() == 4) {
+            JTextArea infoArea = new JTextArea(20, 50);
+            infoArea.setEditable(false);
+            infoArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+            infoArea.setText(game.getExpansionTeaser());
+
+            JScrollPane scrollPane = new JScrollPane(infoArea);
+            scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+            JOptionPane.showMessageDialog(
+                    mainApp,
+                    scrollPane,
+                    "Future Expansions Preview",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        }
     }
 }

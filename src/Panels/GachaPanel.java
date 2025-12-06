@@ -8,6 +8,8 @@ import exceptions.InventoryFullException;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class GachaPanel extends JPanel {
     private JPanel gachaPanel;
@@ -19,6 +21,7 @@ public class GachaPanel extends JPanel {
     private JLabel costLabel;
     private JLabel coinsLabel;
     private JLabel pityLabel;
+    private JLabel pityProgressLabel; // ✅ ADD: For visual progress bar
 
     private MainApplication mainApp;
     private GameManager game;
@@ -29,6 +32,12 @@ public class GachaPanel extends JPanel {
 
         setLayout(new BorderLayout());
         add(gachaPanel, BorderLayout.CENTER);
+
+        // ✅ CREATE pity progress label if it doesn't exist in your form
+        if (pityProgressLabel == null) {
+            pityProgressLabel = new JLabel("", JLabel.CENTER);
+            // Add it to your gachaPanel if needed, or create a new panel
+        }
 
         initializeComponents();
         setupEventHandlers();
@@ -49,6 +58,9 @@ public class GachaPanel extends JPanel {
         makeLabelTransparent(costLabel);
         makeLabelTransparent(coinsLabel);
         makeLabelTransparent(pityLabel);
+        if (pityProgressLabel != null) {
+            makeLabelTransparent(pityProgressLabel);
+        }
 
         // Configure result area WITH ALPHA IN CODE
         if (resultArea != null) {
@@ -128,7 +140,16 @@ public class GachaPanel extends JPanel {
         styleLabel(machineLabel, "🎰 Machine: Time Capsule", new Color(180, 220, 255));
         styleLabel(costLabel, "💰 Cost: 20 coins", new Color(255, 255, 200));
         styleLabel(coinsLabel, "🪙 Coins: 100", new Color(255, 255, 150));
-        styleLabel(pityLabel, "📊 Pity: 0/10", new Color(150, 255, 255));
+
+        // ✅ UPDATED: Style pity labels
+        if (pityLabel != null) {
+            styleLabel(pityLabel, "📊 Pity: 0/10", new Color(150, 255, 255));
+        }
+
+        if (pityProgressLabel != null) {
+            styleLabel(pityProgressLabel, "░░░░░░░░░░ (0/10)", new Color(255, 200, 100));
+            pityProgressLabel.setFont(new Font("Monospaced", Font.BOLD, 12));
+        }
 
         // Style buttons
         styleGachaButton(pullButton, "🎲 PULL GACHA", new Color(180, 60, 60));
@@ -211,49 +232,97 @@ public class GachaPanel extends JPanel {
                 return;
             }
 
-            GachaItem pulledItem = game.getCurrentGachaMachine().pull(game.getCurrentPlayer());
-
-            if (pulledItem != null) {
-                try {
-                    game.getCurrentPlayer().addItem(pulledItem);
-
-                    String rarityDisplay = "";
-                    String itemIcon = pulledItem.getItemType() == model.ItemType.KEY ? "🔑 " : "🛠️ ";
-
-                    switch (pulledItem.getRarity()) {
-                        case EPIC: rarityDisplay = "✨✨✨ EPIC ✨✨✨"; break;
-                        case RARE: rarityDisplay = "🌟🌟🌟 RARE 🌟🌟🌟"; break;
-                        default: rarityDisplay = "⭐ COMMON ⭐";
-                    }
-
-                    if (resultArea != null) {
-                        resultArea.setText(rarityDisplay + "\n\n" +
-                                itemIcon + "YOU GOT: " + pulledItem.getName() + "\n" +
-                                "📝 " + pulledItem.getDescription() + "\n\n" +
-                                "✅ Added to inventory!\n\n" +
-                                "🎒 " + game.getCurrentPlayer().getInventoryStatus());
-                        resultArea.setCaretPosition(0);
-                    }
-
-                    mainApp.showMessage("🎊 " + pulledItem.getRarity() + " ITEM!\n" + pulledItem.getName());
-
-                } catch (InventoryFullException e) {
-                    if (resultArea != null) {
-                        resultArea.setText("❌ INVENTORY FULL!\n\n" +
-                                "You pulled: " + pulledItem.getName() + "\n" +
-                                "But inventory is full!\n\n" +
-                                "Go to Inventory panel first.");
-                    }
-                    mainApp.showMessage("❌ Inventory full!");
-                }
+            // Disable button during pull animation
+            if (pullButton != null) {
+                pullButton.setEnabled(false);
+                pullButton.setText("⏳ PULLING...");
             }
 
-            refresh();
+            // Use timer for animation effect
+            Timer pullTimer = new Timer(800, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        GachaItem pulledItem = game.getCurrentGachaMachine().pull(game.getCurrentPlayer());
 
-        } catch (NotEnoughCoinsException e) {
-            mainApp.showMessage("❌ Need " + e.getRequired() + " coins!\nYou have: " + e.getAvailable());
+                        if (pulledItem != null) {
+                            try {
+                                game.getCurrentPlayer().addItem(pulledItem);
+
+                                String rarityDisplay = "";
+                                String itemIcon = pulledItem.getItemType() == model.ItemType.KEY ? "🔑 " : "🛠️ ";
+
+                                // Special colors based on rarity
+                                Color rarityColor;
+                                switch (pulledItem.getRarity()) {
+                                    case EPIC:
+                                        rarityDisplay = "✨✨✨ EPIC ✨✨✨";
+                                        rarityColor = new Color(255, 100, 255); // Pink/purple
+                                        break;
+                                    case RARE:
+                                        rarityDisplay = "🌟🌟🌟 RARE 🌟🌟🌟";
+                                        rarityColor = new Color(100, 200, 255); // Blue
+                                        break;
+                                    default:
+                                        rarityDisplay = "⭐ COMMON ⭐";
+                                        rarityColor = Color.WHITE;
+                                }
+
+                                if (resultArea != null) {
+                                    resultArea.setText(rarityDisplay + "\n\n" +
+                                            itemIcon + "YOU GOT: " + pulledItem.getName() + "\n" +
+                                            "📝 " + pulledItem.getDescription() + "\n\n" +
+                                            "✅ Added to inventory!\n\n" +
+                                            "🎒 " + game.getCurrentPlayer().getInventoryStatus());
+                                    resultArea.setForeground(rarityColor);
+                                    resultArea.setCaretPosition(0);
+                                }
+
+                                // Show special message for epic
+                                if (pulledItem.getRarity() == model.Rarity.EPIC) {
+                                    mainApp.showMessage("🎉🎉🎉 EPIC ITEM! 🎉🎉🎉\n" +
+                                            pulledItem.getName() + "\n\n" +
+                                            "Pity counter has been reset!");
+                                } else {
+                                    mainApp.showMessage("🎊 " + pulledItem.getRarity() + " ITEM!\n" + pulledItem.getName());
+                                }
+
+                            } catch (InventoryFullException ex) {
+                                if (resultArea != null) {
+                                    resultArea.setText("❌ INVENTORY FULL!\n\n" +
+                                            "You pulled: " + pulledItem.getName() + "\n" +
+                                            "But inventory is full!\n\n" +
+                                            "Go to Inventory panel first.");
+                                    resultArea.setForeground(Color.RED);
+                                }
+                                mainApp.showMessage("❌ Inventory full!");
+                            }
+                        }
+
+                        refresh();
+
+                    } catch (NotEnoughCoinsException ex) {
+                        mainApp.showMessage("❌ Need " + ex.getRequired() + " coins!\nYou have: " + ex.getAvailable());
+                    } catch (Exception ex) {
+                        mainApp.showMessage("❌ Error: " + ex.getMessage());
+                    } finally {
+                        if (pullButton != null) {
+                            pullButton.setEnabled(true);
+                            refresh(); // Update button text
+                        }
+                        ((Timer) e.getSource()).stop();
+                    }
+                }
+            });
+            pullTimer.setRepeats(false);
+            pullTimer.start();
+
         } catch (Exception e) {
             mainApp.showMessage("❌ Error: " + e.getMessage());
+            if (pullButton != null) {
+                pullButton.setEnabled(true);
+                refresh();
+            }
         }
     }
 
@@ -267,19 +336,50 @@ public class GachaPanel extends JPanel {
                 costLabel.setText("💰 Cost: " + game.getCurrentGachaMachine().getPullCost() + " coins");
             }
 
-            int pullsSinceEpic = game.getCurrentGachaMachine().getPullsSinceLastEpic();
+            // ✅ UPDATED: Use total pity counter (not session counter)
+            int totalPullsWithoutEpic = game.getCurrentGachaMachine().getTotalPullsWithoutEpic();
+
             if (pityLabel != null) {
-                String pityText = "📊 Pity: " + pullsSinceEpic + "/10";
-                if (pullsSinceEpic >= 9) {
+                String pityText = String.format("📊 Pity: %d/10", totalPullsWithoutEpic);
+                if (totalPullsWithoutEpic >= 9) {
                     pityText = "🔥 " + pityText + " - NEXT IS EPIC!";
                     pityLabel.setForeground(new Color(255, 100, 100));
-                } else if (pullsSinceEpic >= 7) {
+                } else if (totalPullsWithoutEpic >= 7) {
                     pityText = "⚡ " + pityText + " - EPIC SOON!";
                     pityLabel.setForeground(new Color(255, 200, 100));
                 } else {
                     pityLabel.setForeground(new Color(150, 255, 255));
                 }
                 pityLabel.setText(pityText);
+            }
+
+            // ✅ ADD: Visual progress bar
+            if (pityProgressLabel != null) {
+                // Create visual progress bar
+                StringBuilder progressBar = new StringBuilder();
+                int filled = (int) ((double) totalPullsWithoutEpic / 10 * 10);
+
+                for (int i = 0; i < 10; i++) {
+                    if (i < filled) {
+                        progressBar.append("█");
+                    } else {
+                        progressBar.append("░");
+                    }
+                }
+
+                String progressText = String.format("%s (%d/10)", progressBar.toString(), totalPullsWithoutEpic);
+                pityProgressLabel.setText(progressText);
+
+                // Color based on progress
+                if (totalPullsWithoutEpic >= 9) {
+                    pityProgressLabel.setForeground(new Color(255, 100, 100)); // Red
+                } else if (totalPullsWithoutEpic >= 7) {
+                    pityProgressLabel.setForeground(new Color(255, 200, 100)); // Orange
+                } else if (totalPullsWithoutEpic >= 5) {
+                    pityProgressLabel.setForeground(new Color(255, 255, 100)); // Yellow
+                } else {
+                    pityProgressLabel.setForeground(new Color(100, 255, 100)); // Green
+                }
             }
         }
 
@@ -311,12 +411,32 @@ public class GachaPanel extends JPanel {
         if (resultArea != null && resultArea.getText().isEmpty()) {
             resultArea.setText("🎰 GACHA MACHINE 🎰\n\n" +
                     "• 20 coins per pull\n" +
-                    "• Epic every 10 pulls!\n" +
-                    "• Get time machine parts\n\n" +
+                    "• Epic every 10 pulls (Pity System)\n" +
+                    "• Get time machine parts\n" +
+                    "• Collect keys and tools\n\n" +
                     "Click PULL to try! 🍀");
+            resultArea.setForeground(Color.WHITE);
             resultArea.setCaretPosition(0);
         }
 
         repaint();
+    }
+
+    private void addPityProgressBar() {
+        // Create a panel for pity info
+        JPanel pityPanel = new JPanel(new GridLayout(2, 1, 5, 5));
+        pityPanel.setOpaque(false);
+
+        // Create the pity progress label
+        pityProgressLabel = new JLabel("░░░░░░░░░░ (0/10)", JLabel.CENTER);
+        pityProgressLabel.setFont(new Font("Monospaced", Font.BOLD, 12));
+        pityProgressLabel.setForeground(new Color(255, 200, 100));
+        pityProgressLabel.setOpaque(false);
+
+        // Find where to add it (assuming you have a container panel)
+        if (gachaPanel != null) {
+            // Look for a container or add a new panel
+            // This depends on your form structure
+        }
     }
 }

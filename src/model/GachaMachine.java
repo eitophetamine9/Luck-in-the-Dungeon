@@ -5,7 +5,7 @@ import java.io.Serializable;
 
 import java.util.*;
 
-public class GachaMachine implements Serializable{
+public class GachaMachine implements Serializable {
     private static final long serialVersionUID = 1L;
     private String machineName;
     private int pullCost;
@@ -14,12 +14,16 @@ public class GachaMachine implements Serializable{
     private static final int PITY_THRESHOLD = 10; // Epic every 10 pulls
     private int pullsSinceLastEpic; // Track pulls since last epic
 
+    // ✅ ADD: Persistent pity counter that survives across game sessions
+    private int totalPullsWithoutEpic;
+
     public GachaMachine(String machineName, int pullCost){
         this.machineName = machineName;
         this.pullCost = pullCost;
         this.itemPool = new ArrayList<>();
         this.rateTable = new HashMap<>();
-        this.pullsSinceLastEpic = 0; // PROPERLY INITIALIZED
+        this.pullsSinceLastEpic = 0;
+        this.totalPullsWithoutEpic = 0; // ✅ INITIALIZE persistent counter
         initializeRates();
     }
 
@@ -35,12 +39,18 @@ public class GachaMachine implements Serializable{
         }
 
         pullsSinceLastEpic++; // Track every pull
+        totalPullsWithoutEpic++; // ✅ ADD: Track persistent pity counter
 
         // Pity system: Guaranteed epic every 10 pulls
-        if (pullsSinceLastEpic >= PITY_THRESHOLD) {
-            pullsSinceLastEpic = 0; // Reset counter
+        if (totalPullsWithoutEpic >= PITY_THRESHOLD) {
+            totalPullsWithoutEpic = 0; // ✅ Reset persistent counter
+            pullsSinceLastEpic = 0;    // Reset session counter
             System.out.println("🎉 Pity system activated! Guaranteed EPIC!");
-            return getGuaranteedEpic();
+            GachaItem pityItem = getGuaranteedEpic();
+            if (pityItem != null) {
+                player.incrementTotalPulls();
+                return pityItem;
+            }
         }
 
         Random random = new Random();
@@ -75,6 +85,14 @@ public class GachaMachine implements Serializable{
         if(!eligibleItems.isEmpty()){
             GachaItem result = eligibleItems.get(random.nextInt(eligibleItems.size()));
             player.incrementTotalPulls();
+
+            // ✅ ADD: Reset pity counters if we get an epic naturally
+            if (result.getRarity() == Rarity.EPIC) {
+                totalPullsWithoutEpic = 0;
+                pullsSinceLastEpic = 0;
+                System.out.println("✨ Natural EPIC! Resetting pity counter.");
+            }
+
             return result;
         }
 
@@ -120,6 +138,44 @@ public class GachaMachine implements Serializable{
 
     public int getPullsSinceLastEpic() {
         return pullsSinceLastEpic;
+    }
+
+    // ✅ ADD: Get total pity counter
+    public int getTotalPullsWithoutEpic() {
+        return totalPullsWithoutEpic;
+    }
+
+    // ✅ ADD: Get pity progress string
+    public String getPityProgress() {
+        int pullsLeft = PITY_THRESHOLD - totalPullsWithoutEpic;
+
+        // Create visual progress bar
+        StringBuilder progressBar = new StringBuilder();
+        int filled = (int) ((double) totalPullsWithoutEpic / PITY_THRESHOLD * 10);
+
+        for (int i = 0; i < 10; i++) {
+            if (i < filled) {
+                progressBar.append("█");
+            } else {
+                progressBar.append("░");
+            }
+        }
+
+        return String.format("Pity: %s (%d/10) | Next epic in: %d pulls",
+                progressBar.toString(), totalPullsWithoutEpic, pullsLeft);
+    }
+
+    // ✅ ADD: Get simple pity string for display
+    public String getSimplePityString() {
+        int pullsLeft = PITY_THRESHOLD - totalPullsWithoutEpic;
+        return String.format("📊 Pity: %d/10", totalPullsWithoutEpic);
+    }
+
+    // ✅ ADD: Setter for loading saved games
+    public void setTotalPullsWithoutEpic(int pulls) {
+        this.totalPullsWithoutEpic = pulls;
+        // Also update session counter to match for consistency
+        this.pullsSinceLastEpic = Math.min(pulls, PITY_THRESHOLD - 1);
     }
 
     public String getMachineName(){

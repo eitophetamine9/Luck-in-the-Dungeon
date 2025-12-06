@@ -42,6 +42,9 @@ public class GameManager implements Serializable {
         rooms.add(new Room(3, "Chronal Alchemy Lab", "Beakers bubble with strange energies. This is where the scientist created the exotic materials needed for time travel."));
         rooms.add(new Room(4, "Assembly Observatory", "A circular room with a central platform - the assembly point for the new time machine. Temporal energy crackles in the air."));
 
+        // ✅ ADD: 5th Room (Temporal Nexus)
+        rooms.add(new Room(5, "Temporal Nexus", "A shimmering portal of pure temporal energy. This gateway leads to untold adventures beyond the original timeline..."));
+
         initializeGameContent();
         rooms.get(0).unlock();
     }
@@ -51,6 +54,7 @@ public class GameManager implements Serializable {
         initializeRoom2();
         initializeRoom3();
         initializeRoom4();
+        initializeRoom5(); // ✅ ADD: Initialize room 5
     }
 
     public void startNewGame(String playerName){
@@ -98,7 +102,7 @@ public class GameManager implements Serializable {
         Room room2 = rooms.get(1);
 
         CodePuzzle scientistNotes = new CodePuzzle(
-                "Scientist's code: T = 20, I = 7, M = 15, E = 25. What is TIME?",
+                "Scientist's code: T = 20, I = 7, M = 15, E = 25. T-I-M-E file, a mathematical pattern perhaps? (This might be helpful later on)",
                 35,
                 2,
                 "67",
@@ -126,10 +130,10 @@ public class GameManager implements Serializable {
         Room room3 = rooms.get(2);
 
         CodePuzzle energyFormula = new CodePuzzle(
-                "Mix elements: 2 parts Temporal Energy + 3 parts Quantum Flux = ? units Chronal Power",
+                "90 failed tests and 2 more untested. The atomic number of Uranium..? (This might be useful later on)",
                 45,
                 2,
-                "5",
+                "92",
                 3
         );
         room3.addPuzzle(energyFormula);
@@ -160,10 +164,10 @@ public class GameManager implements Serializable {
         Room room4 = rooms.get(3);
 
         CodePuzzle activation = new CodePuzzle(
-                "Enter the activation code: The year the scientist traveled back to",
+                "Enter the activation code: (T-I-M-E file and Uranium... could be helpful)",
                 60,
                 3,
-                "2024",
+                "6792",
                 3
         );
         room4.addPuzzle(activation);
@@ -189,6 +193,36 @@ public class GameManager implements Serializable {
                 return false;
             }
         });
+    }
+
+    // ✅ ADD: Initialize Room 5 (Temporal Nexus)
+    private void initializeRoom5() {
+        Room room5 = rooms.get(4);
+
+        // Add special "coming soon" puzzle
+        CodePuzzle nexusPuzzle = new CodePuzzle(
+                "The Temporal Gateway",
+                100,
+                5,
+                "TEMPORAL_NEXUS",
+                1,
+                false
+        );
+        nexusPuzzle.markSolved(); // Auto-solve it since it's just a placeholder
+        room5.addPuzzle(nexusPuzzle);
+
+        // Add special gacha items for the expansion
+        room5.addItemToGacha(new ToolItem("Chrono-Key", "A key that can unlock any temporal gateway",
+                Rarity.EPIC, "nexus_key", 1));
+        room5.addItemToGacha(new ToolItem("Reality Shard", "A fragment of alternate reality",
+                Rarity.RARE, "nexus_component", 1));
+        room5.addItemToGacha(new KeyItem("Nexus Pass", "Access all temporal dimensions",
+                Rarity.EPIC, "nexus", true));
+        room5.addItemToGacha(new ToolItem("Time Paradox Crystal", "Glows with impossible energy",
+                Rarity.EPIC, "nexus_component", 1));
+
+        // Lock the room initially - it unlocks after completing room 4
+        room5.lock();
     }
 
     public static void replaceInstance(GameManager newInstance) {
@@ -261,6 +295,29 @@ public class GameManager implements Serializable {
 
         Room targetRoom = rooms.get(roomIndex);
         System.out.println("🎯 Target room: " + targetRoom.getName() + " (Locked: " + targetRoom.isLocked() + ")");
+
+        // ✅ ADD: Special check for Room 5 (Temporal Nexus)
+        if (roomIndex == 4) { // Room 5
+            // Check if Room 4 is complete AND player has enough time machine parts
+            Room room4 = rooms.get(3);
+            int requiredParts = 4;
+            int collectedParts = currentPlayer.getTimeMachinePartsCollected();
+
+            if (!room4.isComplete()) {
+                return "❌ Complete Room 4 first to unlock the Temporal Nexus!";
+            }
+
+            if (collectedParts < requiredParts) {
+                return String.format(
+                        "🔧 You need %d time machine components to access the Temporal Nexus! (Currently have: %d)\n" +
+                                "Complete puzzles and use gacha to collect more parts.",
+                        requiredParts, collectedParts
+                );
+            }
+
+            // If we passed all checks, ensure Room 5 is unlocked
+            targetRoom.unlock();
+        }
 
         if (targetRoom.isLocked()) {
             return String.format("🔒 Room %d: %s is locked! Complete previous rooms first.",
@@ -342,6 +399,8 @@ public class GameManager implements Serializable {
                 } else {
                     return String.format("Collect more time machine components (%d/4 needed).", parts);
                 }
+            case 4: // ✅ ADD: 5th room objective
+                return "This temporal gateway leads to future expansions! The adventure continues...";
             default: return "Explore and solve puzzles to progress.";
         }
     }
@@ -399,25 +458,25 @@ public class GameManager implements Serializable {
     }
 
     public String getExpansionTeaser() {
-        if (!canExpandStory()) {
-            return "Complete the current story to unlock future adventures!";
-        }
+        return "🌌 BEYOND THE TIME MACHINE...\n\n" +
+                "The time machine hums to life, its dials spinning wildly. \n" +
+                "You've restored the original timeline, but new temporal anomalies \n" +
+                "are appearing across history...\n\n" +
+                "Future expansions may include:\n" +
+                "• Ancient Egypt temporal rift\n" +
+                "• Renaissance art forgery mystery\n" +
+                "• Future dystopia intervention\n" +
+                "• Parallel reality exploration\n\n" +
+                "Your journey through time is just beginning!";
+    }
 
-        return """
-               🌌 BEYOND THE TIME MACHINE...
-               
-               The time machine hums to life, its dials spinning wildly. 
-               You've restored the original timeline, but new temporal anomalies 
-               are appearing across history...
-               
-               Future expansions may include:
-               • Ancient Egypt temporal rift
-               • Renaissance art forgery mystery  
-               • Future dystopia intervention
-               • Parallel reality exploration
-               
-               Your journey through time is just beginning!
-               """;
+    public String checkSpecialAchievements() {
+        if (currentRoomIndex >= 4) {
+            return "🏆 ACHIEVEMENT UNLOCKED: Nexus Explorer\n" +
+                    "✨ You've reached the Temporal Nexus!\n" +
+                    "🌌 You're ready for future adventures!";
+        }
+        return "";
     }
 
     // === UTILITY METHODS ===
@@ -477,6 +536,27 @@ public class GameManager implements Serializable {
         if (roomIndex < 0 || roomIndex >= rooms.size()) return "INVALID";
 
         Room room = rooms.get(roomIndex);
+
+        // ✅ ADD: Special logic for Room 5
+        if (roomIndex == 4) {
+            Room room4 = rooms.get(3);
+            int requiredParts = 4;
+            int collectedParts = currentPlayer.getTimeMachinePartsCollected();
+
+            // Check if prerequisites are met
+            if (!room4.isComplete()) {
+                return "🔒 REQUIREMENTS: Complete Room 4";
+            }
+
+            if (collectedParts < requiredParts) {
+                return String.format("🔧 NEED %d PARTS: %d/4 collected", requiredParts, collectedParts);
+            }
+
+            if (room.isLocked()) {
+                return "⚡ READY: Complete Room 4 to unlock";
+            }
+        }
+
         if (room.isLocked()) return "🔒 LOCKED";
         if (roomIndex == currentRoomIndex) return "📍 CURRENT";
         if (room.isComplete()) return "✅ COMPLETED";
@@ -497,38 +577,39 @@ public class GameManager implements Serializable {
     public Map<String, Object> checkWinConditionDetailed() {
         Map<String, Object> result = new HashMap<>();
 
-        boolean allRoomsComplete = true;
-        for (Room room : rooms) {
-            if (!room.isComplete()) {
-                allRoomsComplete = false;
-                break;
+        boolean timeMachineBuilt = isTimeMachineBuilt();
+
+        if (timeMachineBuilt) {
+            // Unlock room 5 if it exists
+            if (rooms.size() > 4) {
+                rooms.get(4).unlock();
             }
-        }
 
-        int requiredParts = 4;
-        int collectedParts = currentPlayer.getTimeMachinePartsCollected();
-        boolean hasEnoughParts = collectedParts >= requiredParts;
-
-        if (allRoomsComplete && hasEnoughParts) {
             result.put("gameState", "COMPLETED");
-            result.put("message", "🎉 CONGRATULATIONS! You've rebuilt the time machine and can now restore the timeline!");
+            result.put("message", "🎉 CONGRATULATIONS! You've rebuilt the time machine!\n\n" +
+                    "⚡ The Temporal Nexus has been unlocked!\n" +
+                    "🌌 Continue your adventure in future expansions!");
             result.put("canProceed", true);
-        } else if (allRoomsComplete && !hasEnoughParts) {
-            result.put("gameState", "BLOCKED");
-            result.put("message", String.format(
-                    "🔧 All rooms complete, but you need %d time machine components (have %d). Keep exploring!",
-                    requiredParts, collectedParts));
-            result.put("canProceed", false);
         } else {
-            result.put("gameState", "IN_PROGRESS");
-            result.put("message", "Keep exploring and solving puzzles!");
+            Room room4 = rooms.get(3);
+            int collectedParts = currentPlayer.getTimeMachinePartsCollected();
+
+            if (room4.isComplete()) {
+                result.put("gameState", "BLOCKED");
+                result.put("message", String.format(
+                        "🔧 Room complete, but you need %d time machine components (have %d).\n" +
+                                "Use gacha machines to collect more parts!",
+                        4, collectedParts));
+            } else {
+                result.put("gameState", "IN_PROGRESS");
+                result.put("message", "Keep exploring and solving puzzles!");
+            }
             result.put("canProceed", false);
         }
 
-        result.put("roomsComplete", allRoomsComplete);
-        result.put("hasRequiredParts", hasEnoughParts);
-        result.put("collectedParts", collectedParts);
-        result.put("requiredParts", requiredParts);
+        result.put("hasRequiredParts", timeMachineBuilt);
+        result.put("collectedParts", currentPlayer.getTimeMachinePartsCollected());
+        result.put("requiredParts", 4);
 
         return result;
     }
@@ -568,27 +649,51 @@ public class GameManager implements Serializable {
 
     public String moveToNextRoom() {
         if (currentRoomIndex >= rooms.size() - 1) {
-            return "🎉 You've completed all rooms!";
+            return "🎉 You've reached the Temporal Nexus!\n🌌 The gateway to future adventures awaits...";
         }
 
         if (!isCurrentRoomComplete()) {
             return "❌ Complete all puzzles in the current room first!";
         }
 
+        // ✅ ADD: Special check for moving to Room 5
+        if (currentRoomIndex == 3) { // Moving from Room 4 to Room 5
+            Room room4 = rooms.get(3);
+            int requiredParts = 4;
+            int collectedParts = currentPlayer.getTimeMachinePartsCollected();
+
+            if (!room4.isComplete()) {
+                return "❌ Complete all puzzles in Room 4 first!";
+            }
+
+            if (collectedParts < requiredParts) {
+                return String.format(
+                        "🔧 You need %d time machine components to build the time machine!\n" +
+                                "Currently have: %d/4\n" +
+                                "Use gacha machines to collect more parts.",
+                        requiredParts, collectedParts
+                );
+            }
+
+            // Show special achievement message
+            System.out.println("🏆 TIME MACHINE BUILT! Temporal Nexus unlocked!");
+        }
+
         // Move to next room and unlock it
         currentRoomIndex++;
         rooms.get(currentRoomIndex).unlock();
 
-        // ✅ IMPORTANT: Reset puzzle attempts and state for the new room
-        Room newRoom = getCurrentRoom();
-        for (Puzzle puzzle : newRoom.getPuzzles()) {
-            // Reset puzzle state for the new room (but keep them unsolved)
-            // This ensures puzzles are fresh when entering a new room
-            puzzle.recordAttempt(); // This just increments attempts counter
+        // Special message for 5th room
+        if (currentRoomIndex == 4) { // Room 5 (index 4)
+            return "⚡ TEMPORAL NEXUS UNLOCKED!\n\n" +
+                    "Congratulations! You've successfully rebuilt the time machine!\n" +
+                    "The Temporal Nexus now awaits your exploration...\n\n" +
+                    "🚀 More rooms, puzzles, and time travel adventures await!";
         }
 
         return "🚀 Advanced to: " + getCurrentRoom().getName();
     }
+
 
     public Room getCurrentRoom(){
         if(currentRoomIndex < rooms.size()) return rooms.get(currentRoomIndex);
@@ -823,6 +928,39 @@ public class GameManager implements Serializable {
         }
         System.out.println("\n" + "=".repeat(50));
     }
+
+    public void restoreGachaState(GameManager loadedGame) {
+        try {
+            // Restore pity counters for each room's gacha machine
+            for (int i = 0; i < rooms.size(); i++) {
+                if (i < loadedGame.getRooms().size()) {
+                    Room loadedRoom = loadedGame.getRooms().get(i);
+                    Room currentRoom = rooms.get(i);
+
+                    // Copy pity counter
+                    currentRoom.getGachaMachine().setTotalPullsWithoutEpic(
+                            loadedRoom.getGachaMachine().getTotalPullsWithoutEpic()
+                    );
+                    System.out.println("✅ Restored pity for " + currentRoom.getName() +
+                            ": " + loadedRoom.getGachaMachine().getTotalPullsWithoutEpic() + "/10");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Could not restore gacha state: " + e.getMessage());
+        }
+    }
+
+    public boolean isTimeMachineBuilt() {
+        Room room4 = rooms.get(3);
+        int requiredParts = 4;
+        int collectedParts = currentPlayer.getTimeMachinePartsCollected();
+
+        return room4.isComplete() && collectedParts >= requiredParts;
+    }
+
+
+
+
 
 
 
