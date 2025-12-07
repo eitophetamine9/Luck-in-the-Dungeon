@@ -158,8 +158,13 @@ public class MainMenuPanel extends JPanel {
 
         String playerName = showCharacterNameDialog();
         if (playerName != null && !playerName.trim().isEmpty()) {
+            // Start new game
             game.startNewGame(playerName);
+
+            // Show welcome message
             mainApp.showMessage("Welcome, " + playerName + "! Your adventure begins...");
+
+            // Switch to game panel
             mainApp.showGame();
         }
     }

@@ -11,6 +11,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import audio.AudioFiles;
+import model.ItemType;
+import model.Rarity;
 
 public class GachaPanel extends JPanel {
     private JPanel gachaPanel;
@@ -235,37 +237,55 @@ public class GachaPanel extends JPanel {
     private void pullGacha() {
         try {
             mainApp.getAudioManager().playSound(AudioFiles.GACHA);
+
+            // 1. Check if there's a gacha machine in the current room
             if (game.getCurrentGachaMachine() == null) {
-                mainApp.showMessage("❌ No gacha machine here!");
+                mainApp.showMessage("❌ No gacha machine here!\nMove to a room with a gacha machine.");
                 return;
             }
 
-            // Disable button during pull animation
+            // 2. Check if player has enough coins
+            if (!game.canAffordGachaPull()) {
+                int cost = game.getCurrentGachaMachine().getPullCost();
+                int coins = game.getCurrentPlayer().getCoinBalance();
+                mainApp.showMessage(String.format("❌ Need %d coins!\nYou have: %d", cost, coins));
+                return;
+            }
+
+            // 3. Check if inventory has space
+            if (game.getCurrentPlayer().getCurrentInventorySize() >= game.getCurrentPlayer().getMaxInventorySize()) {
+                mainApp.showMessage("❌ Inventory full!\nClear some space before pulling.");
+                return;
+            }
+
+            // 4. Disable button during pull animation
             if (pullButton != null) {
                 pullButton.setEnabled(false);
                 pullButton.setText("⏳ PULLING...");
             }
 
-            // Use timer for animation effect
+            // 5. Use timer for animation effect
             Timer pullTimer = new Timer(800, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     try {
+                        // Perform the actual gacha pull
                         GachaItem pulledItem = game.getCurrentGachaMachine().pull(game.getCurrentPlayer());
 
                         if (pulledItem != null) {
                             try {
+                                // Add item to inventory
                                 game.getCurrentPlayer().addItem(pulledItem);
 
+                                // Display the result
                                 String rarityDisplay = "";
-                                String itemIcon = pulledItem.getItemType() == model.ItemType.KEY ? "🔑 " : "🛠️ ";
+                                Color rarityColor = Color.WHITE;
 
-                                // Special colors based on rarity
-                                Color rarityColor;
                                 switch (pulledItem.getRarity()) {
                                     case EPIC:
                                         rarityDisplay = "✨✨✨ EPIC ✨✨✨";
-                                        rarityColor = new Color(255, 100, 255); // Pink/purple
+                                        rarityColor = new Color(255, 215, 0); // Gold
+                                        mainApp.getAudioManager().playSound(AudioFiles.SUCCESS);
                                         break;
                                     case RARE:
                                         rarityDisplay = "🌟🌟🌟 RARE 🌟🌟🌟";
@@ -276,47 +296,58 @@ public class GachaPanel extends JPanel {
                                         rarityColor = Color.WHITE;
                                 }
 
+                                // Update result area
                                 if (resultArea != null) {
-                                    resultArea.setText(rarityDisplay + "\n\n" +
-                                            itemIcon + "YOU GOT: " + pulledItem.getName() + "\n" +
-                                            "📝 " + pulledItem.getDescription() + "\n\n" +
-                                            "✅ Added to inventory!\n\n" +
-                                            "🎒 " + game.getCurrentPlayer().getInventoryStatus());
+                                    String itemIcon = pulledItem.getItemType() == ItemType.KEY ? "🔑 " : "🛠️ ";
+                                    resultArea.setText(
+                                            rarityDisplay + "\n\n" +
+                                                    itemIcon + "YOU GOT: " + pulledItem.getName() + "\n" +
+                                                    "📝 " + pulledItem.getDescription() + "\n\n" +
+                                                    "✅ Added to inventory!\n\n" +
+                                                    "🎒 " + game.getCurrentPlayer().getInventoryStatus() + "\n" +
+                                                    "🪙 Coins left: " + game.getCurrentPlayer().getCoinBalance()
+                                    );
                                     resultArea.setForeground(rarityColor);
                                     resultArea.setCaretPosition(0);
                                 }
 
-                                // Show special message for epic
-                                if (pulledItem.getRarity() == model.Rarity.EPIC) {
-                                    mainApp.showMessage("🎉🎉🎉 EPIC ITEM! 🎉🎉🎉\n" +
-                                            pulledItem.getName() + "\n\n" +
-                                            "Pity counter has been reset!");
-                                } else {
-                                    mainApp.showMessage("🎊 " + pulledItem.getRarity() + " ITEM!\n" + pulledItem.getName());
-                                }
+                                // Show success message
+                                String message = pulledItem.getRarity() == Rarity.EPIC ?
+                                        "🎉🎉🎉 EPIC ITEM! 🎉🎉🎉\n" + pulledItem.getName() + "\n\nPity counter has been reset!" :
+                                        "🎊 " + pulledItem.getRarity() + " ITEM!\n" + pulledItem.getName();
+                                mainApp.showMessage(message);
 
                             } catch (InventoryFullException ex) {
+                                // This shouldn't happen since we checked earlier, but handle it anyway
                                 if (resultArea != null) {
-                                    resultArea.setText("❌ INVENTORY FULL!\n\n" +
-                                            "You pulled: " + pulledItem.getName() + "\n" +
-                                            "But inventory is full!\n\n" +
-                                            "Go to Inventory panel first.");
+                                    resultArea.setText(
+                                            "❌ INVENTORY FULL!\n\n" +
+                                                    "You pulled: " + pulledItem.getName() + "\n" +
+                                                    "But inventory is full!\n\n" +
+                                                    "Go to Inventory panel to discard items."
+                                    );
                                     resultArea.setForeground(Color.RED);
                                 }
-                                mainApp.showMessage("❌ Inventory full!");
+                                mainApp.showMessage("❌ Inventory full! Item lost.");
                             }
+                        } else {
+                            // This should never happen if gacha machine is properly initialized
+                            mainApp.showMessage("⚠️ Gacha machine is empty! Try another room.");
                         }
 
+                        // Refresh UI
                         refresh();
 
                     } catch (NotEnoughCoinsException ex) {
-                        mainApp.showMessage("❌ Need " + ex.getRequired() + " coins!\nYou have: " + ex.getAvailable());
+                        mainApp.showMessage("❌ Unexpected error: " + ex.getMessage());
                     } catch (Exception ex) {
-                        mainApp.showMessage("❌ Error: " + ex.getMessage());
+                        mainApp.showMessage("❌ Gacha pull failed: " + ex.getMessage());
+                        ex.printStackTrace();
                     } finally {
+                        // Always re-enable the button
                         if (pullButton != null) {
                             pullButton.setEnabled(true);
-                            refresh(); // Update button text
+                            refresh(); // This will update button text and state
                         }
                         ((Timer) e.getSource()).stop();
                     }
@@ -327,6 +358,7 @@ public class GachaPanel extends JPanel {
 
         } catch (Exception e) {
             mainApp.showMessage("❌ Error: " + e.getMessage());
+            // Ensure button is re-enabled even if there's an error
             if (pullButton != null) {
                 pullButton.setEnabled(true);
                 refresh();
@@ -344,9 +376,8 @@ public class GachaPanel extends JPanel {
                 costLabel.setText("💰 Cost: " + game.getCurrentGachaMachine().getPullCost() + " coins");
             }
 
-            // ✅ UPDATED: Use total pity counter (not session counter)
+            // Update pity counter
             int totalPullsWithoutEpic = game.getCurrentGachaMachine().getTotalPullsWithoutEpic();
-
             if (pityLabel != null) {
                 String pityText = String.format("📊 Pity: %d/10", totalPullsWithoutEpic);
                 if (totalPullsWithoutEpic >= 9) {
@@ -360,38 +391,12 @@ public class GachaPanel extends JPanel {
                 }
                 pityLabel.setText(pityText);
             }
-
-            // ✅ ADD: Visual progress bar
-            if (pityProgressLabel != null) {
-                // Create visual progress bar
-                StringBuilder progressBar = new StringBuilder();
-                int filled = (int) ((double) totalPullsWithoutEpic / 10 * 10);
-
-                for (int i = 0; i < 10; i++) {
-                    if (i < filled) {
-                        progressBar.append("█");
-                    } else {
-                        progressBar.append("░");
-                    }
-                }
-
-                String progressText = String.format("%s (%d/10)", progressBar.toString(), totalPullsWithoutEpic);
-                pityProgressLabel.setText(progressText);
-
-                // Color based on progress
-                if (totalPullsWithoutEpic >= 9) {
-                    pityProgressLabel.setForeground(new Color(255, 100, 100)); // Red
-                } else if (totalPullsWithoutEpic >= 7) {
-                    pityProgressLabel.setForeground(new Color(255, 200, 100)); // Orange
-                } else if (totalPullsWithoutEpic >= 5) {
-                    pityProgressLabel.setForeground(new Color(255, 255, 100)); // Yellow
-                } else {
-                    pityProgressLabel.setForeground(new Color(100, 255, 100)); // Green
-                }
-            }
         }
 
         int coins = game.getCurrentPlayer().getCoinBalance();
+        int inventorySize = game.getCurrentPlayer().getCurrentInventorySize();
+        int maxInventory = game.getCurrentPlayer().getMaxInventorySize();
+
         if (coinsLabel != null) {
             coinsLabel.setText("🪙 Coins: " + coins);
             if (coins < 20) {
@@ -404,19 +409,22 @@ public class GachaPanel extends JPanel {
         }
 
         if (pullButton != null) {
-            boolean canPull = coins >= 20;
+            boolean canPull = coins >= 20 && inventorySize < maxInventory;
             pullButton.setEnabled(canPull);
 
             if (canPull) {
                 pullButton.setText("🎲 PULL GACHA (20 coins)");
                 pullButton.setBackground(new Color(180, 60, 60, 220));
+            } else if (inventorySize >= maxInventory) {
+                pullButton.setText("❌ INVENTORY FULL");
+                pullButton.setBackground(new Color(100, 100, 100, 180));
             } else {
                 pullButton.setText("❌ NEED 20 COINS");
                 pullButton.setBackground(new Color(100, 100, 100, 180));
             }
         }
 
-        if (resultArea != null && resultArea.getText().isEmpty()) {
+        if (resultArea != null && (resultArea.getText().isEmpty() || resultArea.getText().contains("GACHA MACHINE"))) {
             resultArea.setText("🎰 GACHA MACHINE 🎰\n\n" +
                     "• 20 coins per pull\n" +
                     "• Epic every 10 pulls (Pity System)\n" +

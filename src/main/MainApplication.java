@@ -28,7 +28,6 @@ public class MainApplication extends JFrame {
         game = GameManager.getInstance();
         initializeGUI();
         showMainMenu();
-
     }
 
     private void initializeGUI() {
@@ -41,7 +40,6 @@ public class MainApplication extends JFrame {
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
-        // ✅ FIXED: Remove Kotlin-style named parameters
         mainMenuPanel = new MainMenuPanel(this, game);
         gamePanel = new GamePanel(this, game);
         puzzlePanel = new PuzzlePanel(this, game);
@@ -49,12 +47,11 @@ public class MainApplication extends JFrame {
         inventoryPanel = new InventoryPanel(this, game);
         mapPanel = new MapPanel(this, game);
 
-        // ✅ FIXED: Correct syntax for mainPanel.add() calls
-        mainPanel.add(mainMenuPanel, "MAIN_MENU");
+        mainPanel.add(mainMenuPanel, "MENU");
         mainPanel.add(gamePanel, "GAME");
-        mainPanel.add(puzzlePanel, "PUZZLE");  // Fixed typo: was "PUZZL1"
+        mainPanel.add(puzzlePanel, "PUZZLE");
         mainPanel.add(gachaPanel, "GACHA");
-        mainPanel.add(inventoryPanel, "INVENTORY");  // Fixed: was "IN"
+        mainPanel.add(inventoryPanel, "INVENTORY");
         mainPanel.add(mapPanel, "MAP");
 
         setContentPane(mainPanel);
@@ -66,48 +63,22 @@ public class MainApplication extends JFrame {
 
     // Navigation methods
     public void showMainMenu() {
-        // Play main menu music
-        audioManager.playMusic(AudioFiles.MAIN_MENU);
-
-        cardLayout.show(mainPanel, "MAIN_MENU");
-        mainMenuPanel.refresh();
-
         cardLayout.show(mainPanel, "MENU");
-        if (mainMenuPanel != null) {
-            mainMenuPanel.refresh();
-        }
+        mainMenuPanel.refresh();
+        audioManager.playMusic(AudioFiles.MAIN_MENU);
     }
 
     public void showGame() {
-        // Determine which music to play based on current room
-        int roomIndex = game.getCurrentRoomIndex();
-
-        switch(roomIndex) {
-            case 0: audioManager.playMusic(AudioFiles.ROOM_1); break;
-            case 1: audioManager.playMusic(AudioFiles.ROOM_2); break;
-            case 2: audioManager.playMusic(AudioFiles.ROOM_3); break;
-            case 3: audioManager.playMusic(AudioFiles.ROOM_4); break;
-            case 4: audioManager.playMusic(AudioFiles.ROOM_5); break;  // Room 5 - Temporal Nexus
-            default: audioManager.playMusic(AudioFiles.ROOM_1);
-        }
-
         cardLayout.show(mainPanel, "GAME");
         gamePanel.refresh();
 
-        cardLayout.show(mainPanel, "GAME");
-        if (gamePanel != null) {
-            gamePanel.refresh();
-        }
+        // Let GamePanel handle room-specific music
+        // Music will be updated when GamePanel.refresh() is called
     }
 
     public void showPuzzle() {
-        System.out.println("🧩 Switching to Puzzle Panel - Room: " + game.getCurrentRoomIndex());
         cardLayout.show(mainPanel, "PUZZLE");
-        if (puzzlePanel != null) {
-            puzzlePanel.refresh();
-        } else {
-            System.err.println("❌ puzzlePanel is null!");
-        }
+        puzzlePanel.refresh();
     }
 
     public void showGacha() {
@@ -123,12 +94,12 @@ public class MainApplication extends JFrame {
     public void showMap() {
         cardLayout.show(mainPanel, "MAP");
         mapPanel.refresh();
+        audioManager.playSound(AudioFiles.MAP);
     }
 
     public void showMessage(String message) {
-        // If it's an error message, play error sound
-        if (message.contains("❌") || message.contains("error") ||
-                message.contains("Error") || message.contains("failed")) {
+        if (message.contains("❌") || message.toLowerCase().contains("error") ||
+                message.toLowerCase().contains("failed")) {
             audioManager.playSound(AudioFiles.ERROR);
         }
 
@@ -142,7 +113,6 @@ public class MainApplication extends JFrame {
     }
 
     public void playVictoryMusic() {
-        audioManager.playMusic(AudioFiles.ROOM_5); // Or play special victory music
+        audioManager.playMusic(AudioFiles.ROOM_5);
     }
-
 }

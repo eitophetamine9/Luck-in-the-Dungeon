@@ -13,27 +13,41 @@ public class AudioManager {
     private AudioManager() {}
 
     public static AudioManager getInstance() {
-        if (instance == null) instance = new AudioManager();
+        if (instance == null) {
+            instance = new AudioManager();
+        }
         return instance;
     }
 
-    // Play background music (loops automatically)
+    // 🆕 FIX: Improved music playing with proper cleanup
     public void playMusic(String fileName) {
-        if (isMuted) return;
-        if (currentMusic.equals(fileName) && backgroundMusic != null && backgroundMusic.isRunning()) {
-            return; // Already playing
+        if (isMuted) {
+            System.out.println("🔇 Music muted, skipping: " + fileName);
+            return;
+        }
+
+        // Don't restart if already playing the same music
+        if (currentMusic.equals(fileName) && backgroundMusic != null &&
+                backgroundMusic.isRunning()) {
+            System.out.println("🎵 Already playing: " + fileName);
+            return;
         }
 
         try {
-            // Stop current music
-            if (backgroundMusic != null && backgroundMusic.isRunning()) {
-                backgroundMusic.stop();
+            // 🆕 FIX: Stop and clean up previous music completely
+            if (backgroundMusic != null) {
+                if (backgroundMusic.isRunning()) {
+                    backgroundMusic.stop();
+                }
+                backgroundMusic.close();
+                backgroundMusic = null;
             }
 
-            // Load audio file from the same package
+            // Load new audio file
             URL url = getClass().getResource(fileName);
             if (url == null) {
                 System.out.println("❌ Audio file not found: " + fileName);
+                currentMusic = "";
                 return;
             }
 
@@ -53,7 +67,8 @@ public class AudioManager {
             System.out.println("🎵 Now playing: " + fileName);
 
         } catch (Exception e) {
-            System.out.println("❌ Error playing music: " + e.getMessage());
+            System.out.println("❌ Error playing music: " + fileName + " - " + e.getMessage());
+            currentMusic = "";
         }
     }
 
@@ -80,19 +95,35 @@ public class AudioManager {
                 }
 
                 clip.start();
+                System.out.println("🔊 Playing sound: " + fileName);
+
+                // 🆕 FIX: Close clip when done to free resources
+                clip.addLineListener(new LineListener() {
+                    @Override
+                    public void update(LineEvent event) {
+                        if (event.getType() == LineEvent.Type.STOP) {
+                            clip.close();
+                        }
+                    }
+                });
 
             } catch (Exception e) {
-                System.out.println("❌ Error playing sound: " + e.getMessage());
+                System.out.println("❌ Error playing sound: " + fileName + " - " + e.getMessage());
             }
         }).start();
     }
 
-    // Stop music
+    // Stop music with proper cleanup
     public void stopMusic() {
-        if (backgroundMusic != null && backgroundMusic.isRunning()) {
-            backgroundMusic.stop();
-            currentMusic = "";
+        if (backgroundMusic != null) {
+            if (backgroundMusic.isRunning()) {
+                backgroundMusic.stop();
+            }
+            backgroundMusic.close();
+            backgroundMusic = null;
         }
+        currentMusic = "";
+        System.out.println("⏹️ Music stopped");
     }
 
     // Volume control (0.0 to 1.0)
@@ -104,15 +135,24 @@ public class AudioManager {
             float dB = (float) (Math.log(volume) / Math.log(10.0) * 20.0);
             gainControl.setValue(dB);
         }
+
+        System.out.println("🔊 Volume set to: " + volume);
     }
 
     public void toggleMute() {
         isMuted = !isMuted;
+        System.out.println(isMuted ? "🔇 Muted" : "🔊 Unmuted");
+
         if (isMuted) {
             stopMusic();
         } else if (!currentMusic.isEmpty()) {
             playMusic(currentMusic);
         }
+    }
+
+    // Get current playing music
+    public String getCurrentMusic() {
+        return currentMusic;
     }
 
     public float getVolume() { return volume; }

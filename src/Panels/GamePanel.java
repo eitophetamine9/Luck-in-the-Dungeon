@@ -12,7 +12,6 @@ import java.util.Map;
 import audio.AudioFiles;
 
 public class GamePanel extends JPanel {
-    // ✅ ADD saveButton to your component list
     private JPanel gamePanel;
     private JScrollPane descScroll;
     private JTextArea roomDescriptionTextArea;
@@ -23,7 +22,7 @@ public class GamePanel extends JPanel {
     private JButton inventoryBtn;
     private JButton nextRoomBtn;
     private JButton mapBtn;
-    private JButton saveButton; // ✅ ADD THIS
+    private JButton saveButton;
     private JLabel coinsLabel;
     private JLabel puzzleAvailableLabel;
     private JLabel roomProgressLabel;
@@ -34,7 +33,7 @@ public class GamePanel extends JPanel {
     private MainApplication mainApp;
     private GameManager game;
     private Image backgroundImage;
-    private String[] roomBackgrounds = { // 🆕 ADDED: Room-specific background names
+    private String[] roomBackgrounds = {
             "room1_lab.png",
             "room2_archives.png",
             "room3_alchemy.png",
@@ -42,38 +41,32 @@ public class GamePanel extends JPanel {
             "room5_nexus.png"
     };
 
-    // 🆕 ADD: Room change tracker
+    // 🆕 Add: Store current music
+    private String currentRoomMusic = "";
+
+    // 🆕 Add: Room change tracker
     private int lastRoomIndex = -1;
 
     public GamePanel(MainApplication mainApp, GameManager game) {
         this.mainApp = mainApp;
         this.game = game;
-        this.lastRoomIndex = -1; // Initialize tracker
+        this.lastRoomIndex = -1;
 
-        // ✅ Initialize form components
         setLayout(new BorderLayout());
         add(gamePanel, BorderLayout.CENTER);
 
-        // 🆕 Test image loading first
         testImageLoading();
-
-        // ✅ Load room-specific background image
         updateBackground();
 
-        // ✅ Make main panel transparent to show background
         setOpaque(false);
-
-        // ✅ Make the form's panel transparent
         if (gamePanel != null) {
             gamePanel.setOpaque(false);
         }
 
-        // ✅ Get text area from scroll pane
         if (descScroll != null && roomDescriptionTextArea == null) {
             roomDescriptionTextArea = (JTextArea) descScroll.getViewport().getView();
         }
 
-        // ✅ FIX: Make JScrollPane and viewport transparent
         if (descScroll != null) {
             descScroll.setOpaque(false);
             descScroll.getViewport().setOpaque(false);
@@ -82,16 +75,15 @@ public class GamePanel extends JPanel {
             descScroll.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         }
 
-        // ✅ Configure text area with monospaced font
         if (roomDescriptionTextArea != null) {
             roomDescriptionTextArea.setEditable(false);
             roomDescriptionTextArea.setLineWrap(true);
             roomDescriptionTextArea.setWrapStyleWord(true);
             roomDescriptionTextArea.setFont(new Font("Monospaced", Font.BOLD, 14));
             roomDescriptionTextArea.setForeground(Color.cyan);
-            roomDescriptionTextArea.setBackground(new Color(30, 30, 60, 180)); // Semi-transparent
+            roomDescriptionTextArea.setBackground(new Color(30, 30, 60, 180));
             roomDescriptionTextArea.setCaretColor(Color.cyan);
-            roomDescriptionTextArea.setText(""); // Clear any initial text
+            roomDescriptionTextArea.setText("");
             roomDescriptionTextArea.setDisabledTextColor(new Color(255, 255, 200));
         }
 
@@ -106,32 +98,34 @@ public class GamePanel extends JPanel {
         }
 
         setupEventHandlers();
-
-        // ✅ Apply dungeon-themed button styling
         setupDungeonButtons();
-
         refresh();
     }
 
-    // 🆕 DEBUG: Test image loading
+    // 🆕 Add: Update room music
+    private void updateRoomMusic() {
+        int roomIndex = game.getCurrentRoomIndex();
+        String newMusic = AudioFiles.getRoomMusic(roomIndex);
+
+        // Only change music if room has changed or music is different
+        if (roomIndex != lastRoomIndex || !newMusic.equals(currentRoomMusic)) {
+            System.out.println("🎵 Changing music from " + currentRoomMusic + " to " + newMusic);
+            mainApp.getAudioManager().playMusic(newMusic);
+            currentRoomMusic = newMusic;
+            lastRoomIndex = roomIndex;
+        }
+    }
+
     private void testImageLoading() {
         System.out.println("\n🔍 TESTING IMAGE LOADING...");
-
-        // Test all room images
         for (int i = 0; i < roomBackgrounds.length; i++) {
             String imagePath = "images/rooms/" + roomBackgrounds[i];
             java.net.URL url = getClass().getClassLoader().getResource(imagePath);
             System.out.println((i+1) + ". " + imagePath + " → " +
                     (url != null ? "✅ FOUND" : "❌ NOT FOUND"));
         }
-
-        // Test default
-        java.net.URL defaultURL = getClass().getClassLoader().getResource("images/dungeon_bg.jpeg");
-        System.out.println("Default: images/dungeon_bg.jpeg → " +
-                (defaultURL != null ? "✅ FOUND" : "❌ NOT FOUND"));
     }
 
-    // 🆕 UPDATED: Now loads room-specific backgrounds with room change detection
     private void updateBackground() {
         System.out.println("\n=== UPDATE BACKGROUND ===");
         System.out.println("Current room index: " + game.getCurrentRoomIndex());
@@ -140,15 +134,13 @@ public class GamePanel extends JPanel {
             int roomIndex = game.getCurrentRoomIndex();
             System.out.println("Room index: " + roomIndex);
 
-            // 🆕 Check if room actually changed
             if (roomIndex == lastRoomIndex && backgroundImage != null) {
                 System.out.println("📌 Same room, keeping current background");
                 return;
             }
 
-            lastRoomIndex = roomIndex; // Update tracker
+            lastRoomIndex = roomIndex;
 
-            // Try room-specific image first
             if (roomIndex >= 0 && roomIndex < roomBackgrounds.length) {
                 String imageName = roomBackgrounds[roomIndex];
                 System.out.println("🔍 Looking for: images/rooms/" + imageName);
@@ -159,14 +151,11 @@ public class GamePanel extends JPanel {
                     System.out.println("✅ Found room image!");
                     backgroundImage = new ImageIcon(imageURL).getImage();
                     System.out.println("🎨 Loaded Room " + (roomIndex + 1) + " background");
-
-                    // Force immediate repaint
                     SwingUtilities.invokeLater(() -> repaint());
                     return;
                 }
             }
 
-            // Fallback: Default dungeon background
             System.out.println("🔍 Trying default: images/dungeon_bg.jpeg");
             java.net.URL defaultURL = getClass().getClassLoader().getResource("images/dungeon_bg.jpeg");
 
@@ -177,7 +166,6 @@ public class GamePanel extends JPanel {
                 return;
             }
 
-            // Final fallback: Gradient
             backgroundImage = null;
             System.out.println("🎨 Using gradient background");
 
@@ -192,10 +180,8 @@ public class GamePanel extends JPanel {
         super.paintComponent(g);
 
         if (backgroundImage != null) {
-            // Draw background image
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         } else {
-            // Fallback gradient background
             Graphics2D g2d = (Graphics2D) g;
             Color color1 = new Color(30, 30, 60);
             Color color2 = new Color(10, 10, 30);
@@ -214,9 +200,7 @@ public class GamePanel extends JPanel {
     public void doLayout() {
         super.doLayout();
 
-        // Prevent components from getting too small
         if (descScroll != null) {
-            // Ensure scroll pane has minimum size
             if (descScroll.getWidth() < 300 || descScroll.getHeight() < 150) {
                 descScroll.setSize(
                         Math.max(300, descScroll.getWidth()),
@@ -287,19 +271,16 @@ public class GamePanel extends JPanel {
     }
 
     private void handleQuickSave() {
-        // Show saving animation/feedback
         if (quickSaveButton != null) {
             quickSaveButton.setText("⏳ SAVING...");
             quickSaveButton.setEnabled(false);
         }
 
-        // Perform save in background to keep UI responsive
         Timer saveTimer = new Timer(100, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String result = game.saveGameWithSummary();
 
-                // Show result in a dialog with save summary
                 JTextArea resultArea = new JTextArea(20, 50);
                 resultArea.setEditable(false);
                 resultArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -315,7 +296,6 @@ public class GamePanel extends JPanel {
                         JOptionPane.INFORMATION_MESSAGE
                 );
 
-                // Restore button
                 if (quickSaveButton != null) {
                     quickSaveButton.setText("💾 QUICK SAVE");
                     quickSaveButton.setEnabled(true);
@@ -334,7 +314,6 @@ public class GamePanel extends JPanel {
             return;
         }
 
-        // Show confirmation with save info
         String saveInfo = game.getSaveInfo();
         int choice = JOptionPane.showConfirmDialog(
                 mainApp,
@@ -348,10 +327,8 @@ public class GamePanel extends JPanel {
             String result = game.loadGameWithFeedback();
 
             if (result.startsWith("✅")) {
-                // Success - refresh UI and show welcome back
                 refresh();
 
-                // Show detailed success message
                 JTextArea messageArea = new JTextArea(10, 40);
                 messageArea.setEditable(false);
                 messageArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -374,24 +351,20 @@ public class GamePanel extends JPanel {
         String saveInfo = game.getSaveInfo();
         String saveSummary = game.getSaveSummary();
 
-        // Create tabbed pane for different info
         JTabbedPane tabbedPane = new JTabbedPane();
 
-        // Tab 1: File Info
         JTextArea fileInfoArea = new JTextArea(15, 50);
         fileInfoArea.setEditable(false);
         fileInfoArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         fileInfoArea.setText(saveInfo);
         tabbedPane.addTab("📁 File Info", new JScrollPane(fileInfoArea));
 
-        // Tab 2: Save Summary
         JTextArea summaryArea = new JTextArea(20, 50);
         summaryArea.setEditable(false);
         summaryArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         summaryArea.setText(saveSummary);
         tabbedPane.addTab("📊 Save Summary", new JScrollPane(summaryArea));
 
-        // Tab 3: Game Stats
         Map<String, Object> stats = game.getGameStats();
         StringBuilder statsText = new StringBuilder();
         stats.forEach((key, value) -> {
@@ -415,7 +388,6 @@ public class GamePanel extends JPanel {
     }
 
     private void setupDungeonButtons() {
-        // ✅ Style all buttons with dungeon theme
         if (puzzleBtn != null) {
             styleDungeonButton(puzzleBtn, "🧩 SOLVE PUZZLES 🧩");
         }
@@ -438,7 +410,6 @@ public class GamePanel extends JPanel {
             styleDungeonButton(saveButton, "💾 SAVE GAME 💾");
         }
 
-        // ✅ Style labels for better visibility
         if (roomHeaderLabel != null) {
             styleDungeonLabel(roomHeaderLabel);
         }
@@ -455,14 +426,11 @@ public class GamePanel extends JPanel {
 
     private void styleDungeonButton(JButton button, String text) {
         button.setText(text);
-        button.setForeground(new Color(255, 215, 0)); // Gold
-
-        // Use monospaced font
+        button.setForeground(new Color(255, 215, 0));
         button.setFont(new Font("Monospaced", Font.BOLD, Math.max(14, button.getFont().getSize())));
 
-        // Create stone-like look
-        Color stoneColor = new Color(70, 60, 50); // Dark stone
-        Color stoneBorder = new Color(150, 140, 130); // Light stone border
+        Color stoneColor = new Color(70, 60, 50);
+        Color stoneBorder = new Color(150, 140, 130);
 
         button.setBackground(stoneColor);
         button.setOpaque(true);
@@ -470,7 +438,6 @@ public class GamePanel extends JPanel {
         button.setFocusPainted(false);
         button.setContentAreaFilled(true);
 
-        // Create 3D stone border effect
         button.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createRaisedBevelBorder(),
                 BorderFactory.createCompoundBorder(
@@ -479,15 +446,13 @@ public class GamePanel extends JPanel {
                 )
         ));
 
-        // Fire hover effect
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 if (button.isEnabled()) {
-                    button.setBackground(new Color(120, 50, 30)); // Fire-like red/orange
+                    button.setBackground(new Color(120, 50, 30));
                     button.setForeground(Color.YELLOW);
 
-                    // Create fiery border
                     button.setBorder(BorderFactory.createCompoundBorder(
                             BorderFactory.createLineBorder(Color.ORANGE, 3),
                             BorderFactory.createCompoundBorder(
@@ -496,13 +461,12 @@ public class GamePanel extends JPanel {
                             )
                     ));
 
-                    // Add subtle fire animation with timer
                     Timer fireTimer = new Timer(200, null);
                     final boolean[] isBright = {false};
 
                     fireTimer.addActionListener(evt -> {
                         if (button.isEnabled() && isBright[0]) {
-                            button.setForeground(new Color(255, 255, 150)); // Bright yellow
+                            button.setForeground(new Color(255, 255, 150));
                             button.setBorder(BorderFactory.createCompoundBorder(
                                     BorderFactory.createLineBorder(new Color(255, 150, 0), 3),
                                     BorderFactory.createCompoundBorder(
@@ -531,25 +495,22 @@ public class GamePanel extends JPanel {
 
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
-                // Stop fire animation timer
                 Object timer = button.getClientProperty("fireTimer");
                 if (timer instanceof Timer) {
                     ((Timer) timer).stop();
                 }
 
-                // Back to stone appearance
                 Color stoneColor = new Color(70, 60, 50);
                 Color stoneBorder = new Color(150, 140, 130);
 
                 if (button.isEnabled()) {
                     button.setBackground(stoneColor);
-                    button.setForeground(new Color(255, 215, 0)); // Gold
+                    button.setForeground(new Color(255, 215, 0));
                 } else {
-                    button.setBackground(new Color(100, 90, 80)); // Darker stone for disabled
+                    button.setBackground(new Color(100, 90, 80));
                     button.setForeground(Color.GRAY);
                 }
 
-                // Restore stone border
                 button.setBorder(BorderFactory.createCompoundBorder(
                         BorderFactory.createRaisedBevelBorder(),
                         BorderFactory.createCompoundBorder(
@@ -562,10 +523,8 @@ public class GamePanel extends JPanel {
     }
 
     private void styleDungeonLabel(JLabel label) {
-        label.setForeground(new Color(255, 215, 0)); // Gold
+        label.setForeground(new Color(255, 215, 0));
         label.setFont(new Font("Monospaced", Font.BOLD, Math.max(16, label.getFont().getSize())));
-
-        // Add subtle text shadow for better readability
         label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
     }
 
@@ -574,19 +533,16 @@ public class GamePanel extends JPanel {
         label.setFont(new Font("Monospaced", Font.PLAIN, Math.max(12, label.getFont().getSize())));
     }
 
-    // ✅ ADD SAVE GAME METHOD
     private void handleSaveGame() {
         if (saveButton != null) {
             saveButton.setText("⏳ Saving...");
             saveButton.setEnabled(false);
         }
 
-        // Use timer to prevent UI freezing
         Timer saveTimer = new Timer(300, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    // First validate game state
                     if (!game.validateGameState()) {
                         JOptionPane.showMessageDialog(
                                 mainApp,
@@ -599,7 +555,6 @@ public class GamePanel extends JPanel {
 
                     String result = game.saveGameWithBackup();
 
-                    // Show result in a dialog
                     JTextArea messageArea = new JTextArea(result);
                     messageArea.setEditable(false);
                     messageArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -612,7 +567,6 @@ public class GamePanel extends JPanel {
                     );
 
                 } catch (Exception ex) {
-                    // Show detailed error
                     String errorMsg = "❌ Save failed:\n" + ex.getMessage() +
                             "\n\nMake sure all model classes implement Serializable.";
                     JOptionPane.showMessageDialog(
@@ -621,9 +575,8 @@ public class GamePanel extends JPanel {
                             "Save Error",
                             JOptionPane.ERROR_MESSAGE
                     );
-                    ex.printStackTrace(); // For debugging
+                    ex.printStackTrace();
                 } finally {
-                    // Restore button
                     if (saveButton != null) {
                         saveButton.setText("💾 Save Game");
                         saveButton.setEnabled(true);
@@ -636,6 +589,7 @@ public class GamePanel extends JPanel {
         saveTimer.start();
     }
 
+    // 🆕 FIXED: Next room with music update
     private void handleNextRoom() {
         if (!game.isCurrentRoomComplete()) {
             mainApp.showMessage("Complete all puzzles in this room to proceed!");
@@ -644,16 +598,20 @@ public class GamePanel extends JPanel {
 
         int currentIndex = game.getCurrentRoomIndex();
         if (currentIndex < game.getRooms().size() - 1) {
-            game.moveToNextRoom();
+            String result = game.moveToNextRoom();
+
+            // 🎵 CRITICAL: Update music after room change
+            updateRoomMusic();
 
             if (game.checkWinCondition()) {
                 Map<String, Object> winDetails = game.checkWinConditionDetailed();
                 mainApp.showMessage(winDetails.get("message").toString());
+            } else {
+                mainApp.showMessage("🏰 Moving to: " + game.getCurrentRoom().getName() +
+                        "\n" + game.getCurrentObjective());
             }
 
             refresh();
-            mainApp.showMessage("🏰 Moving to: " + game.getCurrentRoom().getName() +
-                    "\n" + game.getCurrentObjective());
         } else {
             mainApp.showMessage("🎉 You've reached the final room! Complete your mission!");
         }
@@ -665,11 +623,12 @@ public class GamePanel extends JPanel {
         }
     }
 
-    // 🆕 COMPLETELY UPDATED refresh() method with room change detection
     public void refresh() {
         System.out.println("\n🔄 === GAMEPANEL REFRESH ===");
         System.out.println("Current room index: " + game.getCurrentRoomIndex());
 
+        // 🎵 Update music when panel refreshes
+        updateRoomMusic();
         updateBackground();
 
         Room currentRoom = game.getCurrentRoom();
@@ -679,11 +638,9 @@ public class GamePanel extends JPanel {
             System.out.println("📊 Current room: " + currentRoom.getName());
             System.out.println("📈 Room completion: " + completion + "%");
 
-            // ✅ SPECIAL HANDLING FOR ROOM 5
-            if (game.getCurrentRoomIndex() == 4) { // Room 5 (index 4)
+            if (game.getCurrentRoomIndex() == 4) {
                 handleRoom5Display(currentRoom);
             } else {
-                // Normal room handling
                 String roomText =
                         "📍 " + currentRoom.getName().toUpperCase() + " 📍\n" +
                                 "════════════════════════════════════════\n\n" +
@@ -697,7 +654,6 @@ public class GamePanel extends JPanel {
                 roomDescriptionTextArea.setText(roomText);
                 roomDescriptionTextArea.setCaretPosition(0);
 
-                // Normal room button states
                 puzzleBtn.setEnabled(!game.getAvailablePuzzles().isEmpty());
                 gachaBtn.setEnabled(game.canAffordGachaPull());
 
@@ -713,7 +669,6 @@ public class GamePanel extends JPanel {
                 }
             }
 
-            // Update common UI elements
             if (roomHeaderLabel != null) {
                 roomHeaderLabel.setText("Room " + currentRoom.getRoomNumber() + ": " +
                         currentRoom.getName() +
@@ -728,7 +683,6 @@ public class GamePanel extends JPanel {
                 roomProgressLabel.setText("📊 Progress: " + String.format("%.0f%%", completion));
             }
 
-            // Update save button
             if (saveButton != null) {
                 saveButton.setText("💾 Save Game");
             }
@@ -765,50 +719,17 @@ public class GamePanel extends JPanel {
         roomDescriptionTextArea.setText(roomText);
         roomDescriptionTextArea.setCaretPosition(0);
 
-        // Disable puzzle button for room 5 (it's a preview room)
         puzzleBtn.setEnabled(false);
         puzzleBtn.setText("🧩 Expansion Content (Coming Soon)");
 
-        // Enable gacha with special text
         gachaBtn.setEnabled(game.canAffordGachaPull());
         gachaBtn.setText("🎰 Special Nexus Gacha");
 
-        // Disable next room button (this is the last room)
         nextRoomBtn.setEnabled(false);
         nextRoomBtn.setText("🌌 Gateway Active");
 
-        // Update info labels
         if (puzzleAvailableLabel != null) {
             puzzleAvailableLabel.setText("🧩 Puzzles: Expansion Content");
-        }
-    }
-
-    private void addExpansionInfoButton() {
-        JButton expansionInfoBtn = new JButton("🌌 Expansion Info");
-        styleDungeonButton(expansionInfoBtn, "🌌 EXPANSION INFO");
-        expansionInfoBtn.addActionListener(e -> showExpansionInfo());
-
-        // Add to your button panel (you might need to adjust layout)
-        // For example, if you have a panel for additional buttons:
-        // buttonPanel.add(expansionInfoBtn);
-    }
-
-    private void showExpansionInfo() {
-        if (game.getCurrentRoomIndex() == 4) {
-            JTextArea infoArea = new JTextArea(20, 50);
-            infoArea.setEditable(false);
-            infoArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-            infoArea.setText(game.getExpansionTeaser());
-
-            JScrollPane scrollPane = new JScrollPane(infoArea);
-            scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-            JOptionPane.showMessageDialog(
-                    mainApp,
-                    scrollPane,
-                    "Future Expansions Preview",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
         }
     }
 }

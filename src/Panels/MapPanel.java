@@ -4,7 +4,7 @@ import main.MainApplication;
 import model.GameManager;
 
 import javax.swing.*;
-import javax.swing.border.Border; // 🆕 IMPORT ADDED
+import javax.swing.border.Border;
 import java.awt.*;
 import audio.AudioFiles;
 
@@ -21,7 +21,6 @@ public class MapPanel extends JPanel {
     private GameManager game;
     private Image mapImage;
 
-    // 🆕 FIX: Store button dimensions
     private static final Dimension ROOM_BUTTON_SIZE = new Dimension(250, 60);
     private static final Dimension BACK_BUTTON_SIZE = new Dimension(200, 50);
 
@@ -29,7 +28,6 @@ public class MapPanel extends JPanel {
         this.mainApp = mainApp;
         this.game = game;
 
-        // Keep your original layout
         setLayout(new BorderLayout());
         add(mapPanel, BorderLayout.CENTER);
 
@@ -56,7 +54,6 @@ public class MapPanel extends JPanel {
     }
 
     private void setupDungeonButtons() {
-        // Set fixed sizes for all buttons
         room1Button.setPreferredSize(ROOM_BUTTON_SIZE);
         room1Button.setMaximumSize(ROOM_BUTTON_SIZE);
         room1Button.setMinimumSize(ROOM_BUTTON_SIZE);
@@ -77,32 +74,27 @@ public class MapPanel extends JPanel {
         backButton.setMaximumSize(BACK_BUTTON_SIZE);
         backButton.setMinimumSize(BACK_BUTTON_SIZE);
 
-        // Style all buttons with FIRE effects (FIXED VERSION)
         styleButtonWithFire(room1Button, "🏰 ROOM 1");
         styleButtonWithFire(room2Button, "🏰 ROOM 2");
         styleButtonWithFire(room3Button, "🏰 ROOM 3");
         styleButtonWithFire(room4Button, "🏰 ROOM 4");
         styleButtonWithFire(backButton, "🔙 BACK TO GAME");
 
-        // Style title
         if (titleLabel != null) {
-            titleLabel.setForeground(new Color(255, 215, 0)); // Gold
+            titleLabel.setForeground(new Color(255, 215, 0));
             titleLabel.setFont(new Font("Monospaced", Font.BOLD, 28));
             titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
             titleLabel.setText("🗺️ DUNGEON MAP 🗺️");
         }
     }
 
-    // 🆕 COMPLETELY FIXED VERSION: No border changes during hover
     private void styleButtonWithFire(JButton button, String text) {
-        // Set text and font
         button.setText(text);
-        button.setForeground(new Color(255, 215, 0)); // Gold
+        button.setForeground(new Color(255, 215, 0));
         button.setFont(new Font("Monospaced", Font.BOLD, 14));
 
-        // Create stone-like look
-        Color stoneColor = new Color(70, 60, 50, 200); // Dark stone with transparency
-        Color stoneBorderColor = new Color(150, 140, 130); // Light stone border
+        Color stoneColor = new Color(70, 60, 50, 200);
+        Color stoneBorderColor = new Color(150, 140, 130);
 
         button.setBackground(stoneColor);
         button.setOpaque(true);
@@ -110,7 +102,6 @@ public class MapPanel extends JPanel {
         button.setFocusPainted(false);
         button.setContentAreaFilled(true);
 
-        // 🆕 FIX: Create ONE permanent border that won't change
         Border permanentBorder = BorderFactory.createCompoundBorder(
                 BorderFactory.createRaisedBevelBorder(),
                 BorderFactory.createCompoundBorder(
@@ -121,21 +112,19 @@ public class MapPanel extends JPanel {
 
         button.setBorder(permanentBorder);
 
-        // 🆕 FIXED: Fire hover effect - only changes colors, NOT border
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 if (button.isEnabled()) {
-                    button.setBackground(new Color(120, 50, 30, 220)); // Fire-like red/orange
+                    button.setBackground(new Color(120, 50, 30, 220));
                     button.setForeground(Color.YELLOW);
 
-                    // 🆕 NO BORDER CHANGES - only color animation
                     Timer fireTimer = new Timer(200, null);
                     final boolean[] isBright = {false};
 
                     fireTimer.addActionListener(evt -> {
                         if (button.isEnabled() && isBright[0]) {
-                            button.setForeground(new Color(255, 255, 150)); // Bright yellow
+                            button.setForeground(new Color(255, 255, 150));
                         } else if (button.isEnabled()) {
                             button.setForeground(Color.ORANGE);
                         }
@@ -150,24 +139,22 @@ public class MapPanel extends JPanel {
 
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
-                // Stop fire animation timer
                 Object timer = button.getClientProperty("fireTimer");
                 if (timer instanceof Timer) {
                     ((Timer) timer).stop();
                 }
 
-                // Back to appropriate appearance
                 updateButtonAppearance(button);
             }
         });
     }
 
+    // 🆕 FIX: Simple room navigation without duplicate music calls
     private void navigateToRoom(int roomIndex) {
         mainApp.getAudioManager().playSound(AudioFiles.CLICK);
 
         String result = game.moveToRoom(roomIndex);
 
-        // Play unlock sound if successful
         if (result.contains("✅") || !result.contains("🔒")) {
             mainApp.getAudioManager().playSound(AudioFiles.UNLOCK);
         }
@@ -176,18 +163,16 @@ public class MapPanel extends JPanel {
             mainApp.showMessage(result);
         } else {
             mainApp.showMessage("✅ " + result);
-            mainApp.showGame();
+            mainApp.showGame(); // GamePanel will handle music update in its refresh()
         }
     }
 
     public void refresh() {
-        // Update room buttons with status
         updateRoomButtonDisplay(room1Button, 0);
         updateRoomButtonDisplay(room2Button, 1);
         updateRoomButtonDisplay(room3Button, 2);
         updateRoomButtonDisplay(room4Button, 3);
 
-        // Update back button
         updateButtonAppearance(backButton);
     }
 
@@ -195,7 +180,6 @@ public class MapPanel extends JPanel {
         String status = game.getRoomStatus(roomIndex);
         String roomName = game.getRooms().get(roomIndex).getName();
 
-        // Status emoji
         String statusEmoji = "";
         switch (status) {
             case "📍 CURRENT": statusEmoji = "📍 "; break;
@@ -204,7 +188,6 @@ public class MapPanel extends JPanel {
             case "🔒 LOCKED": statusEmoji = "🔒 "; break;
         }
 
-        // Update button text with status
         button.setText(statusEmoji + roomName);
         button.setToolTipText("Room " + (roomIndex + 1) + " - " + status);
 
@@ -212,7 +195,6 @@ public class MapPanel extends JPanel {
         updateButtonAppearance(button);
     }
 
-    // 🆕 FIXED: Update appearance without changing border size
     private void updateButtonAppearance(JButton button) {
         if (button == null) return;
 
@@ -221,35 +203,29 @@ public class MapPanel extends JPanel {
         Color stoneBorderColor = new Color(150, 140, 130);
 
         if (text.contains("🔒")) {
-            // Locked room - gray stone
             stoneColor = new Color(100, 90, 80, 180);
             stoneBorderColor = new Color(120, 110, 100);
             button.setForeground(Color.GRAY);
         }
         else if (text.contains("📍")) {
-            // Current room - green stone
             stoneColor = new Color(80, 120, 80, 220);
             stoneBorderColor = new Color(120, 180, 120);
             button.setForeground(Color.WHITE);
         }
         else if (text.contains("✅")) {
-            // Completed room - blue stone
             stoneColor = new Color(80, 100, 140, 220);
             stoneBorderColor = new Color(120, 150, 200);
             button.setForeground(Color.WHITE);
         }
         else if (text.contains("⚪")) {
-            // Unlocked room - yellow stone
             stoneColor = new Color(140, 130, 80, 220);
             stoneBorderColor = new Color(200, 190, 120);
             button.setForeground(Color.BLACK);
         }
         else {
-            // Back button - regular stone
             button.setForeground(new Color(255, 215, 0));
         }
 
-        // Update button colors
         if (button.isEnabled()) {
             button.setBackground(stoneColor);
         } else {
@@ -257,7 +233,6 @@ public class MapPanel extends JPanel {
             button.setForeground(Color.GRAY);
         }
 
-        // 🆕 FIXED: Update border COLOR only, not size
         Border newBorder = BorderFactory.createCompoundBorder(
                 BorderFactory.createRaisedBevelBorder(),
                 BorderFactory.createCompoundBorder(
@@ -271,7 +246,6 @@ public class MapPanel extends JPanel {
 
     private void loadMapImage() {
         try {
-            // Try different image names
             String[] possibleImages = {
                     "images/top_downview.jpeg",
                     "images/top_downview.jpg",
@@ -303,15 +277,12 @@ public class MapPanel extends JPanel {
         super.paintComponent(g);
 
         if (mapImage != null) {
-            // Draw image covering entire panel
             g.drawImage(mapImage, 0, 0, getWidth(), getHeight(), this);
         } else {
-            // Fallback: Fire-themed gradient background
             Graphics2D g2d = (Graphics2D) g;
 
-            // Dark red/orange gradient like fire embers
-            Color color1 = new Color(40, 20, 10);     // Dark brown/red
-            Color color2 = new Color(80, 40, 20);     // Reddish brown
+            Color color1 = new Color(40, 20, 10);
+            Color color2 = new Color(80, 40, 20);
 
             GradientPaint gradient = new GradientPaint(
                     0, 0, color1,
@@ -320,7 +291,6 @@ public class MapPanel extends JPanel {
             g2d.setPaint(gradient);
             g2d.fillRect(0, 0, getWidth(), getHeight());
 
-            // Add subtle fire/ember effect
             g2d.setColor(new Color(255, 100, 0, 30));
             int emberSize = 100;
             for (int i = 0; i < 5; i++) {
