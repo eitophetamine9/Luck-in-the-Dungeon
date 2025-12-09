@@ -52,6 +52,10 @@ public class GamePanel extends JPanel {
         this.game = game;
         this.lastRoomIndex = -1;
 
+        // Force stop any lingering Main Menu music immediately
+        System.out.println("🔄 Initializing GamePanel - Resetting Audio");
+        mainApp.getAudioManager().stopMusic();
+
         setLayout(new BorderLayout());
         add(gamePanel, BorderLayout.CENTER);
 
@@ -79,9 +83,10 @@ public class GamePanel extends JPanel {
             roomDescriptionTextArea.setEditable(false);
             roomDescriptionTextArea.setLineWrap(true);
             roomDescriptionTextArea.setWrapStyleWord(true);
-            roomDescriptionTextArea.setFont(new Font("Monospaced", Font.BOLD, 14));
-            roomDescriptionTextArea.setForeground(Color.cyan);
-            roomDescriptionTextArea.setBackground(new Color(30, 30, 60, 180));
+            roomDescriptionTextArea.setFont(new Font("Monospaced", Font.BOLD, 22));
+            roomDescriptionTextArea.setForeground(new Color(0, 255, 255));
+            roomDescriptionTextArea.setBackground(new Color(20, 20, 40, 230));
+            roomDescriptionTextArea.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
             roomDescriptionTextArea.setCaretColor(Color.cyan);
             roomDescriptionTextArea.setText("");
             roomDescriptionTextArea.setDisabledTextColor(new Color(255, 255, 200));
@@ -97,22 +102,34 @@ public class GamePanel extends JPanel {
             styleDungeonButton(saveInfoButton, "📊 SAVE INFO");
         }
 
+        this.currentRoomMusic = "";
+
         setupEventHandlers();
         setupDungeonButtons();
         refresh();
     }
 
+    public void updateGameInstance(GameManager newGame) {
+        this.game = newGame;
+        this.lastRoomIndex = -1; // Force background update
+        this.currentRoomMusic = ""; // Force music update
+        refresh();
+    }
+
     // 🆕 Add: Update room music
     private void updateRoomMusic() {
-        int roomIndex = game.getCurrentRoomIndex();
-        String newMusic = AudioFiles.getRoomMusic(roomIndex);
+        // 1. Security: If panel is hidden, DO NOT touch audio.
+        if (!this.isShowing()) return;
 
-        // Only change music if room has changed or music is different
-        if (roomIndex != lastRoomIndex || !newMusic.equals(currentRoomMusic)) {
-            System.out.println("🎵 Changing music from " + currentRoomMusic + " to " + newMusic);
-            mainApp.getAudioManager().playMusic(newMusic);
-            currentRoomMusic = newMusic;
-            lastRoomIndex = roomIndex;
+        int roomIndex = game.getCurrentRoomIndex();
+        String correctMusicForThisRoom = AudioFiles.getRoomMusic(roomIndex);
+        String actuallyPlaying = mainApp.getAudioManager().getCurrentMusic();
+
+        // 2. Only switch if the strings are different
+        if (!correctMusicForThisRoom.equals(actuallyPlaying)) {
+            System.out.println("🎵 Panel detecting mismatch. Fixing...");
+            mainApp.getAudioManager().playMusic(correctMusicForThisRoom);
+            currentRoomMusic = correctMusicForThisRoom;
         }
     }
 
@@ -128,50 +145,39 @@ public class GamePanel extends JPanel {
 
     private void updateBackground() {
         System.out.println("\n=== UPDATE BACKGROUND ===");
-        System.out.println("Current room index: " + game.getCurrentRoomIndex());
+        int roomIndex = game.getCurrentRoomIndex();
+        System.out.println("Current Game Room Index: " + roomIndex);
+
+        // REMOVED the "if (roomIndex == lastRoomIndex)" check.
+        // We force a reload to ensure the image is always correct.
 
         try {
-            int roomIndex = game.getCurrentRoomIndex();
-            System.out.println("Room index: " + roomIndex);
-
-            if (roomIndex == lastRoomIndex && backgroundImage != null) {
-                System.out.println("📌 Same room, keeping current background");
-                return;
-            }
-
+            // Update the tracker
             lastRoomIndex = roomIndex;
 
             if (roomIndex >= 0 && roomIndex < roomBackgrounds.length) {
                 String imageName = roomBackgrounds[roomIndex];
-                System.out.println("🔍 Looking for: images/rooms/" + imageName);
+                System.out.println("🔍 Loading: " + imageName);
 
                 java.net.URL imageURL = getClass().getClassLoader().getResource("images/rooms/" + imageName);
 
                 if (imageURL != null) {
-                    System.out.println("✅ Found room image!");
+                    // Force the new image
                     backgroundImage = new ImageIcon(imageURL).getImage();
-                    System.out.println("🎨 Loaded Room " + (roomIndex + 1) + " background");
-                    SwingUtilities.invokeLater(() -> repaint());
-                    return;
+                    System.out.println("🎨 Success! Loaded background for Room " + (roomIndex + 1));
+                } else {
+                    System.out.println("❌ ERROR: Image file not found: " + imageName);
                 }
+            } else {
+                System.out.println("⚠️ Room index out of bounds, using default.");
             }
 
-            System.out.println("🔍 Trying default: images/dungeon_bg.jpeg");
-            java.net.URL defaultURL = getClass().getClassLoader().getResource("images/dungeon_bg.jpeg");
-
-            if (defaultURL != null) {
-                System.out.println("✅ Found default image");
-                backgroundImage = new ImageIcon(defaultURL).getImage();
-                System.out.println("🏰 Using default background");
-                return;
-            }
-
-            backgroundImage = null;
-            System.out.println("🎨 Using gradient background");
+            // Force the panel to redraw immediately
+            this.repaint();
 
         } catch (Exception e) {
             System.out.println("💥 ERROR loading background: " + e.getMessage());
-            backgroundImage = null;
+            e.printStackTrace();
         }
     }
 
@@ -181,6 +187,10 @@ public class GamePanel extends JPanel {
 
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            // Color(0, 0, 0, 128) means Black with 50% transparency (0-255)
+            // Increase 128 to make it darker, decrease to make it brighter.
+            g.setColor(new Color(0, 0, 0, 128));
+            g.fillRect(0, 0, getWidth(), getHeight());
         } else {
             Graphics2D g2d = (Graphics2D) g;
             Color color1 = new Color(30, 30, 60);
@@ -598,11 +608,10 @@ public class GamePanel extends JPanel {
 
         int currentIndex = game.getCurrentRoomIndex();
         if (currentIndex < game.getRooms().size() - 1) {
+            // 1. Move the logic
             String result = game.moveToNextRoom();
 
-            // 🎵 CRITICAL: Update music after room change
-            updateRoomMusic();
-
+            // 2. Show messages
             if (game.checkWinCondition()) {
                 Map<String, Object> winDetails = game.checkWinConditionDetailed();
                 mainApp.showMessage(winDetails.get("message").toString());
@@ -611,7 +620,11 @@ public class GamePanel extends JPanel {
                         "\n" + game.getCurrentObjective());
             }
 
+            // 3. Just call refresh().
+            // Refresh handles updateRoomMusic() and updateBackground() automatically.
+            // Do NOT call updateRoomMusic() here manually.
             refresh();
+
         } else {
             mainApp.showMessage("🎉 You've reached the final room! Complete your mission!");
         }
@@ -624,6 +637,14 @@ public class GamePanel extends JPanel {
     }
 
     public void refresh() {
+        // 🆕 GUARD CLAUSE: If this panel is hidden (behind Main Menu), DO NOT RUN.
+        if (!this.isShowing()) {
+            return;
+        }
+
+        System.out.println("\n🔄 === GAMEPANEL REFRESH ===");
+        System.out.println("Current room index: " + game.getCurrentRoomIndex());
+
         System.out.println("\n🔄 === GAMEPANEL REFRESH ===");
         System.out.println("Current room index: " + game.getCurrentRoomIndex());
 
@@ -632,7 +653,7 @@ public class GamePanel extends JPanel {
         updateBackground();
 
         Room currentRoom = game.getCurrentRoom();
-        if (currentRoom != null && roomDescriptionTextArea != null) {
+        if (currentRoom != null) {
             double completion = game.getCurrentRoomCompletion();
 
             System.out.println("📊 Current room: " + currentRoom.getName());
@@ -670,9 +691,7 @@ public class GamePanel extends JPanel {
             }
 
             if (roomHeaderLabel != null) {
-                roomHeaderLabel.setText("Room " + currentRoom.getRoomNumber() + ": " +
-                        currentRoom.getName() +
-                        String.format(" (%.0f%% Complete)", completion));
+                roomHeaderLabel.setText("Room " + currentRoom.getRoomNumber() + ": " + currentRoom.getName());
             }
 
             if (coinsLabel != null) {
@@ -692,6 +711,7 @@ public class GamePanel extends JPanel {
             System.out.println("⚠️ Could not update UI - null components");
         }
 
+        revalidate();
         repaint();
         System.out.println("✅ REFRESH COMPLETE\n");
     }

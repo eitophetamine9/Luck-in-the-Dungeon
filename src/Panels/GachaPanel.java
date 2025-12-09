@@ -65,25 +65,25 @@ public class GachaPanel extends JPanel {
             makeLabelTransparent(pityProgressLabel);
         }
 
-        // Configure result area WITH ALPHA IN CODE
+        // inside initializeComponents()
         if (resultArea != null) {
             resultArea.setEditable(false);
             resultArea.setLineWrap(true);
             resultArea.setWrapStyleWord(true);
-            resultArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
-            // Set colors with alpha IN CODE
-            resultArea.setBackground(new Color(30, 20, 40, 220)); // Alpha here!
+            // CHANGED: Massive font for the "Result" (18px Bold)
+            resultArea.setFont(new Font("Monospaced", Font.BOLD, 18));
+
+            // CHANGED: Darker background (Alpha 240) so white text pops
+            resultArea.setBackground(new Color(30, 20, 40, 240));
             resultArea.setForeground(Color.WHITE);
             resultArea.setCaretColor(Color.YELLOW);
 
-            // Create border IN CODE
             resultArea.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createLineBorder(new Color(150, 100, 200), 2),
-                    BorderFactory.createEmptyBorder(15, 15, 15, 15)
+                    BorderFactory.createEmptyBorder(20, 20, 20, 20) // More padding
             ));
 
-            // Make the text area itself non-opaque to show background
             resultArea.setOpaque(false);
         }
     }
@@ -100,9 +100,9 @@ public class GachaPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        // Draw background WITH ALPHA
-        Color color1 = new Color(40, 20, 50, 255);     // Solid dark purple
-        Color color2 = new Color(60, 30, 70, 255);     // Solid lighter purple
+        // CHANGE: Make these purples much darker
+        Color color1 = new Color(20, 10, 30, 255); // Was (40, 20, 50)
+        Color color2 = new Color(30, 15, 40, 255); // Was (60, 30, 70)
 
         GradientPaint gradient = new GradientPaint(
                 0, 0, color1,

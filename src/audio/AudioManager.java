@@ -2,87 +2,117 @@ package audio;
 
 import javax.sound.sampled.*;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class AudioManager {
     private static AudioManager instance;
-    private Clip backgroundMusic;
+
+    // 🆕 THE NUCLEAR FIX: A list to track ALL sounds, so none can "escape"
+    private List<Clip> activeClips = new ArrayList<>();
+
+    private String currentMusic = "";
     private float volume = 0.6f;
     private boolean isMuted = false;
-    private String currentMusic = "";
 
     private AudioManager() {}
 
-    public static AudioManager getInstance() {
+    public static synchronized AudioManager getInstance() {
         if (instance == null) {
             instance = new AudioManager();
         }
         return instance;
     }
 
-    // 🆕 FIX: Improved music playing with proper cleanup
-    public void playMusic(String fileName) {
-        if (isMuted) {
-            System.out.println("🔇 Music muted, skipping: " + fileName);
+    // 🆕 SYNCHRONIZED: Only one thread can touch the audio system at a time
+    public synchronized void playMusic(String fileName) {
+        if (isMuted) return;
+
+        // Optimization: If asking for the exact same song, do nothing
+        // BUT: We check if the clip is actually running to be safe
+        if (currentMusic.equals(fileName) && !activeClips.isEmpty() && activeClips.get(activeClips.size()-1).isRunning()) {
             return;
         }
 
-        // Don't restart if already playing the same music
-        if (currentMusic.equals(fileName) && backgroundMusic != null &&
-                backgroundMusic.isRunning()) {
-            System.out.println("🎵 Already playing: " + fileName);
-            return;
-        }
+        System.out.println("🎵 Audio Manager: Request to play " + fileName);
+
+        // 1. NUCLEAR CLEANUP: Kill EVERY clip we know about
+        stopAllMusic();
 
         try {
-            // 🆕 FIX: Stop and clean up previous music completely
-            if (backgroundMusic != null) {
-                if (backgroundMusic.isRunning()) {
-                    backgroundMusic.stop();
-                }
-                backgroundMusic.close();
-                backgroundMusic = null;
-            }
-
-            // Load new audio file
             URL url = getClass().getResource(fileName);
+            if (url == null) url = getClass().getResource("/" + fileName);
+
             if (url == null) {
-                System.out.println("❌ Audio file not found: " + fileName);
-                currentMusic = "";
+                System.err.println("❌ CRITICAL: Audio file missing: " + fileName);
                 return;
             }
 
             AudioInputStream audioStream = AudioSystem.getAudioInputStream(url);
-            backgroundMusic = AudioSystem.getClip();
-            backgroundMusic.open(audioStream);
+            Clip newClip = AudioSystem.getClip();
+            newClip.open(audioStream);
 
-            // Set volume
-            if (backgroundMusic.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
-                FloatControl gainControl = (FloatControl) backgroundMusic.getControl(FloatControl.Type.MASTER_GAIN);
-                float dB = (float) (Math.log(volume) / Math.log(10.0) * 20.0);
+            // Volume Control
+            if (newClip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                FloatControl gainControl = (FloatControl) newClip.getControl(FloatControl.Type.MASTER_GAIN);
+                float dB = (float) (Math.log(Math.max(0.0001f, volume)) / Math.log(10.0) * 20.0);
                 gainControl.setValue(dB);
             }
 
-            backgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
+            // 2. Add to our tracking list BEFORE starting
+            activeClips.add(newClip);
             currentMusic = fileName;
-            System.out.println("🎵 Now playing: " + fileName);
+
+            // 3. Play
+            newClip.setFramePosition(0);
+            newClip.loop(Clip.LOOP_CONTINUOUSLY);
+            newClip.start();
+
+            System.out.println("🎵 Now playing: " + fileName + " [Active Clips: " + activeClips.size() + "]");
 
         } catch (Exception e) {
-            System.out.println("❌ Error playing music: " + fileName + " - " + e.getMessage());
+            System.err.println("❌ Error playing music: " + fileName);
+            e.printStackTrace();
             currentMusic = "";
         }
     }
 
-    // Play sound effect (plays once)
+    // 🆕 The "Nuclear" Stop Method
+    public synchronized void stopMusic() {
+        System.out.println("🛑 Stopping ALL music...");
+        stopAllMusic();
+        currentMusic = "";
+    }
+
+    private void stopAllMusic() {
+        // Iterator is safer for removing while looping
+        Iterator<Clip> iterator = activeClips.iterator();
+        while (iterator.hasNext()) {
+            Clip clip = iterator.next();
+            try {
+                if (clip != null) {
+                    if (clip.isRunning()) clip.stop();
+                    clip.flush();
+                    clip.close();
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️ Error closing clip: " + e.getMessage());
+            }
+            // Remove from list
+            iterator.remove();
+        }
+        // Ensure list is empty
+        activeClips.clear();
+    }
+
     public void playSound(String fileName) {
         if (isMuted) return;
-
         new Thread(() -> {
             try {
                 URL url = getClass().getResource(fileName);
-                if (url == null) {
-                    System.out.println("❌ Sound file not found: " + fileName);
-                    return;
-                }
+                if (url == null) url = getClass().getResource("/" + fileName);
+                if (url == null) return;
 
                 AudioInputStream audioStream = AudioSystem.getAudioInputStream(url);
                 Clip clip = AudioSystem.getClip();
@@ -93,68 +123,29 @@ public class AudioManager {
                     float dB = (float) (Math.log(volume) / Math.log(10.0) * 20.0);
                     gainControl.setValue(dB);
                 }
-
                 clip.start();
-                System.out.println("🔊 Playing sound: " + fileName);
-
-                // 🆕 FIX: Close clip when done to free resources
-                clip.addLineListener(new LineListener() {
-                    @Override
-                    public void update(LineEvent event) {
-                        if (event.getType() == LineEvent.Type.STOP) {
-                            clip.close();
-                        }
-                    }
+                clip.addLineListener(e -> {
+                    if (e.getType() == LineEvent.Type.STOP) clip.close();
                 });
-
             } catch (Exception e) {
-                System.out.println("❌ Error playing sound: " + fileName + " - " + e.getMessage());
+                System.out.println("❌ SFX Error: " + fileName);
             }
         }).start();
     }
 
-    // Stop music with proper cleanup
-    public void stopMusic() {
-        if (backgroundMusic != null) {
-            if (backgroundMusic.isRunning()) {
-                backgroundMusic.stop();
-            }
-            backgroundMusic.close();
-            backgroundMusic = null;
-        }
-        currentMusic = "";
-        System.out.println("⏹️ Music stopped");
-    }
-
-    // Volume control (0.0 to 1.0)
-    public void setVolume(float newVolume) {
-        volume = Math.max(0.0f, Math.min(1.0f, newVolume));
-
-        if (backgroundMusic != null && backgroundMusic.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
-            FloatControl gainControl = (FloatControl) backgroundMusic.getControl(FloatControl.Type.MASTER_GAIN);
-            float dB = (float) (Math.log(volume) / Math.log(10.0) * 20.0);
-            gainControl.setValue(dB);
-        }
-
-        System.out.println("🔊 Volume set to: " + volume);
-    }
-
-    public void toggleMute() {
-        isMuted = !isMuted;
-        System.out.println(isMuted ? "🔇 Muted" : "🔊 Unmuted");
-
-        if (isMuted) {
-            stopMusic();
-        } else if (!currentMusic.isEmpty()) {
-            playMusic(currentMusic);
-        }
-    }
-
-    // Get current playing music
-    public String getCurrentMusic() {
+    public synchronized String getCurrentMusic() {
         return currentMusic;
     }
 
-    public float getVolume() { return volume; }
-    public boolean isMuted() { return isMuted; }
+    public void setVolume(float newVolume) {
+        this.volume = newVolume;
+        // Update all active clips
+        for (Clip clip : activeClips) {
+            if (clip != null && clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+                float dB = (float) (Math.log(Math.max(0.0001f, volume)) / Math.log(10.0) * 20.0);
+                gainControl.setValue(dB);
+            }
+        }
+    }
 }

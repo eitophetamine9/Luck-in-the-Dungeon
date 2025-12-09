@@ -66,7 +66,7 @@ public class PuzzlePanel extends JPanel {
             puzzleDescription.setEditable(false);
             puzzleDescription.setLineWrap(true);
             puzzleDescription.setWrapStyleWord(true);
-            puzzleDescription.setFont(new Font("Monospaced", Font.PLAIN, 13));
+            puzzleDescription.setFont(new Font("Monospaced", Font.BOLD, 20));
             puzzleDescription.setForeground(new Color(220, 220, 255));
             puzzleDescription.setCaretColor(Color.YELLOW);
             puzzleDescription.setOpaque(false);
@@ -76,7 +76,7 @@ public class PuzzlePanel extends JPanel {
             hintTextArea.setEditable(false);
             hintTextArea.setLineWrap(true);
             hintTextArea.setWrapStyleWord(true);
-            hintTextArea.setFont(new Font("Monospaced", Font.ITALIC, 12));
+            hintTextArea.setFont(new Font("Monospaced", Font.PLAIN, 16));
             hintTextArea.setForeground(new Color(255, 255, 180));
             hintTextArea.setCaretColor(Color.ORANGE);
             hintTextArea.setOpaque(false);
@@ -115,7 +115,7 @@ public class PuzzlePanel extends JPanel {
                 }
 
                 String displayText = String.format(
-                        "<html><div style='padding: 5px;'>" +
+                        "<html><div style='padding: 8px; font-size: 14px;'>" +
                                 "<b>%s%s</b><br>" +
                                 "<font size='-1' color='#AAAAAA'>%s</font><br>" +
                                 "<font size='-2'>Difficulty: %s | Reward: %d coins</font>" +
@@ -147,7 +147,7 @@ public class PuzzlePanel extends JPanel {
                     setBorder(BorderFactory.createEmptyBorder(5, 8, 5, 8));
                 }
 
-                setFont(new Font("Segoe UI", Font.PLAIN, 12));
+                setFont(new Font("Segoe UI", Font.BOLD, 16));
             }
 
             return this;
@@ -241,8 +241,9 @@ public class PuzzlePanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        Color color1 = new Color(30, 25, 40, 255);
-        Color color2 = new Color(50, 40, 65, 255);
+        // CHANGE: Make these deep blues almost black
+        Color color1 = new Color(15, 12, 20, 255); // Was (30, 25, 40)
+        Color color2 = new Color(25, 20, 35, 255); // Was (50, 40, 65)
 
         GradientPaint gradient = new GradientPaint(
                 0, 0, color1,

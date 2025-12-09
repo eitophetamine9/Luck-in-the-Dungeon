@@ -57,12 +57,18 @@ public class InventoryPanel extends JPanel {
             itemDetails.setEditable(false);
             itemDetails.setLineWrap(true);
             itemDetails.setWrapStyleWord(true);
-            itemDetails.setFont(new Font("Monospaced", Font.PLAIN, 12));
-            itemDetails.setBackground(new Color(40, 35, 25, 230));
+
+            // CHANGED: Increased to 18 + BOLD for visibility
+            itemDetails.setFont(new Font("Monospaced", Font.BOLD, 18));
+
+            // CHANGED: Made background slightly darker (alpha 245) for better text contrast
+            itemDetails.setBackground(new Color(40, 35, 25, 245));
             itemDetails.setForeground(new Color(255, 255, 200));
+
+            // CHANGED: Increased padding inside the box
             itemDetails.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createLineBorder(new Color(180, 150, 100), 2),
-                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
+                    BorderFactory.createEmptyBorder(15, 15, 15, 15)
             ));
         }
     }
@@ -74,6 +80,9 @@ public class InventoryPanel extends JPanel {
 
         if (backgroundImage != null){
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            // ✅ ADD THIS: Dim the leather background slightly
+            g.setColor(new Color(0, 0, 0, 100)); // Slightly lighter dim (approx 40%)
+            g.fillRect(0, 0, getWidth(), getHeight());
         }
 
         // Draw leather-like background
