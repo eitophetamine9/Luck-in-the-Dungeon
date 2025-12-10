@@ -111,7 +111,7 @@ public class GameManager implements Serializable {
         room2.addPuzzle(scientistNotes);
 
         RiddlePuzzle timeline = new RiddlePuzzle(
-                "Arrange these events: Machine Built → Reality Split → Scientist Rules → Machine Destroyed. What comes after Machine Destroyed?",
+                "Arrange these events: Build Machine → Solve Complex Formula → Reality Split → Destroy Machine. What should be our next step...",
                 40,
                 2,
                 "In the sequence: Machine Built, Reality Split, Scientist Rules, Machine Destroyed... what event should happen next?",
